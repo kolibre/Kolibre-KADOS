@@ -1,0 +1,120 @@
+﻿<?xml version="1.0" ?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+	targetNamespace="http://www.daisy.org/DRM/2005/KeyExchange"
+	elementFormDefault="qualified"
+	xmlns:ds="http://www.w3.org/2000/09/xmldsig#"
+    xmlns:xe="http://www.w3.org/2001/04/xmlenc#"
+    xmlns:dkx="http://www.daisy.org/DRM/2005/KeyExchange"
+>
+	<xs:annotation>
+		<xs:documentation>
+			DAISY DRM:  XML Schema for key exchange object
+			Version 1, rev 9 (9 Feb 2010)
+
+			This version fixes a minor bug in the IdString regular expression
+		</xs:documentation>
+	</xs:annotation>
+
+	<xs:import namespace="http://www.w3.org/2001/04/xmlenc#"
+			   schemaLocation="xenc-schema.xsd" />
+    <xs:import namespace="http://www.w3.org/2000/09/xmldsig#"
+    		   schemaLocation="xmldsig-core-schema.xsd"  />
+
+	<xs:element name="KeyExchange">
+		<xs:annotation>
+			<xs:documentation>
+				KeyExchange = document container
+				KeyExchange (Issuer, (ds:KeyInfo | Keys)+)
+			</xs:documentation>
+		</xs:annotation>
+
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element name="Issuer" type="dkx:IssuerType" />
+				<xs:choice maxOccurs="unbounded">
+					<xs:element ref="ds:KeyInfo" />
+					<xs:element name="Keys" type="dkx:KeysType" />
+				</xs:choice>
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+
+
+	<xs:complexType name="IssuerType">
+		<xs:annotation>
+			<xs:documentation>
+				Issuer = Issuer identification
+				Issuer (#PCDATA)
+			</xs:documentation>
+		</xs:annotation>
+
+		<xs:simpleContent>
+			<xs:extension base="xs:string">
+				<xs:attribute name="uid" type="dkx:IdString" />
+			</xs:extension>
+		</xs:simpleContent>
+	</xs:complexType>
+
+	<xs:simpleType name="IdString">
+		<xs:annotation>
+			<xs:documentation>
+				IdString = data type for issue IDs (e.g., DAISY.us-Acme)
+				Name parts use all allowed XML name characters except period
+			</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:pattern value="([-A-Za-z0-9_:])+(\.([-A-Za-z0-9_:])+)*" />
+		</xs:restriction>
+	</xs:simpleType>
+
+	<xs:complexType name="KeysType" >
+		<xs:annotation>
+			<xs:documentation>
+				Keys = Set of keys secured using same encryption key
+				Keys (ds:KeyInfo, (xe:EncryptedKey | KeyPair)+)
+			</xs:documentation>
+		</xs:annotation>
+
+		<xs:sequence>
+			<xs:element ref="ds:KeyInfo" />
+			<xs:choice maxOccurs="unbounded">
+				<xs:element name="KeyPair" type="dkx:KeyPairType"  />
+				<xs:element name="UAK" type="dkx:UAKType"  />
+			</xs:choice>
+		</xs:sequence>
+	</xs:complexType>
+
+	<xs:complexType name="UAKType" >
+		<xs:annotation>
+			<xs:documentation>
+				UAK = A container for a base64-encoded PDTB v1 UAK
+				UAK (#PCDATA)
+				Attributes:
+					issuerID = Issuer ID string from UAK
+					collectionID = Collection ID string from UAK
+			</xs:documentation>
+		</xs:annotation>
+
+		<xs:simpleContent>
+			<xs:extension base="xs:base64Binary">
+				<xs:attribute name="issuerID"  type="xs:string"  use="required"/>
+				<xs:attribute name="collectionID" type="xs:string" use="required" />
+			</xs:extension>
+		</xs:simpleContent>
+	</xs:complexType>
+	<xs:complexType name="KeyPairType" >
+		<xs:annotation>
+			<xs:documentation>
+				KeyPair = A container for a secured public-private key pair
+				(ds:KeyInfo, xe:EncryptedKey)
+			</xs:documentation>
+		</xs:annotation>
+
+		<xs:sequence>
+			<xs:element ref="ds:KeyInfo" />
+			<xs:element ref="xe:EncryptedKey" />
+		</xs:sequence>
+	</xs:complexType>
+
+</xs:schema>
+

@@ -1,0 +1,221 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE smil
+  PUBLIC "-//NISO//DTD dtbsmil 2005-2//EN" "http://www.daisy.org/z3986/2005/dtbsmil-2005-2.dtd">
+<smil xmlns="http://www.w3.org/2001/SMIL20/">
+	  <head>
+		    <meta content="AUTO-UID-4767990567747899000" name="dtb:uid"/>
+		    <meta content="TPB Narrator" name="dtb:generator"/>
+		    <meta content="0:14:01.680" name="dtb:totalElapsedTime"/>
+		    <customAttributes>
+		       <customTest defaultState="false" id="pagenum" override="visible"/>
+      </customAttributes>
+	  </head>
+	  <body>
+		    <seq dur="0:04:38.980" fill="remove" id="mseq">
+		       <par id="tcp166">
+            <text id="text166" src="AreYouReadyV3.xml#dtb170"/>
+            <audio clipBegin="0:00:00" clipEnd="0:00:03.918" src="speechgen0013.mp3"/>
+         </par>
+         <seq class="list" end="DTBuserEscape;tcp213.end" fill="remove" id="tcs19">
+            <par id="tcp167">
+               <text id="text167" src="AreYouReadyV3.xml#dtb172"/>
+               <audio clipBegin="0:00:03.918" clipEnd="0:00:08.295" src="speechgen0013.mp3"/>
+            </par>
+            <par id="tcp168">
+               <text id="text168" src="AreYouReadyV3.xml#dtb173"/>
+               <audio clipBegin="0:00:08.295" clipEnd="0:00:11.630" src="speechgen0013.mp3"/>
+            </par>
+            <par id="tcp169">
+               <text id="text169" src="AreYouReadyV3.xml#dtb174"/>
+               <audio clipBegin="0:00:11.630" clipEnd="0:00:13.674" src="speechgen0013.mp3"/>
+            </par>
+            <par id="tcp170">
+               <text id="text170" src="AreYouReadyV3.xml#dtb175"/>
+               <audio clipBegin="0:00:13.674" clipEnd="0:00:14.969" src="speechgen0013.mp3"/>
+            </par>
+            <par id="tcp171">
+               <text id="text171" src="AreYouReadyV3.xml#dtb176"/>
+               <audio clipBegin="0:00:14.969" clipEnd="0:00:16.396" src="speechgen0013.mp3"/>
+            </par>
+            <seq class="list" end="DTBuserEscape;tcp176.end" fill="remove" id="tcs20">
+               <par id="tcp172">
+                  <text id="text172" src="AreYouReadyV3.xml#dtb178"/>
+                  <audio clipBegin="0:00:16.396" clipEnd="0:00:23.918" src="speechgen0013.mp3"/>
+               </par>
+               <par id="tcp173">
+                  <text id="text173" src="AreYouReadyV3.xml#dtb179"/>
+                  <audio clipBegin="0:00:23.918" clipEnd="0:00:28.739" src="speechgen0013.mp3"/>
+               </par>
+               <par id="tcp174">
+                  <text id="text174" src="AreYouReadyV3.xml#dtb180"/>
+                  <audio clipBegin="0:00:28.739" clipEnd="0:00:31.906" src="speechgen0013.mp3"/>
+               </par>
+               <par id="tcp175">
+                  <text id="text175" src="AreYouReadyV3.xml#dtb181"/>
+                  <audio clipBegin="0:00:31.906" clipEnd="0:00:38.613" src="speechgen0013.mp3"/>
+               </par>
+               <par id="tcp176">
+                  <text id="text176" src="AreYouReadyV3.xml#dtb182"/>
+                  <audio clipBegin="0:00:38.613" clipEnd="0:00:45.475" src="speechgen0013.mp3"/>
+               </par>
+            </seq>
+            <par id="tcp177">
+               <text id="text177" src="AreYouReadyV3.xml#dtb183"/>
+               <audio clipBegin="0:00:45.475" clipEnd="0:00:55.635" src="speechgen0013.mp3"/>
+            </par>
+            <par id="tcp178">
+               <text id="text178" src="AreYouReadyV3.xml#dtb184"/>
+               <audio clipBegin="0:00:55.635" clipEnd="0:00:56.922" src="speechgen0013.mp3"/>
+            </par>
+            <seq class="list" end="DTBuserEscape;tcp183.end" fill="remove" id="tcs21">
+               <par id="tcp179">
+                  <text id="text179" src="AreYouReadyV3.xml#dtb186"/>
+                  <audio clipBegin="0:00:56.922" clipEnd="0:01:00.947" src="speechgen0013.mp3"/>
+               </par>
+               <par id="tcp180">
+                  <text id="text180" src="AreYouReadyV3.xml#dtb187"/>
+                  <audio clipBegin="0:01:00.947" clipEnd="0:01:05.034" src="speechgen0013.mp3"/>
+               </par>
+               <par id="tcp181">
+                  <text id="text181" src="AreYouReadyV3.xml#dtb188"/>
+                  <audio clipBegin="0:01:05.034" clipEnd="0:01:19.208" src="speechgen0013.mp3"/>
+               </par>
+               <par id="tcp182">
+                  <text id="text182" src="AreYouReadyV3.xml#dtb189"/>
+                  <audio clipBegin="0:01:19.208" clipEnd="0:01:27.812" src="speechgen0013.mp3"/>
+               </par>
+               <par id="tcp183">
+                  <text id="text183" src="AreYouReadyV3.xml#dtb190"/>
+                  <audio clipBegin="0:01:27.812" clipEnd="0:01:33.431" src="speechgen0013.mp3"/>
+               </par>
+            </seq>
+            <par id="tcp184">
+               <text id="text184" src="AreYouReadyV3.xml#dtb191"/>
+               <audio clipBegin="0:01:33.431" clipEnd="0:01:36.120" src="speechgen0013.mp3"/>
+            </par>
+            <par id="tcp185">
+               <text id="text185" src="AreYouReadyV3.xml#dtb192"/>
+               <audio clipBegin="0:01:36.120" clipEnd="0:01:41.433" src="speechgen0013.mp3"/>
+            </par>
+            <par id="tcp186">
+               <text id="text186" src="AreYouReadyV3.xml#dtb193"/>
+               <audio clipBegin="0:01:41.433" clipEnd="0:01:45.659" src="speechgen0013.mp3"/>
+            </par>
+            <par id="tcp187">
+               <text id="text187" src="AreYouReadyV3.xml#dtb194"/>
+               <audio clipBegin="0:01:45.659" clipEnd="0:01:57.430" src="speechgen0013.mp3"/>
+            </par>
+            <par id="tcp188">
+               <text id="text188" src="AreYouReadyV3.xml#dtb195"/>
+               <audio clipBegin="0:01:57.430" clipEnd="0:02:03.956" src="speechgen0013.mp3"/>
+            </par>
+            <par id="tcp189">
+               <text id="text189" src="AreYouReadyV3.xml#dtb196"/>
+               <audio clipBegin="0:02:03.956" clipEnd="0:02:07.154" src="speechgen0013.mp3"/>
+            </par>
+            <par id="tcp190">
+               <text id="text190" src="AreYouReadyV3.xml#dtb197"/>
+               <audio clipBegin="0:02:07.154" clipEnd="0:02:15.943" src="speechgen0013.mp3"/>
+            </par>
+            <par id="tcp191">
+               <text id="text191" src="AreYouReadyV3.xml#dtb198"/>
+               <audio clipBegin="0:02:15.943" clipEnd="0:02:23.489" src="speechgen0013.mp3"/>
+            </par>
+            <par id="tcp192">
+               <text id="text192" src="AreYouReadyV3.xml#dtb199"/>
+               <audio clipBegin="0:02:23.489" clipEnd="0:02:26.846" src="speechgen0013.mp3"/>
+            </par>
+            <seq class="list" end="DTBuserEscape;tcp197.end" fill="remove" id="tcs22">
+               <par id="tcp193">
+                  <text id="text193" src="AreYouReadyV3.xml#dtb201"/>
+                  <audio clipBegin="0:02:26.846" clipEnd="0:02:34.596" src="speechgen0013.mp3"/>
+               </par>
+               <par id="tcp194">
+                  <text id="text194" src="AreYouReadyV3.xml#dtb202"/>
+                  <audio clipBegin="0:02:34.596" clipEnd="0:02:42.569" src="speechgen0013.mp3"/>
+               </par>
+               <par id="tcp195">
+                  <text id="text195" src="AreYouReadyV3.xml#dtb203"/>
+                  <audio clipBegin="0:02:42.569" clipEnd="0:02:49.418" src="speechgen0013.mp3"/>
+               </par>
+               <par id="tcp196">
+                  <text id="text196" src="AreYouReadyV3.xml#dtb204"/>
+                  <audio clipBegin="0:02:49.418" clipEnd="0:02:52.549" src="speechgen0013.mp3"/>
+               </par>
+               <par id="tcp197">
+                  <text id="text197" src="AreYouReadyV3.xml#dtb205"/>
+                  <audio clipBegin="0:02:52.549" clipEnd="0:02:58.691" src="speechgen0013.mp3"/>
+               </par>
+            </seq>
+            <par id="tcp198">
+               <text id="text198" src="AreYouReadyV3.xml#dtb206"/>
+               <audio clipBegin="0:02:58.691" clipEnd="0:03:05.382" src="speechgen0013.mp3"/>
+            </par>
+            <par id="tcp199">
+               <text id="text199" src="AreYouReadyV3.xml#dtb207"/>
+               <audio clipBegin="0:03:05.382" clipEnd="0:03:14.124" src="speechgen0013.mp3"/>
+            </par>
+            <par id="tcp200">
+               <text id="text200" src="AreYouReadyV3.xml#dtb208"/>
+               <audio clipBegin="0:03:14.124" clipEnd="0:03:18.931" src="speechgen0013.mp3"/>
+            </par>
+            <par id="tcp201">
+               <text id="text201" src="AreYouReadyV3.xml#dtb209"/>
+               <audio clipBegin="0:03:18.931" clipEnd="0:03:24.105" src="speechgen0013.mp3"/>
+            </par>
+            <par id="tcp202">
+               <text id="text202" src="AreYouReadyV3.xml#dtb210"/>
+               <audio clipBegin="0:03:24.105" clipEnd="0:03:27.244" src="speechgen0013.mp3"/>
+            </par>
+            <par id="tcp203">
+               <text id="text203" src="AreYouReadyV3.xml#dtb211"/>
+               <audio clipBegin="0:03:27.244" clipEnd="0:03:32.506" src="speechgen0013.mp3"/>
+            </par>
+            <par id="tcp204">
+               <text id="text204" src="AreYouReadyV3.xml#dtb212"/>
+               <audio clipBegin="0:03:32.506" clipEnd="0:03:35.931" src="speechgen0013.mp3"/>
+            </par>
+            <par id="tcp205">
+               <text id="text205" src="AreYouReadyV3.xml#dtb213"/>
+               <audio clipBegin="0:03:35.931" clipEnd="0:03:40.194" src="speechgen0013.mp3"/>
+            </par>
+            <par id="tcp206">
+               <text id="text206" src="AreYouReadyV3.xml#dtb214"/>
+               <audio clipBegin="0:03:40.194" clipEnd="0:03:44.221" src="speechgen0013.mp3"/>
+            </par>
+            <par id="tcp207">
+               <text id="text207" src="AreYouReadyV3.xml#dtb215"/>
+               <audio clipBegin="0:03:44.221" clipEnd="0:03:52.721" src="speechgen0013.mp3"/>
+            </par>
+            <par id="tcp208">
+               <text id="text208" src="AreYouReadyV3.xml#dtb216"/>
+               <audio clipBegin="0:03:52.721" clipEnd="0:03:58.702" src="speechgen0013.mp3"/>
+            </par>
+            <par id="tcp209">
+               <text id="text209" src="AreYouReadyV3.xml#dtb217"/>
+               <audio clipBegin="0:03:58.702" clipEnd="0:04:04.645" src="speechgen0013.mp3"/>
+            </par>
+            <par id="tcp210">
+               <text id="text210" src="AreYouReadyV3.xml#dtb218"/>
+               <audio clipBegin="0:04:04.645" clipEnd="0:04:11.485" src="speechgen0013.mp3"/>
+            </par>
+            <par id="tcp211">
+               <text id="text211" src="AreYouReadyV3.xml#dtb219"/>
+               <audio clipBegin="0:04:11.485" clipEnd="0:04:20.277" src="speechgen0013.mp3"/>
+            </par>
+            <par id="tcp212">
+               <text id="text212" src="AreYouReadyV3.xml#dtb220"/>
+               <audio clipBegin="0:04:20.277" clipEnd="0:04:24.051" src="speechgen0013.mp3"/>
+            </par>
+            <par id="tcp213">
+               <text id="text213" src="AreYouReadyV3.xml#dtb221"/>
+               <audio clipBegin="0:04:24.051" clipEnd="0:04:37.619" src="speechgen0013.mp3"/>
+            </par>
+         </seq>
+         <par customTest="pagenum" id="tcp214">
+            <text id="text214" src="AreYouReadyV3.xml#page9"/>
+            <audio clipBegin="0:04:37.619" clipEnd="0:04:38.980" src="speechgen0013.mp3"/>
+         </par>
+      </seq>
+	  </body>
+</smil>

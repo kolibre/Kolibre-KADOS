@@ -1,0 +1,267 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema elementFormDefault="qualified" id="bookmark-2005-1"
+	xmlns="http://www.daisy.org/z3986/2005/bookmark/"
+	targetNamespace="http://www.daisy.org/z3986/2005/bookmark/"
+	xmlns:xs="http://www.w3.org/2001/XMLSchema"
+	xmlns:db="http://docbook.org/ns/docbook">
+        
+        <xs:import namespace="http://www.w3.org/XML/1998/namespace" schemaLocation="xml.xsd"/>
+        
+        <xs:annotation>
+                <xs:documentation>
+                        <db:para>
+                                This schema is a conversion of the bookmarks-2005-1 DTD that was 
+                                developed by Tom McLaughlin and Michael Moodie as part of the
+                                ANSI/NISO z39.86-2005 standard. This schema reflects the 2005-06-26
+                                version of the DTD.
+                        </db:para>
+                        <db:para>
+                                This xsd representation was created for inclusion in the DAISY Online
+                                delivery standard. Errors/variations/inconsistencies in this schema should
+                                be reported to the working group and not to the original authors.
+                        </db:para>
+                </xs:documentation>
+        </xs:annotation>
+        
+        <xs:element name="bookmarkSet">
+                <xs:annotation>
+                        <xs:documentation>
+                                The set of bookmarks for a book consists of the title, a unique 
+                                identifier of the book, the last place the reader left off and zero or more 
+                                bookmarks, highlights, and associated audio or textual notes. This set is intended for 
+                                export of bookmarks, highlights and notes to another player; the markup is not required 
+                                for a player's internal representation of bookmarks.
+                        </xs:documentation>
+                </xs:annotation>
+                <xs:complexType>
+                        <xs:sequence>
+                                <xs:element ref="title"/>
+                                <xs:element ref="uid"/>
+                                <xs:element ref="lastmark" minOccurs="0"/>
+                                <xs:choice minOccurs="0" maxOccurs="unbounded">
+                                        <xs:element ref="bookmark"/>
+                                        <xs:element ref="hilite"/>
+                                </xs:choice>
+                        </xs:sequence>
+                </xs:complexType>
+        </xs:element>
+        
+        <xs:element name="title">
+                <xs:annotation>
+                        <xs:documentation>
+                                <db:para>The book's title in text and an optional audio clip.</db:para>
+                        </xs:documentation>
+                </xs:annotation>
+                <xs:complexType>
+                        <xs:sequence>
+                                <xs:element ref="text"/>
+                                <xs:element ref="audio" minOccurs="0"/>
+                        </xs:sequence>
+                </xs:complexType>
+        </xs:element>
+        
+        
+        <xs:element name="uid" type="xs:string">
+                <xs:annotation>
+                        <xs:documentation>
+                                <db:para>A globally unique identifier for the book.</db:para>
+                        </xs:documentation>
+                </xs:annotation>
+        </xs:element>
+        
+        
+        <xs:element name="lastmark">
+                <xs:annotation>
+                        <xs:documentation>
+                                <db:para>Location where reader left off and where player will resume play when restarted.</db:para>
+                        </xs:documentation>
+                </xs:annotation>
+                <xs:complexType>
+					<xs:sequence>
+                        <xs:group ref="bookmarkContent"/>
+					</xs:sequence>
+                </xs:complexType>
+        </xs:element>
+        
+        
+        <xs:element name="bookmark">
+                <xs:annotation>
+                        <xs:documentation>
+                                <db:para>
+                                        Location and optional note. Location consists of a URI pointing to 
+                                        the id attribute of the &lt;par&gt; element in the SMIL file that contains the bookmark 
+                                        plus a time offset in seconds (or character offset) to the exact place.  Player should 
+                                        by default automatically number bookmarks in the order in which they fall in the book.
+                                </db:para>
+                        </xs:documentation>
+                </xs:annotation>
+                <xs:complexType>
+                        <xs:sequence>
+                                <xs:group ref="bookmarkContent"/>
+                                <xs:element ref="note" minOccurs="0"/>
+                        </xs:sequence>
+                        <xs:attribute name="label" type="xs:string" use="optional"/>
+                        <xs:attribute ref="xml:lang" use="optional"/>
+                </xs:complexType>
+        </xs:element>
+        
+        
+        <xs:element name="hilite">
+                <xs:annotation>
+                        <xs:documentation>
+                                <db:para>A block of text with an optional note attached.</db:para>
+                        </xs:documentation>
+                </xs:annotation>
+                <xs:complexType>
+                        <xs:sequence>
+                                <xs:element name="hiliteStart">
+                                        <xs:annotation>
+                                                <xs:documentation>
+                                                        <db:para>Starting point of highlighted block.</db:para>
+                                                </xs:documentation>
+                                        </xs:annotation>
+                                        <xs:complexType>
+											<xs:sequence>
+                                                <xs:group ref="hiliteContent"/>
+											</xs:sequence>
+                                        </xs:complexType>
+                                </xs:element>
+                                <xs:element name="hiliteEnd">
+                                        <xs:annotation>
+                                                <xs:documentation>
+                                                        <db:para>End point of highlighted block.</db:para>
+                                                </xs:documentation>
+                                        </xs:annotation>
+                                        <xs:complexType>
+											<xs:sequence>
+                                                <xs:group ref="hiliteContent"/>
+											</xs:sequence>
+                                        </xs:complexType>
+                                </xs:element>
+                                <xs:element ref="note" minOccurs="0"/>
+                        </xs:sequence>
+                        <xs:attribute name="label" type="xs:string" use="optional"/>
+                </xs:complexType>
+        </xs:element>
+        
+        
+        <xs:element name="timeOffset" type="xs:string">
+                <xs:annotation>
+                        <xs:documentation>
+                                <db:para>
+                                        Exact position of bookmark in SMIL file referenced by the URI; represented 
+                                        as SMIL 2.0 Clock Value. The timeOffset value is relative to the start of the SMIL time container 
+                                        referenced in the URI. 
+                                </db:para>
+                        </xs:documentation>
+                </xs:annotation>
+        </xs:element>
+        
+                <xs:element name="charOffset" type="xs:long">
+                <xs:annotation>
+                        <xs:documentation>
+                                <db:para>
+                                        Exact position of bookmark in text-only file referenced (via SMIL) by the URI: 
+                                        measured in characters, counting from the start of the content of the referenced element; 
+                                        start- and end-tags are not counted, white space is then normalized (collapsed to one character).
+                                </db:para>
+                        </xs:documentation>
+                </xs:annotation>
+        </xs:element>
+                
+        <xs:element name="ncxRef" type="xs:anyURI">
+                <xs:annotation>
+                        <xs:documentation>
+                                <db:para>
+                                        Captures current location in NCX (the id of the current navPoint)at 
+                                        time lastmark, bookmark, or highlight is set.  Ensures that current location in NCX and 
+                                        SMIL are synchronized after moving to a lastmark, etc., so that any global navigation 
+                                        commands issued by the user will start from the current location.
+                                </db:para>
+                        </xs:documentation>
+                </xs:annotation>
+        </xs:element>
+        
+                <xs:element name="URI" type="xs:anyURI">
+                <xs:annotation>
+                        <xs:documentation>
+                                <db:para>pointer to id of &lt;par&gt; or &lt;seq&gt; in SMIL that contains the bookmark.</db:para>
+                        </xs:documentation>
+                </xs:annotation>
+        </xs:element>
+        
+        
+        <xs:element name="text" type="xs:string">
+                <xs:annotation>
+                        <xs:documentation>
+                                <db:para>Text of title or note.</db:para>
+                        </xs:documentation>
+                </xs:annotation>
+        </xs:element>
+        
+        
+        <xs:element name="audio">
+                <xs:annotation>
+                        <xs:documentation>
+                                <db:para>Audio clip of user-recorded note, in any format supported by standard.</db:para>
+                        </xs:documentation>
+                </xs:annotation>
+                <xs:complexType>
+                        <xs:attribute name="src" form="unqualified" type="xs:anyURI"/>
+                        <xs:attribute name="clipBegin" form="unqualified" type="xs:string"/>
+                        <xs:attribute name="clipEnd" form="unqualified" type="xs:string"/>
+                </xs:complexType>
+        </xs:element>
+        
+        
+        <xs:element name="note">
+                <xs:annotation>
+                        <xs:documentation>
+                                <db:para>
+                                        The note is for the user's input, random thoughts, musings, etc. It can be 
+                                        text or audio or both.
+                                </db:para>
+                        </xs:documentation>
+                </xs:annotation>
+                <xs:complexType>
+                        <xs:choice>
+                                <xs:sequence>
+                                        <xs:element ref="text"/>
+                                        <xs:element ref="audio" minOccurs="0"/>
+                                </xs:sequence>
+                                <xs:element ref="audio"/>
+                        </xs:choice>
+                </xs:complexType>
+        </xs:element>
+        
+        
+        <xs:group name="bookmarkContent">
+                <xs:sequence>
+                        <xs:element ref="ncxRef"/>
+                        <xs:element ref="URI"/>
+                        <xs:choice>
+                                <xs:sequence>
+                                        <xs:element ref="timeOffset"/>
+                                        <xs:element ref="charOffset" minOccurs="0"/>
+                                </xs:sequence>
+                                <xs:element ref="charOffset"/>
+                        </xs:choice>
+                </xs:sequence>
+        </xs:group>
+        
+        
+        <xs:group name="hiliteContent">
+                <xs:sequence>
+                        <xs:element ref="ncxRef"/>
+                        <xs:element ref="URI"/>
+                        <xs:choice>
+                                <xs:sequence>
+                                        <xs:element ref="timeOffset"/>
+                                        <xs:element ref="charOffset" minOccurs="0"/>
+                                </xs:sequence>
+                                <xs:element ref="charOffset"/>
+                        </xs:choice>
+                </xs:sequence>
+        </xs:group>
+        
+</xs:schema>

@@ -1,0 +1,12 @@
+<configuration xmlns="http://logging.apache.org/log4php/">
+    <appender name="FileAppender" class="LoggerAppenderFile">
+        <layout class="LoggerLayoutPattern">
+            <param name="conversionPattern" value="%d %c:%L [%p] %m%n"/>
+        </layout>
+        <param name="file" value="../data/service.log" />
+    </appender>
+    <root>
+        <level value="DEBUG" />
+        <appender_ref ref="FileAppender" />
+    </root>
+</configuration>

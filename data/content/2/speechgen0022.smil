@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE smil
+  PUBLIC "-//NISO//DTD dtbsmil 2005-2//EN" "http://www.daisy.org/z3986/2005/dtbsmil-2005-2.dtd">
+<smil xmlns="http://www.w3.org/2001/SMIL20/">
+	  <head>
+		    <meta content="AUTO-UID-4767990567747899000" name="dtb:uid"/>
+		    <meta content="TPB Narrator" name="dtb:generator"/>
+		    <meta content="0:35:46.795" name="dtb:totalElapsedTime"/>
+		
+	  </head>
+	  <body>
+		    <seq dur="0:00:31.284" fill="remove" id="mseq">
+		       <par id="tcp406">
+            <text id="text406" src="AreYouReadyV3.xml#dtb416"/>
+            <audio clipBegin="0:00:00" clipEnd="0:00:01.904" src="speechgen0022.mp3"/>
+         </par>
+         <par id="tcp407">
+            <text id="text407" src="AreYouReadyV3.xml#dtb417"/>
+            <audio clipBegin="0:00:01.904" clipEnd="0:00:04.631" src="speechgen0022.mp3"/>
+         </par>
+         <par id="tcp408">
+            <text id="text408" src="AreYouReadyV3.xml#dtb418"/>
+            <audio clipBegin="0:00:04.631" clipEnd="0:00:10.518" src="speechgen0022.mp3"/>
+         </par>
+         <par id="tcp409">
+            <text id="text409" src="AreYouReadyV3.xml#dtb419"/>
+            <audio clipBegin="0:00:10.518" clipEnd="0:00:21.702" src="speechgen0022.mp3"/>
+         </par>
+         <par id="tcp410">
+            <text id="text410" src="AreYouReadyV3.xml#dtb420"/>
+            <audio clipBegin="0:00:21.702" clipEnd="0:00:31.284" src="speechgen0022.mp3"/>
+         </par>
+      </seq>
+	  </body>
+</smil>

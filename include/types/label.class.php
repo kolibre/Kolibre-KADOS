@@ -1,0 +1,188 @@
+<?php
+
+/*
+ * Copyright (C) 2013 Kolibre
+ *
+ * This file is part of Kolibre-KADOS.
+ * Kolibre-KADOS is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 2.1 of the License, or
+ * at your option) any later version.
+ *
+ * Kolibre-KADOS is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with Kolibre-KADOS. If not, see <http://www.gnu.org/licenses/>.
+ */
+
+require_once('AbstractType.class.php');
+
+require_once('audio.class.php');
+
+class label extends AbstractType {
+
+    /**
+     * @var string
+     */
+    public $text;
+
+    /**
+     * @var (object)audio
+     */
+    public $audio;
+
+    /**
+     * @var language
+     *     NOTE: lang should follow the following restrictions
+     */
+    public $lang;
+
+    /**
+     * @var string
+     *     NOTE: dir should follow the following restrictions
+     *     You can have one of the following value
+     *     ltr
+     *     rtl
+     */
+    public $dir;
+
+
+    /******************** public functions ********************/
+
+    /**
+     * constructor for class label
+     */
+    function __construct($_text = NULL, $_audio = NULL, $_lang = NULL, $_dir = NULL) {
+        if (is_string($_text)) $this->setText($_text);
+        if (is_a($_audio, "audio")) $this->setAudio($_audio);
+        if (is_string($_lang)) $this->setLang($_lang);
+        if (is_string($_dir)) $this->setDir($_dir);
+    }
+
+
+    /******************** class get set methods ********************/
+
+    /**
+     * getter for text
+     */
+    function getText() {
+        return $this->text;
+    }
+
+    /**
+     * setter for text
+     */
+    function setText($_text) {
+        $this->text = $_text;
+    }
+
+    /**
+     * resetter for text
+     */
+    function resetText() {
+        $this->text = NULL;
+    }
+
+    /**
+     * getter for audio
+     */
+    function getAudio() {
+        return $this->audio;
+    }
+
+    /**
+     * setter for audio
+     */
+    function setAudio($_audio) {
+        $this->audio = $_audio;
+    }
+
+    /**
+     * resetter for audio
+     */
+    function resetAudio() {
+        $this->audio = NULL;
+    }
+
+    /**
+     * getter for lang
+     */
+    function getLang() {
+        return $this->lang;
+    }
+
+    /**
+     * setter for lang
+     */
+    function setLang($_lang) {
+        $this->lang = $_lang;
+    }
+
+    /**
+     * resetter for lang
+     */
+    function resetLang() {
+        $this->lang = NULL;
+    }
+
+    /**
+     * getter for dir
+     */
+    function getDir() {
+        return $this->dir;
+    }
+
+    /**
+     * setter for dir
+     */
+    function setDir($_dir) {
+        $this->dir = $_dir;
+    }
+
+    /**
+     * resetter for dir
+     */
+    function resetDir() {
+        $this->dir = NULL;
+    }
+
+
+    /******************** validator methods ********************/
+
+    /**
+     * validator for class label
+     */
+    function validate() {
+        // text must occur exactly once
+        if ($this->isNoneEmptyString($this->text, 'text') === false)
+            return false;
+
+        // audio must occur zero or one times
+        if (!is_null($this->audio)) {
+            if ($this->isInstanceOf($this->audio, 'audio') === false)
+                return false;
+            if ($this->audio->validate() === false) {
+                $this->error = __CLASS__ . '.' . $this->audio->getError();
+                return false;
+            }
+        }
+
+        // attribute lang is required
+        if ($this->isString($this->lang, 'lang') === false)
+            return false;
+
+        // attribute dir is optional
+        if (!is_null($this->dir)) {
+            $allowedValues = array('ltr', 'rtl');
+            if ($this->isString($this->dir, 'dir', $allowedValues) === false)
+                return false;
+        }
+
+        return true;
+    }
+}
+
+?>

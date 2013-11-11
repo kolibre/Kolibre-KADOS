@@ -102,7 +102,8 @@ class DaisyOnlineService
         }
 
         // parse settings file
-        $settings = parse_ini_file('../service.ini', true);
+        $inifile = realpath(dirname(__FILE__)) . '/../service.ini';
+        $settings = parse_ini_file($inifile, true);
 
         // setup service attributes
         if (array_key_exists('Service', $settings))

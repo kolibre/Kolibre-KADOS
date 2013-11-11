@@ -81,6 +81,9 @@ class DaisyOnlineService
     // logger instance
     private $logger = null;
 
+    // adapter instance
+    private $adapter = null;
+
     // database connection handler
     private $dbh = null;
 
@@ -112,6 +115,15 @@ class DaisyOnlineService
         {
             $this->logger->error("Group 'Service' is missing in ini file");
             die("Group 'Service' not found in ini file, please make sure the settings file is correct.");
+        }
+
+        // setup adapter
+        if (array_key_exists('Adapter', $settings))
+            $this->setupAdapter($settings['Adapter']);
+        else
+        {
+            $this->logger->error("Group 'Adapter' is missing in ini file");
+            die("Group 'Adapter' not found in ini file, please make sure the settings file is correct.");
         }
     }
 
@@ -949,6 +961,74 @@ class DaisyOnlineService
         $this->serviceAttributes['supportsAudioLabels'] = false;
         if (array_key_exists('supportsAudioLabels', $settings))
             $this->serviceAttributes['supportsAudioLabels'] = true;
+    }
+
+    /**
+     * Service helper
+     *
+     * Parses adapter settings and initializes adapter
+     *
+     * @param array $settings Adapter settings from service.ini
+     */
+    private function setupAdapter($settings)
+    {
+        if (!array_key_exists('name', $settings))
+        {
+            $this->logger->fatal('No adapter specified in settings file');
+            die('No adapter specified in settings file');
+        }
+        $adapterClass = $settings['name'];
+
+        if (array_key_exists('path', $settings))
+        {
+            $path = $settings['path'];
+            $this->includeAdapter($path, $adapterClass);
+        }
+
+        $path = realpath(dirname(__FILE__)) . '/adapter';
+        $this->includeAdapter($path, $adapterClass);
+
+        if (!class_exists($adapterClass))
+        {
+            $this->logger->fatal("Could not find adapter class '$adapterClass'");
+            die('Adapter class not found, please make sure adapter path is set');
+        }
+        $this->adapter = new $adapterClass;
+    }
+
+    /**
+     * Service helper
+     *
+     * Search path for a file which name is the value of parameter name and has the
+     * extension .class.php or .php. If file exists, append path to include paths and include
+     * the file.
+     *
+     * @param string $path Path in which to look for an adapter file
+     * @param string $name Name of the adapter to serach for
+     */
+    private function includeAdapter($path, $name)
+    {
+        if (!is_dir($path))
+        {
+            $this->logger-warn("Adapter path '$path' does not exists");
+            return;
+        }
+
+        $file = "$path/$name.class.php";
+        if (file_exists($file))
+        {
+            set_include_path(get_include_path() . PATH_SEPARATOR . $path);
+            require_once($file);
+            return;
+        }
+
+        $file = "$path/$name.php";
+        if (file_exists($file))
+        {
+            set_include_path(get_include_path() . PATH_SEPARATOR . $path);
+            require_once($file);
+            return;
+        }
     }
 
     /**

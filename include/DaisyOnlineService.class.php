@@ -105,74 +105,7 @@ class DaisyOnlineService
         $settings = parse_ini_file('../service.ini');
 
         // setup service attributes
-        if (array_key_exists('serviceProvider', $settings))
-            $this->serviceAttributes['serviceProvider'] = $settings['serviceProvider'];
-        if (array_key_exists('service', $settings))
-            $this->serviceAttributes['service'] = $settings['service'];
-        $this->serviceAttributes['supportedContentSelectionMethods'] = array();
-        if (array_key_exists('supportedContentSelectionMethods', $settings))
-        {
-            if (in_array('OUT_OF_BAND', $settings['supportedContentSelectionMethods']))
-                array_push($this->serviceAttributes['supportedContentSelectionMethods'], 'OUT_OF_BAND');
-            if (in_array('BROWSE', $settings['supportedContentSelectionMethods']))
-                array_push($this->serviceAttributes['supportedContentSelectionMethods'], 'BROWSE');
-        }
-        if (sizeof($this->serviceAttributes['supportedContentSelectionMethods']) == 0)
-        {
-            $msg = 'No valid content selection method found in settings, using default OUT_OF_BAND';
-            $this->logger->error($msg);
-            array_push($this->serviceAttributes['supportedContentSelectionMethods'], 'OUT_OF_BAND');
-        }
-        $this->serviceAttributes['supportedOptionalOperations'] = array();
-        if (array_key_exists('supportedOptionalOperations', $settings))
-        {
-            if (in_array('SERVICE_ANNOUNCEMENTS', $settings['supportedOptionalOperations']))
-                array_push($this->serviceAttributes['supportedOptionalOperations'], 'SERVICE_ANNOUNCEMENTS');
-            if (in_array('SET_BOOKMARKS', $settings['supportedOptionalOperations']))
-                array_push($this->serviceAttributes['supportedOptionalOperations'], 'SET_BOOKMARKS');
-            if (in_array('GET_BOOKMARKS', $settings['supportedOptionalOperations']))
-                array_push($this->serviceAttributes['supportedOptionalOperations'], 'GET_BOOKMARKS');
-            if (in_array('DYNAMIC_MENUS', $settings['supportedOptionalOperations']))
-                array_push($this->serviceAttributes['supportedOptionalOperations'], 'DYNAMIC_MENUS');
-            if (in_array('PDTB2_KEY_PROVISION', $settings['supportedOptionalOperations']))
-                array_push($this->serviceAttributes['supportedOptionalOperations'], 'PDTB2_KEY_PROVISION');
-        }
-        $this->serviceAttributes['supportsServerSideBack'] = false;
-        if (array_key_exists('supportsServerSideBack', $settings))
-        {
-            if (in_array('DYNAMIC_MENUS', $this->serviceAttributes['supportedOptionalOperations']))
-                $this->serviceAttributes['supportsServerSideBack'] = true;
-            else
-            {
-                $msg = "Reserved parameter 'search' supported in settings but DYNAMIC_MENUS not supported";
-                $this->logger->warn($msg);
-            }
-        }
-        $this->serviceAttributes['supportsSearch'] = false;
-        if (array_key_exists('supportsSearch', $settings))
-        {
-            if (in_array('DYNAMIC_MENUS', $this->serviceAttributes['supportedOptionalOperations']))
-                $this->serviceAttributes['supportsSearch'] = true;
-            else
-            {
-                $msg = "Reserved parameter 'back' supported in settings but DYNAMIC_MENUS not supported";
-                $this->logger->warn($msg);
-            }
-        }
-        $this->serviceAttributes['supportedUplinkAudioCodecs'] = array();
-        if (array_key_exists('supportedUplinkAudioCodecs', $settings))
-        {
-            if (in_array('DYNAMIC_MENUS', $this->serviceAttributes['supportedOptionalOperations']))
-                $this->serviceAttributes['supportedUplinkAudioCodecs'] = $settings['supportedUplinkAudioCodecs'];
-            else
-            {
-                $msg = "Uplink audio codes specified in settings but DYNAMIC_MENUS not supported";
-                $this->logger->warn($msg);
-            }
-        }
-        $this->serviceAttributes['supportsAudioLabels'] = false;
-        if (array_key_exists('supportsAudioLabels', $settings))
-            $this->serviceAttributes['supportsAudioLabels'] = true;
+        $this->setupServiceAttributes($settings);
     }
 
     /**
@@ -930,6 +863,85 @@ class DaisyOnlineService
         $this->sessionHandle(__FUNCTION__);
         if (!in_array('PDTB2_KEY_PROVISION', $this->serviceAttributes['supportedOptionalOperations']))
             throw new SoapFault ('Client', 'getKeyExchangeObject not supported', '', '', 'getKeyExchangeObject_operationNotSupportedFault');
+    }
+
+    /**
+     * Service helper
+     *
+     * Parses services settings and initializes private service attributes
+     *
+     * @param array $settings Service settings from service.ini
+     */
+    private function setupServiceAttributes($settings)
+    {
+        if (array_key_exists('serviceProvider', $settings))
+            $this->serviceAttributes['serviceProvider'] = $settings['serviceProvider'];
+        if (array_key_exists('service', $settings))
+            $this->serviceAttributes['service'] = $settings['service'];
+        $this->serviceAttributes['supportedContentSelectionMethods'] = array();
+        if (array_key_exists('supportedContentSelectionMethods', $settings))
+        {
+            if (in_array('OUT_OF_BAND', $settings['supportedContentSelectionMethods']))
+                array_push($this->serviceAttributes['supportedContentSelectionMethods'], 'OUT_OF_BAND');
+            if (in_array('BROWSE', $settings['supportedContentSelectionMethods']))
+                array_push($this->serviceAttributes['supportedContentSelectionMethods'], 'BROWSE');
+        }
+        if (sizeof($this->serviceAttributes['supportedContentSelectionMethods']) == 0)
+        {
+            $msg = 'No valid content selection method found in settings, using default OUT_OF_BAND';
+            $this->logger->error($msg);
+            array_push($this->serviceAttributes['supportedContentSelectionMethods'], 'OUT_OF_BAND');
+        }
+        $this->serviceAttributes['supportedOptionalOperations'] = array();
+        if (array_key_exists('supportedOptionalOperations', $settings))
+        {
+            if (in_array('SERVICE_ANNOUNCEMENTS', $settings['supportedOptionalOperations']))
+                array_push($this->serviceAttributes['supportedOptionalOperations'], 'SERVICE_ANNOUNCEMENTS');
+            if (in_array('SET_BOOKMARKS', $settings['supportedOptionalOperations']))
+                array_push($this->serviceAttributes['supportedOptionalOperations'], 'SET_BOOKMARKS');
+            if (in_array('GET_BOOKMARKS', $settings['supportedOptionalOperations']))
+                array_push($this->serviceAttributes['supportedOptionalOperations'], 'GET_BOOKMARKS');
+            if (in_array('DYNAMIC_MENUS', $settings['supportedOptionalOperations']))
+                array_push($this->serviceAttributes['supportedOptionalOperations'], 'DYNAMIC_MENUS');
+            if (in_array('PDTB2_KEY_PROVISION', $settings['supportedOptionalOperations']))
+                array_push($this->serviceAttributes['supportedOptionalOperations'], 'PDTB2_KEY_PROVISION');
+        }
+        $this->serviceAttributes['supportsServerSideBack'] = false;
+        if (array_key_exists('supportsServerSideBack', $settings))
+        {
+            if (in_array('DYNAMIC_MENUS', $this->serviceAttributes['supportedOptionalOperations']))
+                $this->serviceAttributes['supportsServerSideBack'] = true;
+            else
+            {
+                $msg = "Reserved parameter 'search' supported in settings but DYNAMIC_MENUS not supported";
+                $this->logger->warn($msg);
+            }
+        }
+        $this->serviceAttributes['supportsSearch'] = false;
+        if (array_key_exists('supportsSearch', $settings))
+        {
+            if (in_array('DYNAMIC_MENUS', $this->serviceAttributes['supportedOptionalOperations']))
+                $this->serviceAttributes['supportsSearch'] = true;
+            else
+            {
+                $msg = "Reserved parameter 'back' supported in settings but DYNAMIC_MENUS not supported";
+                $this->logger->warn($msg);
+            }
+        }
+        $this->serviceAttributes['supportedUplinkAudioCodecs'] = array();
+        if (array_key_exists('supportedUplinkAudioCodecs', $settings))
+        {
+            if (in_array('DYNAMIC_MENUS', $this->serviceAttributes['supportedOptionalOperations']))
+                $this->serviceAttributes['supportedUplinkAudioCodecs'] = $settings['supportedUplinkAudioCodecs'];
+            else
+            {
+                $msg = "Uplink audio codes specified in settings but DYNAMIC_MENUS not supported";
+                $this->logger->warn($msg);
+            }
+        }
+        $this->serviceAttributes['supportsAudioLabels'] = false;
+        if (array_key_exists('supportsAudioLabels', $settings))
+            $this->serviceAttributes['supportsAudioLabels'] = true;
     }
 
     /**

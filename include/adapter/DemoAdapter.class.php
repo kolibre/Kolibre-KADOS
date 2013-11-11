@@ -32,13 +32,13 @@ class DemoAdapter extends Adapter
     // database connection handler
     private $dbh = null;
 
-    public function __construct()
+    public function __construct($database = null)
     {
         // stup logger
         $this->setupLogger();
 
         // setup database connection
-        $this->setupDatabase();
+        $this->setupDatabase($database);
     }
 
     /**
@@ -69,11 +69,21 @@ class DemoAdapter extends Adapter
         $this->logger = Logger::getLogger('kolibre.daisyonline.demoadapter');
     }
 
-    private function setupDatabase()
+    private function setupDatabase($database = null)
     {
-        try
+        if (is_null($database))
         {
             $database = realpath(dirname(__FILE__)) . '/../../data/db/demo.db';
+        }
+
+        if (file_exists($database) === false)
+        {
+            $this->logger->error("File '$database' does not exist");
+            return;
+        }
+
+        try
+        {
             $this->dbh = new PDO("sqlite:$database");
             $this->dbh->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
         }

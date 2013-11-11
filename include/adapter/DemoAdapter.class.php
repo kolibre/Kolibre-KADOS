@@ -113,6 +113,39 @@ class DemoAdapter extends Adapter
 
     public function authenticate($username, $password)
     {
+        try
+        {
+            $query = 'SELECT rowid, * FROM user WHERE username = :username AND password = :password';
+            $sth = $this->dbh->prepare($query);
+            $values = array(':username' => $username, ':password' => $password);
+            $sth->execute($values);
+            $users = $sth->fetchAll(PDO::FETCH_ASSOC);
+        }
+        catch (PDOException $e)
+        {
+            $this->logger->fatal($e->getMessage());
+            throw new AdapterException('Authentication failed');
+        }
+
+        if (sizeof($users) == 0)
+        {
+            $msg = "No user found with username = '$username' and password = '********'";
+            $this->logger->warn($msg);
+            return false;
+        }
+        else if (sizeof($users) > 1)
+        {
+            $count = sizeof($users);
+            $msg = "$count users found with username = '$username' and password = '********'";
+            $this->logger->error($msg);
+            return false;
+        }
+
+        $this->user = $users[0]['rowid'];
+        if ($users[0]['log'] == 1)
+            $this->userLoggingEnabled = true;
+
+        return true;
     }
 
     public function contentListExists($list)

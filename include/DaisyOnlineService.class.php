@@ -212,34 +212,16 @@ class DaisyOnlineService
 
         try
         {
-            $query = 'SELECT rowid, * FROM user WHERE username = :username AND password = :password';
-            $sth = $this->dbh->prepare($query);
-            $values = array(':username' => $username, ':password' => $password);
-            $sth->execute($values);
-            $users = $sth->fetchAll(PDO::FETCH_ASSOC);
+            if ($this->adapter->authenticate($username, $password) === false)
+                return new logOnResponse(false);
         }
-        catch (PDOException $e)
+        catch (AdapterException $e)
         {
             $this->logger->fatal($e->getMessage());
             throw new SoapFault('Server', 'Internal Server Error', '', '', 'logOn_internalServerErrorFault');
         }
 
-        if (sizeof($users) == 0)
-        {
-            $msg = "No user found with username = '$username' and password = <hidden>";
-            $this->logger->warn($msg);
-            return new logOnResponse(false);
-        }
-        else if (sizeof($users) > 1)
-        {
-            $count = sizeof($users);
-            $msg = "$count users found with username = '$username' and password = <hidden>";
-            $this->logger->error($msg);
-            return new logOnResponse(false);
-        }
-
         // store user information
-        $this->sessionUserId = $users[0]['rowid'];
         $this->sessionUsername = $username;
         $this->sessionUserLoggedOn = true;
 

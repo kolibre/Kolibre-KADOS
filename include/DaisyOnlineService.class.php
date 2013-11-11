@@ -84,25 +84,13 @@ class DaisyOnlineService
     // adapter instance
     private $adapter = null;
 
-    // database connection handler
-    private $dbh = null;
+    // adapter file to include in wakeup
+    private $adapterIncludeFile = null;
 
     public function __construct()
     {
         // setup logger
         $this->logger = Logger::getLogger('kolibre.daisyonline.daisyonlineservice');
-
-        // setup database connection
-        try
-        {
-            $this->dbh = new PDO('sqlite:../data/db/demo.db');
-            $this->dbh->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-        }
-        catch (PDOException $e)
-        {
-            $this->logger->fatal($e->getMessage());
-            die("DB Error: $msg\n");
-        }
 
         // parse settings file
         $inifile = realpath(dirname(__FILE__)) . '/../service.ini';
@@ -135,17 +123,8 @@ class DaisyOnlineService
         // setup logger
         $this->logger = Logger::getLogger('kolibre.daisyonline.daisyonlineservice');
 
-        // setup database connection
-        try
-        {
-            $this->dbh = new PDO('sqlite:../data/db/demo.db');
-            $this->dbh->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-        }
-        catch (PDOException $e)
-        {
-            $this->logger->fatal($e->getMessage());
-            die("DB Error: $msg\n");
-        }
+        if (!is_null($this->adapterIncludeFile)) require_once($this->adapterIncludeFile);
+        $this->adapter = unserialize($this->adapter);
     }
 
     /**
@@ -153,6 +132,7 @@ class DaisyOnlineService
      */
     public function __sleep()
     {
+        $this->adapter = serialize($this->adapter);
         $instance_variables_to_serialize = array();
         array_push($instance_variables_to_serialize, 'serviceAttributes');
         array_push($instance_variables_to_serialize, 'readingSystemAttributes');
@@ -164,6 +144,8 @@ class DaisyOnlineService
         array_push($instance_variables_to_serialize, 'sessionUserId');
         array_push($instance_variables_to_serialize, 'sessionUsername');
         array_push($instance_variables_to_serialize, 'sessionUserLoggingEnabled');
+        array_push($instance_variables_to_serialize, 'adapter');
+        array_push($instance_variables_to_serialize, 'adapterIncludeFile');
         return $instance_variables_to_serialize;
     }
 
@@ -1019,6 +1001,7 @@ class DaisyOnlineService
         {
             set_include_path(get_include_path() . PATH_SEPARATOR . $path);
             require_once($file);
+            $this->adapterIncludeFile = $file;
             return;
         }
 
@@ -1027,6 +1010,7 @@ class DaisyOnlineService
         {
             set_include_path(get_include_path() . PATH_SEPARATOR . $path);
             require_once($file);
+            $this->adapterIncludeFile = $file;
             return;
         }
     }

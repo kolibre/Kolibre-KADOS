@@ -18,10 +18,67 @@
  * along with Kolibre-KADOS. If not, see <http://www.gnu.org/licenses/>.
  */
 
+require_once('log4php/Logger.php');
 require_once('Adapter.class.php');
 
 class DemoAdapter extends Adapter
 {
+    // logger instance
+    private $logger = null;
+
+    // database connection handler
+    private $dbh = null;
+
+    public function __construct()
+    {
+        // stup logger
+        $this->setupLogger();
+
+        // setup database connection
+        $this->setupDatabase();
+    }
+
+    /**
+     * Invoked when restoring object from session
+     */
+    public function __wakeup()
+    {
+        // stup logger
+        $this->setupLogger();
+
+        // setup database connection
+        $this->setupDatabase();
+    }
+
+    /**
+     * Invoked when storing object to session
+     */
+    public function __sleep()
+    {
+        $instance_variables_to_serialize = array();
+        array_push($instance_variables_to_serialize, 'user');
+        return $instance_variables_to_serialize;
+    }
+
+    private function setupLogger()
+    {
+        $this->logger = Logger::getLogger('kolibre.daisyonline.demoadapter');
+    }
+
+    private function setupDatabase()
+    {
+        try
+        {
+            $database = realpath(dirname(__FILE__)) . '/../../data/db/demo.db';
+            $this->dbh = new PDO("sqlite:$database");
+            $this->dbh->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+        }
+        catch (PDOException $e)
+        {
+            $this->logger->fatal($e->getMessage());
+        }
+    }
+
     public function label($id, $type, $language = null)
     {
     }

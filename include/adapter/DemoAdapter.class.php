@@ -23,6 +23,9 @@ require_once('Adapter.class.php');
 
 class DemoAdapter extends Adapter
 {
+    // placeholders for storing user information
+    private $userLoggingEnabled = false;
+
     // logger instance
     private $logger = null;
 
@@ -57,6 +60,7 @@ class DemoAdapter extends Adapter
     {
         $instance_variables_to_serialize = array();
         array_push($instance_variables_to_serialize, 'user');
+        array_push($instance_variables_to_serialize, 'userLoggingEnabled');
         return $instance_variables_to_serialize;
     }
 
@@ -76,6 +80,30 @@ class DemoAdapter extends Adapter
         catch (PDOException $e)
         {
             $this->logger->fatal($e->getMessage());
+        }
+    }
+
+    public function logSoapRequestAndResponse($request, $response, $timestamp, $ip)
+    {
+        if ($this->userLoggingEnabled === false) return;
+
+        try
+        {
+            $query = 'INSERT INTO userlog VALUES(:user_id, :datetime, :request, :response, :ip)';
+            $sth = $this->dbh->prepare($query);
+            $values = array();
+            $values[':user_id'] = $this->user;
+            $values[':datetime'] = date('Y-m-d H:i:s', $timestamp);
+            $values[':request'] = $request;
+            $values[':response'] = $response;
+            $values[':ip'] = $ip;
+            if ($sth->execute($values) === false)
+                $this->logger->error("Insert row to userlog failed");
+        }
+        catch (PDOException $e)
+        {
+            $msg = $e->getMessage();
+            $this->logger->fatal($msg);
         }
     }
 

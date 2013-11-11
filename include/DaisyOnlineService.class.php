@@ -76,7 +76,6 @@ class DaisyOnlineService
     // placeholders for storing user information
     private $sessionUserId = null;
     private $sessionUsername = null;
-    private $sessionUserLoggingEnabled = false;
 
     // logger instance
     private $logger = null;
@@ -143,7 +142,6 @@ class DaisyOnlineService
         array_push($instance_variables_to_serialize, 'sessionEstablished');
         array_push($instance_variables_to_serialize, 'sessionUserId');
         array_push($instance_variables_to_serialize, 'sessionUsername');
-        array_push($instance_variables_to_serialize, 'sessionUserLoggingEnabled');
         array_push($instance_variables_to_serialize, 'adapter');
         array_push($instance_variables_to_serialize, 'adapterIncludeFile');
         return $instance_variables_to_serialize;
@@ -154,30 +152,10 @@ class DaisyOnlineService
      * @param string $request, SOAP request
      * @param string $response, SOAP response
      */
-    public function logRequestAndResponse($request, $response)
+    public function logRequestAndResponse($request, $response, $timestamp)
     {
-        if ($this->sessionUserLoggingEnabled === false) return;
-
-        try
-        {
-            $query = 'INSERT INTO userlog VALUES(:user_id, :datetime, :request, :response, :ip)';
-            $values = array();
-            $values[':user_id'] = $this->sessionUserId;
-            $values[':datetime'] = date('Y-m-d H:i:s');
-            $values[':request'] = $request;
-            $values[':response'] = $response;
-            $values[':ip'] = $this->getClientIP();
-            $sth = $this->dbh->prepare($query);
-            $sth->execute($values);
-            $count = $sth->rowCount();
-            $msg = "$count line(s) inserted";
-            $this->logger->trace($msg);
-        }
-        catch (PDOException $e)
-        {
-            $msg = $e->getMessage();
-            $this->logger->fatal($msg);
-        }
+        $ip = $this->getClientIP();
+        $this->adapter->logSoapRequestAndResponse($request, $response, $timestamp, $ip);
     }
 
     /**
@@ -264,8 +242,6 @@ class DaisyOnlineService
         $this->sessionUserId = $users[0]['rowid'];
         $this->sessionUsername = $username;
         $this->sessionUserLoggedOn = true;
-        if ($users[0]['log'] == 1)
-            $this->sessionUserLoggingEnabled = true;
 
         $msg = "User '$username' logged on";
         $this->logger->info($msg);

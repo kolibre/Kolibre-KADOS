@@ -64,6 +64,9 @@ $service->setPersistence(SOAP_PERSISTENCE_SESSION);
 
 if(!isset($HTTP_RAW_POST_DATA)) $HTTP_RAW_POST_DATA = '';
 
+// create timestamp for incoming request
+$timestamp = time();
+
 // Start output buffering to capture response data before it is sent to the client
 ob_start();
 
@@ -80,7 +83,7 @@ if (isset($_SESSION['_bogus_session_name']))
     {
         // log request and response
         $serviceLogger->trace('Log SOAP request and response');
-        $daisyonlineservice->logRequestAndResponse($HTTP_RAW_POST_DATA, $RESPONSE_DATA);
+        $daisyonlineservice->logRequestAndResponse($HTTP_RAW_POST_DATA, $RESPONSE_DATA, $timestamp);
     }
 }
 

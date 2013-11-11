@@ -102,10 +102,16 @@ class DaisyOnlineService
         }
 
         // parse settings file
-        $settings = parse_ini_file('../service.ini');
+        $settings = parse_ini_file('../service.ini', true);
 
         // setup service attributes
-        $this->setupServiceAttributes($settings);
+        if (array_key_exists('Service', $settings))
+            $this->setupServiceAttributes($settings['Service']);
+        else
+        {
+            $this->logger->error("Group 'Service' is missing in ini file");
+            die("Group 'Service' not found in ini file, please make sure the settings file is correct.");
+        }
     }
 
     /**

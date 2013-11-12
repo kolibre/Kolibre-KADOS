@@ -614,12 +614,79 @@ class DemoAdapter extends Adapter
         return $contentMetadata;
     }
 
+    public function contentInList($contentID, $list)
+    {
+        if (is_string($contentID))
+            $contentID = $this->extractId($contentID);
+
+        try
+        {
+            $query = 'SELECT contentlist.name FROM usercontent
+                JOIN contentlist ON usercontent.contentlist_id = contentlist.rowid
+                WHERE user_id = :userId AND content_id = :contentId AND contentlist.name = :list';
+            $sth = $this->dbh->prepare($query);
+            $sth->execute(array(':userId' => $this->user, ':contentId' => $contentID, ':list' => $list));
+            $row = $sth->fetch(PDO::FETCH_ASSOC);
+        }
+        catch (PDOException $e)
+        {
+            $this->logger->fatal($e->getMessage());
+            throw new AdapterException('Retrieving list which content resides in failed');
+        }
+
+        if ($row === false) return false;
+        return true;
+    }
+
     public function contentIssuable($contentID)
     {
+        if (is_string($contentID))
+            $contentID = $this->extractId($contentID);
+
+        if ($this->contentInList($contentID, 'new') || $this->contentInList($contentID, 'issued'))
+            return true;
+
+        return false;
     }
 
     public function contentIssue($contentID)
     {
+        if (is_string($contentID))
+            $contentID = $this->extractId($contentID);
+
+        if ($this->contentInList($contentID, 'expired') || $this->contentInList($contentID, 'returned'))
+            return false;
+
+        if ($this->contentInList($contentID, 'issued'))
+            return true;
+
+        if ($this->contentInList($contentID, 'new'))
+        {
+            try
+            {
+                $query = 'UPDATE usercontent SET contentlist_id = :listId, updated_at = :timestamp
+                    WHERE user_id = :userId AND content_id = :contentId';
+                $sth = $this->dbh->prepare($query);
+                $values = array();
+                $values[':listId'] = $this->contentListId('issued');
+                $values[':timestamp'] = date('Y-m-d H:i:s');
+                $values[':userId'] = $this->user;
+                $values[':contentId'] = $contentID;
+                if ($sth->execute($values) === false)
+                {
+                    $this->logger->error("Issuing content with id '$contentID' for user with id '$this->user' failed");
+                    return false;
+                }
+                return true;
+            }
+            catch (PDOException $e)
+            {
+                $this->logger->fatal($e->getMessage());
+                throw new AdapterException('Issuing content failed');
+            }
+        }
+
+        return false;
     }
 
     public function contentResources($contentID)

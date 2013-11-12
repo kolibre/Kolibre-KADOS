@@ -173,6 +173,42 @@ class DemoAdapterTest extends PHPUnit_Framework_TestCase
         $this->assertArrayHasKey('dc:format', self::$adapter->contentMetadata(2));
         $this->assertArrayHasKey('dc:format', self::$adapter->contentMetadata('con_2'));
     }
+
+    public function testContentInList()
+    {
+        $this->assertFalse(self::$adapter->contentInList(10, 'new'));
+        $this->assertFalse(self::$adapter->contentInList('con_10', 'new'));
+        $this->assertFalse(self::$adapter->contentInList(1, 'old'));
+        $this->assertFalse(self::$adapter->contentInList('con_1', 'old'));
+        $this->assertFalse(self::$adapter->contentInList(1, 'issued'));
+        $this->assertFalse(self::$adapter->contentInList('con_1', 'issued'));
+        $this->assertFalse(self::$adapter->contentInList(2, 'issued'));
+        $this->assertFalse(self::$adapter->contentInList('con_2', 'issued'));
+        $this->assertTrue(self::$adapter->contentInList(1, 'new'));
+        $this->assertTrue(self::$adapter->contentInList('con_1', 'new'));
+        $this->assertTrue(self::$adapter->contentInList(2, 'new'));
+        $this->assertTrue(self::$adapter->contentInList('con_2', 'new'));
+    }
+
+    public function testContentIssuable()
+    {
+        $this->assertFalse(self::$adapter->contentIssuable(10));
+        $this->assertFalse(self::$adapter->contentIssuable('con_10'));
+        $this->assertTrue(self::$adapter->contentIssuable(1));
+        $this->assertTrue(self::$adapter->contentIssuable('con_1'));
+        $this->assertTrue(self::$adapter->contentIssuable(2));
+        $this->assertTrue(self::$adapter->contentIssuable('con_2'));
+    }
+
+    public function testContentIssue()
+    {
+        $this->assertFalse(self::$adapter->contentIssue(10));
+        $this->assertFalse(self::$adapter->contentIssue('con_10'));
+        $this->assertTrue(self::$adapter->contentIssue(1));
+        $this->assertTrue(self::$adapter->contentIssue('con_1'));
+        $this->assertTrue(self::$adapter->contentIssue(2));
+        $this->assertTrue(self::$adapter->contentIssue('con_2'));
+    }
 }
 
 ?>

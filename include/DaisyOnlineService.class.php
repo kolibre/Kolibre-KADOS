@@ -653,33 +653,53 @@ class DaisyOnlineService
         }
 
         // parameters
-        $contentId = ContentHelper::parseContentId($input->getContentID());
+        $contentId = $input->getContentID();
 
-        // check if content can be issued
-        $issuable = ContentHelper::contentIssuable($this->dbh, $this->sessionUserId, $contentId);
-        if ($issuable === false)
+        // check if the requested content exists and is accessible
+        try
         {
-            $msg = "User '$this->sessionUsername' not allowed to issue content with id '$contentId'";
-            $this->logger->warn($msg);
-            $faultString = 'User is not allowd to issue content';
-            throw new SoapFault('Client', $faultString, '', '', 'issueContent_invalidParameterFault');
+            if ($this->adapter->contentExists($contentId) === false)
+            {
+                $msg = "User '$this->sessionUsername' requested issuing of a nonexistent content '$contentId'";
+                $this->logger->warn($msg);
+                $faultString = "content '$contentId' does not exist";
+                throw new SoapFault('Client', $faultString,'', '', 'issueContent_invalidParameterFault');
+            }
+
+            if ($this->adapter->contentAccessible($contentId) === false)
+            {
+                $msg = "User '$this->sessionUsername' requested issuing of an inaccessible content '$contentId'";
+                $this->logger->warn($msg);
+                $faultString = "content '$contentId' not accessible";
+                throw new SoapFault('Client', $faultString,'', '', 'issueContent_invalidParameterFault');
+            }
+        }
+        catch (AdapterException $e)
+        {
+            $this->logger->fatal($e->getMessage());
+            throw new SoapFault('Server', 'Internal Server Error', '', '', 'issueContent_internalServerErrorFault');
         }
 
-        // if issued
-        if (ContentHelper::contentInList($this->dbh, $this->sessionUserId, $contentId, 'issued'))
-            return new issueContentResponse(true);
-        // if expired
-        if (ContentHelper::contentInList($this->dbh, $this->sessionUserId, $contentId, 'expired'))
-            return new issueContentResponse(false);
-        // if returned
-        if (ContentHelper::contentInList($this->dbh, $this->sessionUserId, $contentId, 'returned'))
-            return new issueContentResponse(false);
-
-        // issue content
-        if (!ContentHelper::issueContent($this->dbh, $this->sessionUserId, $contentId))
+        // check if content is issuable and issue content
+        try
         {
-            $msg = "issuing content with id '$contentId' failed";
-            $this->logger->warn($msg);
+            if ($this->adapter->contentIssuable($contentId) === false)
+            {
+                $msg = "User '$this->sessionUsername' not allowed to issue content with id '$contentId'";
+                $this->logger->warn($msg);
+                $faultString = "content '$contentId' is not issuable";
+                throw new SoapFault('Client', $faultString, '', '', 'issueContent_invalidParameterFault');
+            }
+
+            if ($this->adapter->contentIssue($contentId) === false)
+            {
+                $this->logger->warn("Issuing content '$contentId' failed");
+                return new issueContentResponse(false);
+            }
+        }
+        catch (AdapterException $e)
+        {
+            $this->logger->fatal($e->getMessage());
             throw new SoapFault('Server', 'Internal Server Error', '', '', 'issueContent_internalServerErrorFault');
         }
 

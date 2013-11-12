@@ -26,6 +26,9 @@ class DemoAdapter extends Adapter
     // placeholders for storing user information
     private $userLoggingEnabled = false;
 
+    // duration for a loan
+    private $loanDuration = 2592000; // 30 days in seconds
+
     // logger instance
     private $logger = null;
 
@@ -452,18 +455,163 @@ class DemoAdapter extends Adapter
 
     public function contentExists($contentID)
     {
+        if (is_string($contentID))
+            $contentID = $this->extractId($contentID);
+
+        try
+        {
+            $query = 'SELECT rowid FROM content WHERE rowid = :contentId';
+            $sth = $this->dbh->prepare($query);
+            $sth->execute(array(':contentId' => $contentID));
+            $row = $sth->fetch(PDO::FETCH_ASSOC);
+        }
+        catch (PDOException $e)
+        {
+            $this->logger->fatal($e->getMessage());
+            throw new AdapterException('Checking if content exists failed');
+        }
+
+        if ($row === false) return false;
+        return true;
     }
 
     public function contentAccessible($contentID)
     {
+        if (is_string($contentID))
+            $contentID = $this->extractId($contentID);
+
+        try
+        {
+            $query = 'SELECT rowid FROM usercontent WHERE user_id = :userId AND content_id = :contentId';
+            $sth = $this->dbh->prepare($query);
+            $sth->execute(array(':userId' => $this->user, ':contentId' => $contentID));
+            $row = $sth->fetch(PDO::FETCH_ASSOC);
+        }
+        catch (PDOException $e)
+        {
+            $this->logger->fatal($e->getMessage());
+            throw new AdapterException('Checking if content is accessible failed');
+        }
+
+        if ($row === false) return false;
+        return true;
+    }
+
+    public function contentCategory($contentID)
+    {
+        if (is_string($contentID))
+            $contentID = $this->extractId($contentID);
+
+        try
+        {
+            $query = 'SELECT category.name FROM content
+                JOIN category ON content.category_id = category.rowid
+                WHERE content.rowid = :contentId';
+            $sth = $this->dbh->prepare($query);
+            $sth->execute(array(':contentId' => $contentID));
+            $row = $sth->fetch(PDO::FETCH_ASSOC);
+        }
+        catch (PDOException $e)
+        {
+            $this->logger->fatal($e->getMessage());
+            throw new AdapterException('Retrieving content category failed');
+        }
+
+        if ($row === false)
+        {
+            $this->logger->warn("No category found for content with id '$contentID'");
+            return false;
+        }
+
+        return $row['name'];
+    }
+
+    public function isValidDate($date)
+    {
+        if (is_null($date)) return false;
+        $pattern = '/\d{4}-\d{2}-\d{2}[ T]\d{2}:\d{2}:\d{2}/';
+        if (preg_match($pattern, $date) == 0) return false;
+        if ($date == '0000-00-00 00:00:00') return false;
+        return true;
     }
 
     public function contentReturnDate($contentID)
     {
+        if (is_string($contentID))
+            $contentID = $this->extractId($contentID);
+
+        try
+        {
+            $query = 'SELECT requires_return, return_by FROM usercontent WHERE user_id = :userId AND content_id = :contentId';
+            $sth = $this->dbh->prepare($query);
+            $sth->execute(array(':userId' => $this->user, ':contentId' => $contentID));
+            $row = $sth->fetch(PDO::FETCH_ASSOC);
+        }
+        catch (PDOException $e)
+        {
+            $this->logger->fatal($e->getMessage());
+            throw new AdapterException('Retrieving content return date failed');
+        }
+
+        if ($row === false)
+        {
+            $this->logger->warn("No usercontent found for user id '$this->user' and content id '$contentID'");
+            return false;
+        }
+
+        if ($row['requires_return'] == 0) return false;
+
+        $returnDate = $row['return_by'];
+        if ($this->isValidDate($returnDate) === false)
+        {
+            $timestamp = time() + $this->loanDuration;
+            $returnDate = date('Y-m-d H:i:s', $timestamp);
+        }
+
+        return $returnDate;
     }
 
     public function contentMetadata($contentID)
     {
+        if (is_string($contentID))
+            $contentID = $this->extractId($contentID);
+
+        try
+        {
+            $query = 'SELECT key, value FROM contentmetadata WHERE content_id = :contentId';
+            $sth = $this->dbh->prepare($query);
+            $sth->execute(array(':contentId' => $contentID));
+            $metadata = $sth->fetchAll(PDO::FETCH_ASSOC);
+        }
+        catch (PDOException $e)
+        {
+            $this->logger->fatal($e->getMessage());
+            throw new AdapterException('Retrieving content metadata failed');
+        }
+
+        $contentMetadata = array();
+        foreach ($metadata as $data)
+            $contentMetadata[$data['key']] = $data['value'];
+
+        try
+        {
+            $query = 'SELECT SUM(bytes) as size FROM contentresource WHERE content_id = :contentId';
+            $sth = $this->dbh->prepare($query);
+            $sth->execute(array(':contentId' => $contentID));
+            $row = $sth->fetch(PDO::FETCH_ASSOC);
+        }
+        catch (PDOException $e)
+        {
+            $this->logger->fatal($e->getMessage());
+            throw new AdapterException('Retrieving content total size failed');
+        }
+
+        if ($row === false || (int)$row['size'] == 0)
+            $this->logger->warn("Calculating total size for content with id '$contentID' failed");
+        else
+            $contentMetadata['size'] = (int)$row['size'];
+
+        return $contentMetadata;
     }
 
     public function contentIssuable($contentID)

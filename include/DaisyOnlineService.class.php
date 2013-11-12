@@ -476,36 +476,71 @@ class DaisyOnlineService
         }
 
         // parameters
-        $contentId = ContentHelper::parseContentId($input->getContentID());
+        $contentId = $input->getContentID();
+
+        // check if the requested content exists and is accessible
+        try
+        {
+            if ($this->adapter->contentExists($contentId) === false)
+            {
+                $msg = "User '$this->sessionUsername' requested metadata for a nonexistent content '$contentId'";
+                $this->logger->warn($msg);
+                $faultString = "content '$contentId' does not exist";
+                throw new SoapFault('Client', $faultString,'', '', 'getContentMetadata_invalidParameterFault');
+            }
+
+            if ($this->adapter->contentAccessible($contentId) === false)
+            {
+                $msg = "User '$this->sessionUsername' requested metadata for an inaccessible content '$contentId'";
+                $this->logger->warn($msg);
+                $faultString = "content '$contentId' not accessible";
+                throw new SoapFault('Client', $faultString,'', '', 'getContentMetadata_invalidParameterFault');
+            }
+        }
+        catch (AdapterException $e)
+        {
+            $this->logger->fatal($e->getMessage());
+            throw new SoapFault('Server', 'Internal Server Error', '', '', 'getContentMetadata_internalServerErrorFault');
+        }
 
         // build contentMetadata
         $contentMetadata = new contentMetadata();
 
-        // set category
-        $category = ContentHelper::getContentCategory($this->dbh, $contentId);
-        $contentMetadata->setCategory($category);
-
-        // set requiresReturn
-        $returnDate = ContentHelper::contentRequiresReturn($this->dbh, $this->sessionUserId, $contentId);
-        if ($returnDate === false)
-            $contentMetadata->setRequiresReturn(false);
-        else
-            $contentMetadata->setRequiresReturn(true);
-
-        // samples not supported
-
-        // build metadata
-        $metadata = new metadata();
-        $metadata->setIdentifier($input->getContentID());
-        foreach (ContentHelper::getContentMetadata($this->dbh, $contentId) as $key => $value)
+        try
         {
-            switch ($key)
+            // set sample [optional]
+            $sample = $this->adapter->contentSample($contentId);
+            if (is_string($sample)) $contentMetadata->setSample($sample);
+
+            // set category [optional]
+            $category = $this->adapter->contentCategory($contentId);
+            if (is_string($category)) $contentMetadata->setCategory($category);
+
+            // set requiresRetrn [mandatory]
+            $returnDate = $this->adapter->contentReturnDate($contentId);
+            if (is_string($returnDate)) $contentMetadata->setRequiresReturn(true);
+            else $contentMetadata->setRequiresReturn(false);
+
+            // build metadata
+            $metadata = new metadata();
+            $metadata->setIdentifier($input->getContentID());
+            $metadataValues = $this->adapter->contentMetadata($contentId);
+            if (is_array($metadataValues) === false) {
+                $this->logger->warn("Content with id '$contentId' has no metadata");
+                throw new SoapFault('Server', 'Internal Server Error', '', '', 'getContentMetadata_internalServerErrorFault');
+            }
+            foreach ($metadataValues as $key => $value)
             {
+                switch ($key)
+                {
+                case 'size':
+                    $metadata->setSize($value);
+                    break;
                 case 'dc:title':
                     $metadata->setTitle($value);
                     break;
                 case 'dc:identifier':
-                    // the identifier is not the identifier found in the fileset
+                    // the identifier is not the identifier found in metadata
                     break;
                 case 'dc:publisher':
                     $metadata->setPublisher($value);
@@ -520,49 +555,71 @@ class DaisyOnlineService
                     $metadata->setSource($value);
                     break;
                 case 'dc:type':
-                    $metadata->addType($value);
+                    if (is_array($value))
+                        foreach ($value as $subvalue) $metadata->addType($subvalue);
+                    else
+                        $metadata->addType($value);
                     break;
                 case 'dc:subject':
-                    $metadata->addSubject($value);
+                    if (is_array($value))
+                        foreach ($value as $subvalue) $metadata->addSubject($subvalue);
+                    else
+                        $metadata->addSubject($value);
                     break;
                 case 'dc:rights':
-                    $metadata->addRights($value);
+                    if (is_array($value))
+                        foreach ($value as $subvalue) $metadata->addRights($subvalue);
+                    else
+                        $metadata->addRights($value);
                     break;
                 case 'dc:relation':
-                    $metadata->addRelation($value);
+                    if (is_array($value))
+                        foreach ($value as $subvalue) $metadata->addRelation($subvalue);
+                    else
+                        $metadata->addRelation($value);
                     break;
                 case 'dc:language':
-                    $metadata->addLanguage($value);
+                    if (is_array($value))
+                        foreach ($value as $subvalue) $metadata->addLanguage($subvalue);
+                    else
+                        $metadata->addLanguage($value);
                     break;
                 case 'dc:description':
-                    $metadata->addDescription($value);
+                    if (is_array($value))
+                        foreach ($value as $subvalue) $metadata->addDescription($subvalue);
+                    else
+                        $metadata->addDescription($value);
                     break;
                 case 'dc:creator':
-                    $metadata->addCreator($value);
+                    if (is_array($value))
+                        foreach ($value as $subvalue) $metadata->addCreator($subvalue);
+                    else
+                        $metadata->addCreator($value);
                     break;
                 case 'dc:coverage':
-                    $metadata->addCoverage($value);
+                    if (is_array($value))
+                        foreach ($value as $subvalue) $metadata->addCoverage($subvalue);
+                    else
+                        $metadata->addCoverage($value);
                     break;
                 case 'dc:contributor':
-                    $metadata->addContributor($value);
+                    if (is_array($value))
+                        foreach ($value as $subvalue) $metadata->addContributor($subvalue);
+                    else
+                        $metadata->addContributor($value);
                     break;
                 default:
                     if ($key == 'pdtb2:specVersion')
                         $metadata->addMeta(new meta($key, $value));
                     break;
+                }
             }
         }
-
-        // fix to avoid validation error if mandatory metadata dc:title value is an empty string
-        if (is_null($metadata->getTitle()) || strlen($metadata->getTitle()) == 0)
-            $metadata->setTitle('unknown title');
-
-        // fix to avoid validation error if mandatory metadata dc:format value is an empty string
-        if (is_null($metadata->getFormat()) || strlen($metadata->getFormat()) == 0)
-            $metadata->setFormat('unknown format');
-
-        // get size
-        $metadata->setSize((int)ContentHelper::getContentResourcesSize($this->dbh, $contentId));
+        catch (AdapterException $e)
+        {
+            $this->logger->fatal($e->getMessage());
+            throw new SoapFault('Server', 'Internal Server Error', '', '', 'getContentMetadata_internalServerErrorFault');
+        }
 
         $contentMetadata->setMetadata($metadata);
 

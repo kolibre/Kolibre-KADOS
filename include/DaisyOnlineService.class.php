@@ -352,62 +352,51 @@ class DaisyOnlineService
 
         $listId = $input->getId();
 
-        // check if we support the requested list
-        $supportedListIds = ContentHelper::getSupportedContentLists($this->dbh);
-        if (!in_array($listId, $supportedListIds))
+        // check if the requested list exists
+        try
         {
-            $msg = "User '$this->sessionUsername' requested an unsupported content list '$listId'";
-            $this->logger->warn($msg);
-            $faultString = "contentList '$listId' does not exist";
-            throw new SoapFault('Client', $faultString,'', '', 'getContentList_invalidParameterFault');
+            if ($this->adapter->contentListExists($listId) === false)
+            {
+                $msg = "User '$this->sessionUsername' requested an unsupported content list '$listId'";
+                $this->logger->warn($msg);
+                $faultString = "contentList '$listId' does not exist";
+                throw new SoapFault('Client', $faultString,'', '', 'getContentList_invalidParameterFault');
+            }
         }
-
-        // get content list id
-        $contentListId = ContentHelper::getContentListId($this->dbh, $listId);
-        if ($contentListId === false)
+        catch (AdapterException $e)
         {
-            $msg = "failed to retrieve id for content list '$listId'";
-            $this->logger->fatal($msg);
+            $this->logger->fatal($e->getMessage());
             throw new SoapFault('Server', 'Internal Server Error', '', '', 'getContentList_internalServerErrorFault');
         }
 
-        // fetch content for user
-        $unfilteredContent = ContentHelper::getUserContent($this->dbh, $this->sessionUserId, $contentListId);
-        if ($unfilteredContent === false)
+        // fetch content for the requested list
+        try
         {
-            $msg = "failed to retrieve '$listId' content for user '$this->sessionUsername'";
-            $this->logger->fatal($msg);
+            $contentItems = $this->adapter->contentList($listId);
+        }
+        catch (AdapterException $e)
+        {
+            $this->logger->fatal($e->getMessage());
             throw new SoapFault('Server', 'Internal Server Error', '', '', 'getContentList_internalServerErrorFault');
         }
-
-        // filter content based on supported content formats
-        $msg = "content items before filtering: ".sizeof($unfilteredContent);
-        $this->logger->debug($msg);
-        $sscf = ContentHelper::getServiceSupportedContentFormats($this->dbh);
-        $cscf = $this->getClientSupportedContentFormats();
-        $formatFilter = array_intersect_ukey($sscf, $cscf, "strcasecmp");
-        $filteredContent = array();
-        foreach ($unfilteredContent as $content)
-        {
-            $contentFormatId = ContentHelper::getDaisyFormatId($this->dbh, $content['rowid']);
-            if (!in_array($contentFormatId, $formatFilter))
-                continue;
-            array_push($filteredContent, $content);
-        }
-        $msg = "content items after filtering: ".sizeof($filteredContent);
-        $this->logger->debug($msg);
 
         // build contentList
         $contentList = new contentList();
         $contentList->setId($listId);
 
         // set label
-        $langCode = $this->getClientLangCode();
-        $description = ContentHelper::getContentListDescription($this->dbh, $listId);
-        $contentListLabel = new label($description, null, $langCode);
-        $contentList->setLabel($contentListLabel);
+        try
+        {
+            $label = $this->adapter->label($listId, Adapter::LABEL_CONTENTLIST, $this->getClientLangCode());
+            if (is_array($label))
+                $contentList->setLabel($this->createLabel($label));
+        }
+        catch (AdapterException $e)
+        {
+            $this->logger->fatal($e->getMessage());
+        }
 
-        $totalItems = sizeof($filteredContent);
+        $totalItems = sizeof($contentItems);
         $firstItem = $input->getFirstItem();
         $lastItem = $input->getLastItem();
 
@@ -431,28 +420,24 @@ class DaisyOnlineService
             {
                 for ($i = $firstItem; $i <= $lastItem; $i++)
                 {
-                    $content = $filteredContent[$i];
-                    $filename = 'content_'.$content['rowid'].'.ogg';
-                    $audio = new audio($this->getServiceMediaUri($filename));
-                    $size = ContentHelper::getContentLabelAudioSize($this->dbh, $content['rowid']);
-                    if ($size > 0) $audio->setSize($size);
-
-                    $language = 'i-unknown';
-                    $title = 'unknown';
-                    foreach (ContentHelper::getContentMetadata($this->dbh, $content['rowid']) as $key => $value)
+                    $contentID = $contentItems[$i];
+                    $contentItem = new contentItem(null, $contentID);
+                    try
                     {
-                        if ($key == 'dc:language')
-                        {
-                            $language = $value;
-                        }
-                        else if ($key == 'dc:title')
-                        {
-                            $title = $value;
-                        }
-                    }
+                        $label = $this->adapter->label($contentID, Adapter::LABEL_CONTENTITEM, $this->getClientLangCode());
+                        if (is_array($label))
+                            $contentItem->setLabel($this->createLabel($label));
+                        else
+                            $this->logger->warn("Content with id '$contentID' has no label");
 
-                    $label = new label($title, $audio, $language);
-                    $contentItem = new contentItem($label, 'con_'.$content['rowid']);
+                        $lastModifiedDate = $this->adapter->contentLastModifiedDate($contentID);
+                        if (is_string($lastModifiedDate))
+                            $contentItem->setLastModifiedDate($lastModifiedDate);
+                    }
+                    catch (AdapterException $e)
+                    {
+                        $this->logger->fatal($e->getMessage());
+                    }
                     $contentList->addContentItem($contentItem);
                 }
 
@@ -1073,14 +1058,63 @@ class DaisyOnlineService
         // sessionCurrentOperation
     }
 
-    /**
-     * Service helper getServiceMediaUri
-     * @param string $filename
-     * @return string
-     */
-    private function getServiceMediaUri($filename)
+    private function createLabel($labelArray)
     {
-        return $this->getServiceBaseUri()."media/$filename";
+        $text = null;
+        $audio = null;
+        $lang = null;
+        $dir = null;
+
+        // text [mandatory]
+        if (array_key_exists('text', $labelArray) === false)
+            $this->logger->error("Required field 'text' is missing in label");
+        else
+            $text = $labelArray['text'];
+
+        // audio [optional]
+        if (array_key_exists('audio', $labelArray) && is_array($labelArray['audio']))
+            $audio = $this->createAudio($labelArray['audio']);
+
+        // lang [mandatory]
+        if (array_key_exists('lang', $labelArray) === false)
+            $this->logger->error("Required field 'lang' is missing in label");
+        else
+            $lang = $labelArray['lang'];
+
+        if (array_key_exists('dir', $labelArray))
+            $dir = $labelArray['dir'];
+
+        $label = new label($text, $audio, $lang, $dir);
+        return $label;
+    }
+
+    private function createAudio($audioArray)
+    {
+        $uri = null;
+        $rangeBegin = null;
+        $rangeEnd = null;
+        $size = null;
+
+        // uri [mandatory]
+        if (array_key_exists('uri', $audioArray) === false)
+            $this->logger->error("Required field 'uri' is missing in audio");
+        else
+            $uri = $audioArray['uri'];
+
+        // rangeBegin [optional]
+        if (array_key_exists('rangeBegin', $audioArray))
+            $rangeBegin = $audioArray['rangeBegin'];
+
+        // rangeEnd [optional]
+        if (array_key_exists('rangeEnd', $audioArray))
+            $rangeEnd = $audioArray['rangeEnd'];
+
+        // size [optional]
+        if (array_key_exists('size', $audioArray))
+            $size = $audioArray['size'];
+
+        $audio = new audio($uri, $rangeBegin, $rangeEnd, $size);
+        return $audio;
     }
 
     /**
@@ -1116,7 +1150,7 @@ class DaisyOnlineService
     {
         $contentFormat = $this->readingSystemAttributes->getConfig()->getSupportedContentFormats()->getContentFormat();
         if (is_null($contentFormat)) return array();
-        return array_flip($contentFormat);
+        return $contentFormat;
     }
 
     /**

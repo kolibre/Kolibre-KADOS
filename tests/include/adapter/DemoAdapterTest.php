@@ -262,6 +262,26 @@ class DemoAdapterTest extends PHPUnit_Framework_TestCase
             $this->assertArrayHasKey('localURI', $resource);
         }
     }
+
+    public function testContentReturnable()
+    {
+        $this->assertFalse(self::$adapter->contentReturnable(10));
+        $this->assertFalse(self::$adapter->contentReturnable('con_10'));
+        $this->assertTrue(self::$adapter->contentReturnable(1));
+        $this->assertTrue(self::$adapter->contentReturnable('con_1'));
+        $this->assertTrue(self::$adapter->contentReturnable(2));
+        $this->assertTrue(self::$adapter->contentReturnable('con_2'));
+    }
+
+    public function testContentReturn()
+    {
+        $this->assertFalse(self::$adapter->contentReturn(10));
+        $this->assertFalse(self::$adapter->contentReturn('con_10'));
+        $this->assertTrue(self::$adapter->contentReturn(1));
+        $this->assertTrue(self::$adapter->contentReturn('con_1'));
+        $this->assertTrue(self::$adapter->contentReturn(2));
+        $this->assertTrue(self::$adapter->contentReturn('con_2'));
+    }
 }
 
 ?>

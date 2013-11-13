@@ -836,25 +836,54 @@ class DaisyOnlineService
         }
 
         // parameters
-        $contentId = ContentHelper::parseContentId($input->getContentID());
+        $contentId = $input->getContentID();
 
-        // check if content requires return
-        $return = ContentHelper::contentRequiresReturn($this->dbh, $this->sessionUserId, $contentId);
-        if ($return === false)
+        // check if the requested content exists and is accessible
+        try
         {
-            $msg = "User '$this->sessionUsername' tried to return content with id '$contentId' which does not required return";
-            $this->logger->warn($msg);
-            $faultString = 'The content does not need to be returned';
-            throw new SoapFault ('Client', $faultString, '', '', 'returnContent_invalidParameterFault');
+            if ($this->adapter->contentExists($contentId) === false)
+            {
+                $msg = "User '$this->sessionUsername' requested return of a nonexistent content '$contentId'";
+                $this->logger->warn($msg);
+                $faultString = "content '$contentId' does not exist";
+                throw new SoapFault('Client', $faultString,'', '', 'returnContent_invalidParameterFault');
+            }
+
+            if ($this->adapter->contentAccessible($contentId) === false)
+            {
+                $msg = "User '$this->sessionUsername' requested return of an inaccessible content '$contentId'";
+                $this->logger->warn($msg);
+                $faultString = "content '$contentId' not accessible";
+                throw new SoapFault('Client', $faultString,'', '', 'returnContent_invalidParameterFault');
+            }
+        }
+        catch (AdapterException $e)
+        {
+            $this->logger->fatal($e->getMessage());
+            throw new SoapFault('Server', 'Internal Server Error', '', '', 'returnContent_internalServerErrorFault');
         }
 
-        // return content
-        $returned = ContentHelper::returnContent($this->dbh, $this->sessionUserId, $contentId);
-        if ($returned === false)
+        // check if content is returnable and return content
+        try
         {
-            $msg = "returning content with id '$contentId' failed";
-            $this->logger->fatal($msg);
-            throw new SoapFault ('Server', 'Internal Server Error', '', '', 'returnContent_internalServerErrorFault');
+            if ($this->adapter->contentReturnable($contentId) === false)
+            {
+                $msg = "User '$this->sessionUsername' tried to return a non borrowable content '$contentId'";
+                $this->logger->warn($msg);
+                $faultString = "content '$contentId' does not require return";
+                throw new SoapFault ('Client', $faultString, '', '', 'returnContent_invalidParameterFault');
+            }
+
+            if ($this->adapter->contentReturn($contentId) === false)
+            {
+                $this->logger->warn("Returning content '$contentId' failed");
+                throw new SoapFault ('Server', 'Internal Server Error', '', '', 'returnContent_internalServerErrorFault');
+            }
+        }
+        catch (AdapterException $e)
+        {
+            $this->logger->fatal($e->getMessage());
+            throw new SoapFault('Server', 'Internal Server Error', '', '', 'returnContent_internalServerErrorFault');
         }
 
         return new returnContentResponse(true);

@@ -761,10 +761,65 @@ class DemoAdapter extends Adapter
 
     public function contentReturnable($contentID)
     {
+        if (is_string($contentID))
+            $contentID = $this->extractId($contentID);
+
+        try
+        {
+            $query = 'SELECT requires_return FROM usercontent WHERE user_id = :userId AND content_id = :contentId';
+            $sth = $this->dbh->prepare($query);
+            $sth->execute(array(':userId' => $this->user, ':contentId' => $contentID));
+            $row = $sth->fetch(PDO::FETCH_ASSOC);
+        }
+        catch (PDOException $e)
+        {
+            $this->logger->fatal($e->getMessage());
+            throw new AdapterException('Checking if content requires return failed');
+        }
+
+        if ($row === false)
+        {
+            $this->logger->warn("No usercontent found for user id '$this->user' and content id '$contentID'");
+            return false;
+        }
+
+        if ($row['requires_return'] == 0) return false;
+        return true;
     }
 
     public function contentReturn($contentID)
     {
+        if (is_string($contentID))
+            $contentID = $this->extractId($contentID);
+
+        if ($this->contentInList($contentID, 'returned'))
+            return true;
+
+        if ($this->contentInList($contentID, 'issued'))
+        {
+            try
+            {
+                $query = 'UPDATE usercontent SET is_returned = 1, contentlist_id = :listId WHERE user_id = :userId AND content_id = :contentId';
+                $sth = $this->dbh->prepare($query);
+                $values = array();
+                $values[':listId'] = $this->contentListId('returned');
+                $values[':userId'] = $this->user;
+                $values[':contentId'] = $contentID;
+                if ($sth->execute($values) === false)
+                {
+                    $this->logger->error("Returning content with id '$contentID' for user with id '$this->user' failed");
+                    return false;
+                }
+                return true;
+            }
+            catch (PDOException $e)
+            {
+                $this->logger->fatal($e->getMessage());
+                throw new AdapterException('Returning content failed');
+            }
+        }
+
+        return false;
     }
 }
 

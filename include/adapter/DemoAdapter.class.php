@@ -566,6 +566,31 @@ class DemoAdapter extends Adapter
         {
             $timestamp = time() + $this->loanDuration;
             $returnDate = date('Y-m-d H:i:s', $timestamp);
+
+            // mark content as not returned and set return date if content has been issued
+            if ($this->contentInList($contentID, 'issued') === true)
+            {
+                try
+                {
+                    $query = 'UPDATE usercontent SET return_by = :datetime, is_returned = 0
+                        WHERE user_id = :userId AND content_id = :contentId';
+                    $sth = $this->dbh->prepare($query);
+                    $values = array();
+                    $values[':datetime'] = $returnDate;
+                    $values[':userId'] = $this->user;
+                    $values[':contentId'] = $contentID;
+                    if ($sth->execute($values) === false)
+                    {
+                        $this->logger->error("Updating return date for content with id '$contentID' for user with id '$this->user' failed");
+                        return false;
+                    }
+                }
+                catch (PDOException $e)
+                {
+                    $this->logger->fatal($e->getMessage());
+                    throw new AdapterException('Updating return data and status failed');
+                }
+            }
         }
 
         return $returnDate;
@@ -691,6 +716,47 @@ class DemoAdapter extends Adapter
 
     public function contentResources($contentID)
     {
+        if (is_string($contentID))
+            $contentID = $this->extractId($contentID);
+
+        if ($this->contentInList($contentID, 'issued') === false)
+        {
+            $this->logger->warn("Resources requested for non-issued content");
+            return array();
+        }
+
+        try
+        {
+            $query = 'SELECT filename, bytes, mimetype FROM contentresource WHERE content_id = :contentId';
+            $sth = $this->dbh->prepare($query);
+            $sth->execute(array(':contentId' => $contentID));
+            $resources = $sth->fetchAll(PDO::FETCH_ASSOC);
+        }
+        catch (PDOException $e)
+        {
+            $this->logger->fatal($e->getMessage());
+            throw new AdapterException('Retrieving content resources failed');
+        }
+
+        if ($resources === false)
+        {
+            $this->logger->error("No resouces found for content with id '$contentID'");
+            return array();
+        }
+
+        $contentResources = array();
+        foreach ($resources as $resource)
+        {
+            $contentResource = array();
+            $uri = $this->serviceBaseUri() . "content/$contentID/" . $resource['filename'];
+            $contentResource['uri'] = $uri;
+            $contentResource['mimetype'] = $resource['mimetype'];
+            $contentResource['size'] = $resource['bytes'];
+            $contentResource['localURI'] = $resource['filename'];
+            array_push($contentResources, $contentResource);
+        }
+
+        return $contentResources;
     }
 
     public function contentReturnable($contentID)

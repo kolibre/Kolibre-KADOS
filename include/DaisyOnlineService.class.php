@@ -723,40 +723,63 @@ class DaisyOnlineService
         }
 
         // parameters
-        $contentId = ContentHelper::parseContentId($input->getContentID());
+        $contentId = $input->getContentID();
+
+        // check if the requested content exists and is accessible
+        try
+        {
+            if ($this->adapter->contentExists($contentId) === false)
+            {
+                $msg = "User '$this->sessionUsername' requested issuing of a nonexistent content '$contentId'";
+                $this->logger->warn($msg);
+                $faultString = "content '$contentId' does not exist";
+                throw new SoapFault('Client', $faultString,'', '', 'getContentResources_invalidParameterFault');
+            }
+
+            if ($this->adapter->contentAccessible($contentId) === false)
+            {
+                $msg = "User '$this->sessionUsername' requested issuing of an inaccessible content '$contentId'";
+                $this->logger->warn($msg);
+                $faultString = "content '$contentId' not accessible";
+                throw new SoapFault('Client', $faultString,'', '', 'getContentResources_invalidParameterFault');
+            }
+        }
+        catch (AdapterException $e)
+        {
+            $this->logger->fatal($e->getMessage());
+            throw new SoapFault('Server', 'Internal Server Error', '', '', 'getContentResources_internalServerErrorFault');
+        }
 
         // build resources
         $resources = new resources();
 
-        // returnBy
-        $returnDate = ContentHelper::contentRequiresReturn($this->dbh, $this->sessionUserId, $contentId);
-        if ($returnDate !== false)
-            $resources->setReturnBy(str_replace(' ', 'T', $returnDate));
-
-        // resources
-        $contentResources = ContentHelper::getContentResources($this->dbh, $this->sessionUserId, $contentId);
-        if ($contentResources == false)
+        try
         {
-            $msg = "failed to retrieve content resources for content with id '$contentId'";
-            $this->logger->fatal($msg);
-            throw new SoapFault ('Server', 'Internal Server Error', '', '', 'getContentResources_internalServerErrorFault');
+            // set returnBy [optional]
+            $returnDate = $this->adapter->contentReturnDate($contentId);
+            if (is_string($returnDate)) $resources->setReturnBy($returnDate);
+
+            // set lastModifiedDate [optional]
+            $lastModifiedDate = $this->adapter->contentLastModifiedDate($contentId);
+            if (is_string($lastModifiedDate)) $resources->setLastModifiedDate($lastModifiedDate);
+
+            // build resource
+            $contentResources = $this->adapter->contentResources($contentId);
+            if (empty($contentResources))
+            {
+                $msg = "User '$this->sessionUsername' requested resources for non-issued content '$contentId'";
+                $this->logger->warn($msg);
+                $faultString = "content '$contentId' is not issued";
+                throw new SoapFault('Client', $faultString,'', '', 'getContentResources_invalidParameterFault');
+            }
+            foreach ($contentResources as $resource)
+                $resources->addResource($this->createResource($resource));
 
         }
-
-        if (sizeof($contentResources) == 0)
+        catch (AdapterException $e)
         {
-            $msg = "User '$this->sessionUsername' is not allow to get resources for content with id '$contentId'";
-            $this->logger->warn($msg);
-            throw new SoapFault ('Client', $msg, '', '', 'getContentResources_invalidParameterFault');
-        }
-
-        foreach ($contentResources as $resource)
-        {
-            $uri = $this->getServiceResourceUri($contentId, $resource['filename']);
-            $mimeType = $resource['mimetype'];
-            $size = (int)$resource['size'];
-            $localURI = $resource['filename'];
-            $resources->addResource(new resource($uri, $mimeType, $size, $localURI));
+            $this->logger->fatal($e->getMessage());
+            throw new SoapFault('Server', 'Internal Server Error', '', '', 'getContentResources_internalServerErrorFault');
         }
 
         $output = new getContentResourcesResponse($resources);
@@ -1194,15 +1217,39 @@ class DaisyOnlineService
         return $audio;
     }
 
-    /**
-     * Service helper getServiceResourceUri
-     * @param int $contentId
-     * @param string $filename
-     * @return string
-     */
-    private function getServiceResourceUri($contentId, $filename)
+    private function createResource($resourceArray)
     {
-        return $this->getServiceBaseUri()."content/$contentId/$filename";
+        $uri = null;
+        $mimetype = null;
+        $size = null;
+        $localURI = null;
+
+        // uri [mandatory]
+        if (array_key_exists('uri', $resourceArray) === false)
+            $this->logger->error("Required field 'uri' is missing in resource");
+        else
+            $uri = $resourceArray['uri'];
+
+        // mimetype [mandatory]
+        if (array_key_exists('mimetype', $resourceArray) === false)
+            $this->logger->error("Required field 'mimetype' is missing in resource");
+        else
+            $mimetype = $resourceArray['mimetype'];
+
+        // size [mandatory]
+        if (array_key_exists('size', $resourceArray) === false)
+            $this->logger->error("Required field 'size' is missing in resource");
+        else
+            $size = (int)$resourceArray['size'];
+
+        // localURI [mandatory]
+        if (array_key_exists('localURI', $resourceArray) === false)
+            $this->logger->error("Required field 'localURI' is missing in resource");
+        else
+            $localURI = $resourceArray['localURI'];
+
+        $resource = new resource($uri, $mimetype, $size, $localURI);
+        return $resource;
     }
 
     /**

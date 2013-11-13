@@ -418,17 +418,17 @@ class DaisyOnlineService
             {
                 for ($i = $firstItem; $i <= $lastItem; $i++)
                 {
-                    $contentID = $contentItems[$i];
-                    $contentItem = new contentItem(null, $contentID);
+                    $contentId = $contentItems[$i];
+                    $contentItem = new contentItem(null, $contentId);
                     try
                     {
-                        $label = $this->adapter->label($contentID, Adapter::LABEL_CONTENTITEM, $this->getClientLangCode());
+                        $label = $this->adapter->label($contentId, Adapter::LABEL_CONTENTITEM, $this->getClientLangCode());
                         if (is_array($label))
                             $contentItem->setLabel($this->createLabel($label));
                         else
-                            $this->logger->warn("Content with id '$contentID' has no label");
+                            $this->logger->warn("Content with id '$contentId' has no label");
 
-                        $lastModifiedDate = $this->adapter->contentLastModifiedDate($contentID);
+                        $lastModifiedDate = $this->adapter->contentLastModifiedDate($contentId);
                         if (is_string($lastModifiedDate))
                             $contentItem->setLastModifiedDate($lastModifiedDate);
                     }

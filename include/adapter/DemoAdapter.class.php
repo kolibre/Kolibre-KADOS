@@ -164,25 +164,25 @@ class DemoAdapter extends Adapter
         return (int)(substr($identifier, 4));
     }
 
-    public function contentAudioUri($contentID)
+    public function contentAudioUri($contentId)
     {
-        if (is_string($contentID))
-            $contentID = $this->extractId($contentID);
+        if (is_string($contentId))
+            $contentId = $this->extractId($contentId);
 
-        $filename = "content_$contentID.ogg";
+        $filename = "content_$contentId.ogg";
         return $this->serviceBaseUri()."media/$filename";
     }
 
-    public function contentAudioSize($contentID)
+    public function contentAudioSize($contentId)
     {
-        if (is_string($contentID))
-            $contentID = $this->extractId($contentID);
+        if (is_string($contentId))
+            $contentId = $this->extractId($contentId);
 
         try
         {
             $query = 'SELECT size FROM contentaudio WHERE rowid = :contentId';
             $sth = $this->dbh->prepare($query);
-            $sth->execute(array(':contentId' => $contentID));
+            $sth->execute(array(':contentId' => $contentId));
             $row = $sth->fetch(PDO::FETCH_ASSOC);
         }
         catch (PDOException $e)
@@ -193,23 +193,23 @@ class DemoAdapter extends Adapter
 
         if ($row === false)
         {
-            $this->logger->warn("No content audio found with content id '$contentID'");
+            $this->logger->warn("No content audio found with content id '$contentId'");
             return -1;
         }
 
         return (int)$row['size'];
     }
 
-    public function contentTitle($contentID)
+    public function contentTitle($contentId)
     {
-        if (is_string($contentID))
-            $contentID = $this->extractId($contentID);
+        if (is_string($contentId))
+            $contentId = $this->extractId($contentId);
 
         try
         {
             $query = 'SELECT title FROM content WHERE rowid = :contentId';
             $sth = $this->dbh->prepare($query);
-            $sth->execute(array(':contentId' => $contentID));
+            $sth->execute(array(':contentId' => $contentId));
             $row = $sth->fetch(PDO::FETCH_ASSOC);
         }
         catch (PDOException $e)
@@ -220,23 +220,23 @@ class DemoAdapter extends Adapter
 
         if ($row === false)
         {
-            $this->logger->warn("No content found with id '$contentID'");
+            $this->logger->warn("No content found with id '$contentId'");
             return 'unknown';
         }
 
         return $row['title'];
     }
 
-    public function contentTitleLang($contentID)
+    public function contentTitleLang($contentId)
     {
-        if (is_string($contentID))
-            $contentID = $this->extractId($contentID);
+        if (is_string($contentId))
+            $contentId = $this->extractId($contentId);
 
         try
         {
             $query = 'SELECT value FROM contentmetadata WHERE content_id = :contentId AND key = :key';
             $sth = $this->dbh->prepare($query);
-            $sth->execute(array(':contentId' => $contentID, ':key' => 'dc:language'));
+            $sth->execute(array(':contentId' => $contentId, ':key' => 'dc:language'));
             $row = $sth->fetch(PDO::FETCH_ASSOC);
         }
         catch (PDOException $e)
@@ -247,7 +247,7 @@ class DemoAdapter extends Adapter
 
         if ($row === false)
         {
-            $this->logger->warn("No dc:language metadata found for content id '$contentID'");
+            $this->logger->warn("No dc:language metadata found for content id '$contentId'");
             return 'i-unknown';
         }
 
@@ -376,16 +376,16 @@ class DemoAdapter extends Adapter
         return $contentFormats;
     }
 
-    public function contentFormatId($contentID)
+    public function contentFormatId($contentId)
     {
-        if (is_string($contentID))
-            $contentID = $this->extractId($contentID);
+        if (is_string($contentId))
+            $contentId = $this->extractId($contentId);
 
         try
         {
             $query = 'SELECT daisyformat_id FROM content WHERE rowid = :contentId';
             $sth = $this->dbh->prepare($query);
-            $sth->execute(array(':contentId' => $contentID));
+            $sth->execute(array(':contentId' => $contentId));
             $row = $sth->fetch(PDO::FETCH_ASSOC);
         }
         catch (PDOException $e)
@@ -396,7 +396,7 @@ class DemoAdapter extends Adapter
 
         if ($row === false)
         {
-            $this->logger->warn->error("No content found with id '$contentID'");
+            $this->logger->warn->error("No content found with id '$contentId'");
             return -1;
         }
 
@@ -431,20 +431,20 @@ class DemoAdapter extends Adapter
         $contentList = array();
         foreach ($content as $item)
         {
-            $contentID = "con_" . $item['rowid'];
+            $contentId = "con_" . $item['rowid'];
 
             // filter content based on DAISY format
             if (is_null($contentFormats) === false && is_array($contentFormats))
             {
                 $scf = $this->supportedContentFormats();
                 $formatFilter = array_intersect_ukey($scf, array_flip($contentFormats), 'strcasecmp');
-                $contentFormatId = $this->contentFormatId($contentID);
+                $contentFormatId = $this->contentFormatId($contentId);
                 if (in_array($contentFormatId, $formatFilter) === false)
                     continue;
-                array_push($contentList, $contentID);
+                array_push($contentList, $contentId);
             }
             else
-                array_push($contentList, $contentID);
+                array_push($contentList, $contentId);
         }
 
         if ($filterContent)
@@ -453,16 +453,16 @@ class DemoAdapter extends Adapter
         return $contentList;
     }
 
-    public function contentExists($contentID)
+    public function contentExists($contentId)
     {
-        if (is_string($contentID))
-            $contentID = $this->extractId($contentID);
+        if (is_string($contentId))
+            $contentId = $this->extractId($contentId);
 
         try
         {
             $query = 'SELECT rowid FROM content WHERE rowid = :contentId';
             $sth = $this->dbh->prepare($query);
-            $sth->execute(array(':contentId' => $contentID));
+            $sth->execute(array(':contentId' => $contentId));
             $row = $sth->fetch(PDO::FETCH_ASSOC);
         }
         catch (PDOException $e)
@@ -475,16 +475,16 @@ class DemoAdapter extends Adapter
         return true;
     }
 
-    public function contentAccessible($contentID)
+    public function contentAccessible($contentId)
     {
-        if (is_string($contentID))
-            $contentID = $this->extractId($contentID);
+        if (is_string($contentId))
+            $contentId = $this->extractId($contentId);
 
         try
         {
             $query = 'SELECT rowid FROM usercontent WHERE user_id = :userId AND content_id = :contentId';
             $sth = $this->dbh->prepare($query);
-            $sth->execute(array(':userId' => $this->user, ':contentId' => $contentID));
+            $sth->execute(array(':userId' => $this->user, ':contentId' => $contentId));
             $row = $sth->fetch(PDO::FETCH_ASSOC);
         }
         catch (PDOException $e)
@@ -497,10 +497,10 @@ class DemoAdapter extends Adapter
         return true;
     }
 
-    public function contentCategory($contentID)
+    public function contentCategory($contentId)
     {
-        if (is_string($contentID))
-            $contentID = $this->extractId($contentID);
+        if (is_string($contentId))
+            $contentId = $this->extractId($contentId);
 
         try
         {
@@ -508,7 +508,7 @@ class DemoAdapter extends Adapter
                 JOIN category ON content.category_id = category.rowid
                 WHERE content.rowid = :contentId';
             $sth = $this->dbh->prepare($query);
-            $sth->execute(array(':contentId' => $contentID));
+            $sth->execute(array(':contentId' => $contentId));
             $row = $sth->fetch(PDO::FETCH_ASSOC);
         }
         catch (PDOException $e)
@@ -519,7 +519,7 @@ class DemoAdapter extends Adapter
 
         if ($row === false)
         {
-            $this->logger->warn("No category found for content with id '$contentID'");
+            $this->logger->warn("No category found for content with id '$contentId'");
             return false;
         }
 
@@ -535,16 +535,16 @@ class DemoAdapter extends Adapter
         return true;
     }
 
-    public function contentReturnDate($contentID)
+    public function contentReturnDate($contentId)
     {
-        if (is_string($contentID))
-            $contentID = $this->extractId($contentID);
+        if (is_string($contentId))
+            $contentId = $this->extractId($contentId);
 
         try
         {
             $query = 'SELECT requires_return, return_by FROM usercontent WHERE user_id = :userId AND content_id = :contentId';
             $sth = $this->dbh->prepare($query);
-            $sth->execute(array(':userId' => $this->user, ':contentId' => $contentID));
+            $sth->execute(array(':userId' => $this->user, ':contentId' => $contentId));
             $row = $sth->fetch(PDO::FETCH_ASSOC);
         }
         catch (PDOException $e)
@@ -555,7 +555,7 @@ class DemoAdapter extends Adapter
 
         if ($row === false)
         {
-            $this->logger->warn("No usercontent found for user id '$this->user' and content id '$contentID'");
+            $this->logger->warn("No usercontent found for user id '$this->user' and content id '$contentId'");
             return false;
         }
 
@@ -568,7 +568,7 @@ class DemoAdapter extends Adapter
             $returnDate = date('Y-m-d H:i:s', $timestamp);
 
             // mark content as not returned and set return date if content has been issued
-            if ($this->contentInList($contentID, 'issued') === true)
+            if ($this->contentInList($contentId, 'issued') === true)
             {
                 try
                 {
@@ -578,10 +578,10 @@ class DemoAdapter extends Adapter
                     $values = array();
                     $values[':datetime'] = $returnDate;
                     $values[':userId'] = $this->user;
-                    $values[':contentId'] = $contentID;
+                    $values[':contentId'] = $contentId;
                     if ($sth->execute($values) === false)
                     {
-                        $this->logger->error("Updating return date for content with id '$contentID' for user with id '$this->user' failed");
+                        $this->logger->error("Updating return date for content with id '$contentId' for user with id '$this->user' failed");
                         return false;
                     }
                 }
@@ -596,16 +596,16 @@ class DemoAdapter extends Adapter
         return $returnDate;
     }
 
-    public function contentMetadata($contentID)
+    public function contentMetadata($contentId)
     {
-        if (is_string($contentID))
-            $contentID = $this->extractId($contentID);
+        if (is_string($contentId))
+            $contentId = $this->extractId($contentId);
 
         try
         {
             $query = 'SELECT key, value FROM contentmetadata WHERE content_id = :contentId';
             $sth = $this->dbh->prepare($query);
-            $sth->execute(array(':contentId' => $contentID));
+            $sth->execute(array(':contentId' => $contentId));
             $metadata = $sth->fetchAll(PDO::FETCH_ASSOC);
         }
         catch (PDOException $e)
@@ -622,7 +622,7 @@ class DemoAdapter extends Adapter
         {
             $query = 'SELECT SUM(bytes) as size FROM contentresource WHERE content_id = :contentId';
             $sth = $this->dbh->prepare($query);
-            $sth->execute(array(':contentId' => $contentID));
+            $sth->execute(array(':contentId' => $contentId));
             $row = $sth->fetch(PDO::FETCH_ASSOC);
         }
         catch (PDOException $e)
@@ -632,17 +632,17 @@ class DemoAdapter extends Adapter
         }
 
         if ($row === false || (int)$row['size'] == 0)
-            $this->logger->warn("Calculating total size for content with id '$contentID' failed");
+            $this->logger->warn("Calculating total size for content with id '$contentId' failed");
         else
             $contentMetadata['size'] = (int)$row['size'];
 
         return $contentMetadata;
     }
 
-    public function contentInList($contentID, $list)
+    public function contentInList($contentId, $list)
     {
-        if (is_string($contentID))
-            $contentID = $this->extractId($contentID);
+        if (is_string($contentId))
+            $contentId = $this->extractId($contentId);
 
         try
         {
@@ -650,7 +650,7 @@ class DemoAdapter extends Adapter
                 JOIN contentlist ON usercontent.contentlist_id = contentlist.rowid
                 WHERE user_id = :userId AND content_id = :contentId AND contentlist.name = :list';
             $sth = $this->dbh->prepare($query);
-            $sth->execute(array(':userId' => $this->user, ':contentId' => $contentID, ':list' => $list));
+            $sth->execute(array(':userId' => $this->user, ':contentId' => $contentId, ':list' => $list));
             $row = $sth->fetch(PDO::FETCH_ASSOC);
         }
         catch (PDOException $e)
@@ -663,29 +663,29 @@ class DemoAdapter extends Adapter
         return true;
     }
 
-    public function contentIssuable($contentID)
+    public function contentIssuable($contentId)
     {
-        if (is_string($contentID))
-            $contentID = $this->extractId($contentID);
+        if (is_string($contentId))
+            $contentId = $this->extractId($contentId);
 
-        if ($this->contentInList($contentID, 'new') || $this->contentInList($contentID, 'issued'))
+        if ($this->contentInList($contentId, 'new') || $this->contentInList($contentId, 'issued'))
             return true;
 
         return false;
     }
 
-    public function contentIssue($contentID)
+    public function contentIssue($contentId)
     {
-        if (is_string($contentID))
-            $contentID = $this->extractId($contentID);
+        if (is_string($contentId))
+            $contentId = $this->extractId($contentId);
 
-        if ($this->contentInList($contentID, 'expired') || $this->contentInList($contentID, 'returned'))
+        if ($this->contentInList($contentId, 'expired') || $this->contentInList($contentId, 'returned'))
             return false;
 
-        if ($this->contentInList($contentID, 'issued'))
+        if ($this->contentInList($contentId, 'issued'))
             return true;
 
-        if ($this->contentInList($contentID, 'new'))
+        if ($this->contentInList($contentId, 'new'))
         {
             try
             {
@@ -696,10 +696,10 @@ class DemoAdapter extends Adapter
                 $values[':listId'] = $this->contentListId('issued');
                 $values[':timestamp'] = date('Y-m-d H:i:s');
                 $values[':userId'] = $this->user;
-                $values[':contentId'] = $contentID;
+                $values[':contentId'] = $contentId;
                 if ($sth->execute($values) === false)
                 {
-                    $this->logger->error("Issuing content with id '$contentID' for user with id '$this->user' failed");
+                    $this->logger->error("Issuing content with id '$contentId' for user with id '$this->user' failed");
                     return false;
                 }
                 return true;
@@ -714,12 +714,12 @@ class DemoAdapter extends Adapter
         return false;
     }
 
-    public function contentResources($contentID)
+    public function contentResources($contentId)
     {
-        if (is_string($contentID))
-            $contentID = $this->extractId($contentID);
+        if (is_string($contentId))
+            $contentId = $this->extractId($contentId);
 
-        if ($this->contentInList($contentID, 'issued') === false)
+        if ($this->contentInList($contentId, 'issued') === false)
         {
             $this->logger->warn("Resources requested for non-issued content");
             return array();
@@ -729,7 +729,7 @@ class DemoAdapter extends Adapter
         {
             $query = 'SELECT filename, bytes, mimetype FROM contentresource WHERE content_id = :contentId';
             $sth = $this->dbh->prepare($query);
-            $sth->execute(array(':contentId' => $contentID));
+            $sth->execute(array(':contentId' => $contentId));
             $resources = $sth->fetchAll(PDO::FETCH_ASSOC);
         }
         catch (PDOException $e)
@@ -740,7 +740,7 @@ class DemoAdapter extends Adapter
 
         if ($resources === false)
         {
-            $this->logger->error("No resouces found for content with id '$contentID'");
+            $this->logger->error("No resouces found for content with id '$contentId'");
             return array();
         }
 
@@ -748,7 +748,7 @@ class DemoAdapter extends Adapter
         foreach ($resources as $resource)
         {
             $contentResource = array();
-            $uri = $this->serviceBaseUri() . "content/$contentID/" . $resource['filename'];
+            $uri = $this->serviceBaseUri() . "content/$contentId/" . $resource['filename'];
             $contentResource['uri'] = $uri;
             $contentResource['mimetype'] = $resource['mimetype'];
             $contentResource['size'] = $resource['bytes'];
@@ -759,16 +759,16 @@ class DemoAdapter extends Adapter
         return $contentResources;
     }
 
-    public function contentReturnable($contentID)
+    public function contentReturnable($contentId)
     {
-        if (is_string($contentID))
-            $contentID = $this->extractId($contentID);
+        if (is_string($contentId))
+            $contentId = $this->extractId($contentId);
 
         try
         {
             $query = 'SELECT requires_return FROM usercontent WHERE user_id = :userId AND content_id = :contentId';
             $sth = $this->dbh->prepare($query);
-            $sth->execute(array(':userId' => $this->user, ':contentId' => $contentID));
+            $sth->execute(array(':userId' => $this->user, ':contentId' => $contentId));
             $row = $sth->fetch(PDO::FETCH_ASSOC);
         }
         catch (PDOException $e)
@@ -779,7 +779,7 @@ class DemoAdapter extends Adapter
 
         if ($row === false)
         {
-            $this->logger->warn("No usercontent found for user id '$this->user' and content id '$contentID'");
+            $this->logger->warn("No usercontent found for user id '$this->user' and content id '$contentId'");
             return false;
         }
 
@@ -787,15 +787,15 @@ class DemoAdapter extends Adapter
         return true;
     }
 
-    public function contentReturn($contentID)
+    public function contentReturn($contentId)
     {
-        if (is_string($contentID))
-            $contentID = $this->extractId($contentID);
+        if (is_string($contentId))
+            $contentId = $this->extractId($contentId);
 
-        if ($this->contentInList($contentID, 'returned'))
+        if ($this->contentInList($contentId, 'returned'))
             return true;
 
-        if ($this->contentInList($contentID, 'issued'))
+        if ($this->contentInList($contentId, 'issued'))
         {
             try
             {
@@ -804,10 +804,10 @@ class DemoAdapter extends Adapter
                 $values = array();
                 $values[':listId'] = $this->contentListId('returned');
                 $values[':userId'] = $this->user;
-                $values[':contentId'] = $contentID;
+                $values[':contentId'] = $contentId;
                 if ($sth->execute($values) === false)
                 {
-                    $this->logger->error("Returning content with id '$contentID' for user with id '$this->user' failed");
+                    $this->logger->error("Returning content with id '$contentId' for user with id '$this->user' failed");
                     return false;
                 }
                 return true;

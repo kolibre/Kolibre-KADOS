@@ -72,7 +72,6 @@ class DaisyOnlineService
     private $sessionEstablished = false;
 
     // placeholders for storing user information
-    private $sessionUserId = null;
     private $sessionUsername = null;
 
     // logger instance
@@ -138,7 +137,6 @@ class DaisyOnlineService
         array_push($instance_variables_to_serialize, 'sessionInitializationStack');
         array_push($instance_variables_to_serialize, 'sessionUserLoggedOn');
         array_push($instance_variables_to_serialize, 'sessionEstablished');
-        array_push($instance_variables_to_serialize, 'sessionUserId');
         array_push($instance_variables_to_serialize, 'sessionUsername');
         array_push($instance_variables_to_serialize, 'adapter');
         array_push($instance_variables_to_serialize, 'adapterIncludeFile');
@@ -1180,7 +1178,6 @@ class DaisyOnlineService
 
         // The following variables must reamin untouched as they are use in logging messages,
         // otherwise some logging messages will be incomplete
-        // sessionUserId
         // sessionUsername
         // sessionCurrentOperation
     }

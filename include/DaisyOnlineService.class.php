@@ -321,6 +321,13 @@ class DaisyOnlineService
             throw new SoapFault('Client', $input->getError(), '', '', 'setReadingSystemAttributes_invalidParameterFault');
         }
 
+        // start backend session
+        if ($this->adapter->startSession() === false)
+        {
+            $this->logger->warn("Backend session not active");
+            return setReadingSystemAttributesResponse(false);
+        }
+
         // store reading system attributes
         $this->readingSystemAttributes = $input->getReadingSystemAttributes();
         $this->sessionEstablished = true;
@@ -1116,6 +1123,7 @@ class DaisyOnlineService
         // 4.2.1 logOff operation may be invoked anywhere within the initialization sequence
         if ($operation == 'logOff')
         {
+            $this->sessionDestroy();
             return;
         }
 
@@ -1139,10 +1147,6 @@ class DaisyOnlineService
             throw new SoapFault ('Client', $faultString, '', '', $operation.'_noActiveSessionFault');
         }
 
-        // if session has been established
-        if ($this->sessionEstablished === true)
-            return;
-
         // if we are still in session initialization phase
         if (sizeof($this->sessionInitializationStack) > 0)
         {
@@ -1161,11 +1165,17 @@ class DaisyOnlineService
             return;
         }
 
-        $msg = 'No active session';
-        $this->logger->warn($msg);
-        $this->sessionDestroy();
-        $faultString = 'No session has been initialized, try initializing a session';
-        throw new SoapFault ('Client', $faultString, '', '', $operation.'_noActiveSessionFault');
+        // if session has been established
+        if ($this->sessionEstablished === true)
+        {
+            if ($this->adapter->startSession() === false)
+            {
+                $this->logger->warn("Backend session not active anymore");
+                $faultString = "Session has expired, try initialization as session again";
+                $this->sessionDestroy();
+                throw new SoapFault ('Client', $faultString, '', '', $operation.'_noActiveSessionFault');
+            }
+        }
     }
 
     /**
@@ -1173,6 +1183,9 @@ class DaisyOnlineService
      */
     private function sessionDestroy()
     {
+        // stop backend session
+        $this->adapter->stopSession();
+
         $this->sessionUserLoggedOn = false;
         $this->sessionEstablished = false;
 

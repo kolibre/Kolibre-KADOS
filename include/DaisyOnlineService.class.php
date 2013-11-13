@@ -65,6 +65,9 @@ class DaisyOnlineService
     // stack containing operations to be invoked in initialization sequence
     private $sessionInitializationStack = array();
 
+    // stack containing content identifiers for which metadata has been retrieved
+    private $sessionContentMetadataRequests = array();
+
     // boolean indicating if a user has successfully logged on
     private $sessionUserLoggedOn = false;
 
@@ -135,6 +138,7 @@ class DaisyOnlineService
         array_push($instance_variables_to_serialize, 'sessionCurrentOperation');
         array_push($instance_variables_to_serialize, 'sessionInvokedOperations');
         array_push($instance_variables_to_serialize, 'sessionInitializationStack');
+        array_push($instance_variables_to_serialize, 'sessionContentMetadataRequests');
         array_push($instance_variables_to_serialize, 'sessionUserLoggedOn');
         array_push($instance_variables_to_serialize, 'sessionEstablished');
         array_push($instance_variables_to_serialize, 'sessionUsername');
@@ -636,6 +640,9 @@ class DaisyOnlineService
             throw new SoapFault('Server', $faultString,'', '', 'getContentMetadata_internalServerErrorFault');
         }
 
+        // store content identifier in sessionContentMetadataRequests
+        array_push($this->sessionContentMetadataRequests, $contentId);
+
         return $output;
     }
 
@@ -681,6 +688,14 @@ class DaisyOnlineService
         {
             $this->logger->fatal($e->getMessage());
             throw new SoapFault('Server', 'Internal Server Error', '', '', 'issueContent_internalServerErrorFault');
+        }
+
+        // check if a prior call to getContentMetadata has been made
+        if (in_array($contentId, $this->sessionContentMetadataRequests) === false)
+        {
+            $this->logger->warn("No prior call to getContentMetadata for content '$contentId'");
+            $faultString = "Metadata for content has not been requested, call getContentMetadata for content '$contentId'";
+            throw new SoapFault('Client', $faultString, '', '', 'issueContent_invalidOperatonFault');
         }
 
         // check if content is issuable and issue content
@@ -1186,6 +1201,7 @@ class DaisyOnlineService
         // stop backend session
         $this->adapter->stopSession();
 
+        $this->sessionContentMetadataRequests = array();
         $this->sessionUserLoggedOn = false;
         $this->sessionEstablished = false;
 

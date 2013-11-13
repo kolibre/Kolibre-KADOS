@@ -458,7 +458,7 @@ abstract class Adapter
      * This method is optional and does not require implementation.
      * It is invoked by the service when getServiceAnnouncements operation is called.
      *
-     * @param string $announcementID The identifier for the announcement
+     * @param string $announcementId The identifier for the announcement
      * @return mixed Returns false is not supported, otherwise an associative kay and value array.
      *
      * <p>Valid key names are 'type' and 'priority'. Allowed values for key 'type' are: [WARNING, ERROR, INFORMATION, SYSTEM]. Allowed values for key 'priority' are: [1, 2, 3].</p>
@@ -473,7 +473,7 @@ abstract class Adapter
      *
      * @throws AdapterException
      */
-    public function announcementInfo($announcementID)
+    public function announcementInfo($announcementId)
     {
         return false;
     }
@@ -485,12 +485,12 @@ abstract class Adapter
      * It is invoked by the service when markAnnouncementsAsRead operation is called.
      * If the service supports SERVICE_ANNOUNCEMENTS, this method must be implemented.
      *
-     * @param string $announcementID The identifier for the announcement
+     * @param string $announcementId The identifier for the announcement
      * @return boolean Returns True if the announcement exists, otherwise False.
      *
      * @throws AdapterException
      */
-    public function announcementExists($announcementID)
+    public function announcementExists($announcementId)
     {
         return false;
     }
@@ -502,12 +502,12 @@ abstract class Adapter
      * It is invoked by the service when markAnnouncementsAsRead operation is called.
      * If the service supports SERVICE_ANNOUNCEMENTS, this method must be implemented.
      *
-     * @param string $announcementID The identifier for the announcement
+     * @param string $announcementId The identifier for the announcement
      * @return boolean Returns True is the announcement is read, otherwise False.
      *
      * @throws AdapterException
      */
-    public function announcementRead($announcementID)
+    public function announcementRead($announcementId)
     {
         return false;
     }
@@ -609,12 +609,12 @@ abstract class Adapter
      * (
      *     [0] => Array
      *     (
-     *         [questionID] => "question 1"
+     *         [questionId] => "question 1"
      *         [value] => "value is always a string"
      *     )
      *     [1] => Array
      *     (
-     *         [questionID] => "question 2"
+     *         [questionId] => "question 2"
      *         [base64] => "base64 encoded binary data"
      *     )
      * )
@@ -628,7 +628,7 @@ abstract class Adapter
      *     [0] => Array
      *     (
      *         [type] => "multipleChoiceQuestion"
-     *         [questionID] => "question 1"
+     *         [questionId] => "question 1"
      *         [choices] => Array
      *         (
      *             [0] => "choice 1"
@@ -639,17 +639,17 @@ abstract class Adapter
      *     [1] => Array
      *     (
      *        [type] => "inputQuestions"
-     *        [questionID] => "question 2"
+     *        [questionId] => "question 2"
      *     )
      *     [2] => Array
      *     (
      *        [type] => "inputQuestions"
-     *        [questionID] => "question 3"
+     *        [questionId] => "question 3"
      *     )
      *     [3] => Array
      *     (
      *         [type] => "multipleChoiceQuestion"
-     *         [questionID] => "question 4"
+     *         [questionId] => "question 4"
      *         [choices] => Array
      *         (
      *             [0] => "choice 1"

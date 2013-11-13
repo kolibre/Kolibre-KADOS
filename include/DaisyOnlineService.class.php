@@ -51,8 +51,6 @@ require_once('getQuestionsResponse.class.php');
 require_once('getKeyExchangeObject.class.php');
 require_once('getKeyExchangeObjectResponse.class.php');
 
-require_once('ContentHelper.class.php');
-
 class DaisyOnlineService
 {
     private $serviceAttributes = array();

@@ -71,7 +71,7 @@ class DaisyOnlineService
     // boolean indicating if a session has been established
     private $sessionEstablished = false;
 
-    // placeholders for storing user information
+    // username for the active client/device in this session
     private $sessionUsername = null;
 
     // logger instance

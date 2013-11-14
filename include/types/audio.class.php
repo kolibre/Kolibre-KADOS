@@ -155,19 +155,21 @@ class audio extends AbstractType {
 
         // attribute rangeBegin is optional
         if (!is_null($this->rangeBegin)) {
-            if ($this->isInteger($this->rangeBegin, 'rangeBegin') === false)
+            if ($this->isPositiveInteger($this->rangeBegin, 'rangeBegin') === false)
                 return false;
         }
 
         // attribute rangeEnd is optional
         if (!is_null($this->rangeEnd)) {
-            if ($this->isInteger($this->rangeEnd, 'rangeEnd') === false)
+            if ($this->isPositiveInteger($this->rangeEnd, 'rangeEnd') === false)
                 return false;
         }
 
-        // attribute size is required
-        if ($this->isInteger($this->size, 'size') === false)
-            return false;
+        // attribute size is optional
+        if (!is_null($this->size)) {
+            if ($this->isPositiveInteger($this->size, 'size') === false)
+                return false;
+        }
 
         // check precense of rangeEnd if rangeBegin is set
         if (!is_null($this->rangeBegin)) {

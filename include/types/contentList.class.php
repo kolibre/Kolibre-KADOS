@@ -312,8 +312,14 @@ class contentList extends AbstractType {
 
         // check value of firstItem and lastItem if they are present
         if (!is_null($this->firstItem) && !is_null($this->lastItem)) {
-            if ($this->firstItem > $this->lastItem) {
-                $this->error = __CLASS__ . ".lastItem must be greater than or equal to " . __CLASS__ . ".firstItem";
+            // lastItem must not be equal to firstItem
+            if ($this->lastItem == $this->firstItem) {
+                $this->error = __CLASS__ . ".lastItem must no be equal to " . __CLASS__ . ".firstItem";
+                return false;
+            }
+            // lastItem must be greater than firstItem
+            if ($this->lastItem <= $this->firstItem) {
+                $this->error = __CLASS__ . ".lastItem must be greater than " . __CLASS__ . ".firstItem";
                 return false;
             }
         }

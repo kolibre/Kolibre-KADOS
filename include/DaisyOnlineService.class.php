@@ -1274,6 +1274,7 @@ class DaisyOnlineService
         $mimetype = null;
         $size = null;
         $localURI = null;
+        $lastModifiedDate = null;
 
         // uri [mandatory]
         if (array_key_exists('uri', $resourceArray) === false)
@@ -1299,7 +1300,11 @@ class DaisyOnlineService
         else
             $localURI = $resourceArray['localURI'];
 
-        $resource = new resource($uri, $mimetype, $size, $localURI);
+        // lastModifiedDate [optional]
+        if (array_key_exists('lastModifiedDate', $resourceArray))
+            $lastModifiedDate = $resourceArray['lastModifiedDate'];
+
+        $resource = new resource($uri, $mimetype, $size, $localURI, $lastModifiedDate);
         return $resource;
     }
 

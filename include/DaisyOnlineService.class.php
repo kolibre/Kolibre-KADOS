@@ -409,8 +409,6 @@ class DaisyOnlineService
 
         // if firstItem or lastItem is invalid we must return an empty list with totalItems attribute set to
         // total number of items in list, thus we assume list will be empty
-        $contentList->setFirstItem(0);
-        $contentList->setLastItem(0);
         $contentList->setTotalItems($totalItems);
 
         // generate content list

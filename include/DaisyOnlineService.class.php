@@ -89,13 +89,14 @@ class DaisyOnlineService
     // adapter file to include in wakeup
     private $adapterIncludeFile = null;
 
-    public function __construct()
+    public function __construct($inifile = null)
     {
         // setup logger
         $this->logger = Logger::getLogger('kolibre.daisyonline.daisyonlineservice');
 
         // parse settings file
-        $inifile = realpath(dirname(__FILE__)) . '/../service.ini';
+        if (is_null($inifile))
+            $inifile = realpath(dirname(__FILE__)) . '/../service.ini';
         $settings = parse_ini_file($inifile, true);
 
         // setup service attributes

@@ -80,6 +80,9 @@ class DaisyOnlineService
     // username for the active client/device in this session
     private $sessionUsername = null;
 
+    // boolean indicating if session handling is disabled, use with debugging and testing only
+    private $sessionHandleDisabled = false;
+
     // logger instance
     private $logger = null;
 
@@ -150,6 +153,17 @@ class DaisyOnlineService
         array_push($instance_variables_to_serialize, 'adapterIncludeFile');
         return $instance_variables_to_serialize;
     }
+
+    /**
+     * Disables the internal session handling.
+     *
+     * Warning! Do not invoke this function unless your are testing or debugging this class.
+     */
+    public function disableInternalSessionHandling()
+    {
+        $this->sessionHandleDisabled = true;
+    }
+
 
     /**
      * Log function logRequestAndResponse, log SOAP request and response, invoked from service.php
@@ -693,7 +707,7 @@ class DaisyOnlineService
         }
 
         // check if a prior call to getContentMetadata has been made
-        if (in_array($contentId, $this->sessionContentMetadataRequests) === false)
+        if (!$this->sessionHandleDisabled && in_array($contentId, $this->sessionContentMetadataRequests) === false)
         {
             $this->logger->warn("No prior call to getContentMetadata for content '$contentId'");
             $faultString = "Metadata for content has not been requested, call getContentMetadata for content '$contentId'";
@@ -1114,6 +1128,12 @@ class DaisyOnlineService
      */
     private function sessionHandle($operation)
     {
+        if ($this->sessionHandleDisabled)
+        {
+            $this->logger->warn('Session handling disabled');
+            return;
+        }
+
         $this->logger->info("Operation '$operation' invoked");
         // session_start() is handled in service.php by SOAP_PERSISTENCE_SESSION
 

@@ -84,7 +84,31 @@ class DaisyOnlineServiceTest extends PHPUnit_Framework_TestCase
      */
     public function testLogOn()
     {
-        $this->assertTrue(true);
+        // request is not valid
+        $input = new logOn();
+        $output = self::$instance->logOn($input);
+        $this->assertFalse($output->logOnResult);
+
+        // adapter throws exception on authenticate
+        $SoapFault = false;
+        $input = new logOn('exception', 'exception');
+        try {
+            $output = self::$instance->logOn($input);
+        } catch (SoapFault $f) {
+            if ($f->_name == 'logOn_internalServerErrorFault')
+                $SoapFault = true;
+        }
+        $this->assertTrue($SoapFault);
+
+        // adapter returns false on authenticate
+        $input = new logOn('invalid', 'invalid');
+        $output = self::$instance->logOn($input);
+        $this->assertFalse($output->logOnResult);
+
+        // adapter returns true on authenticate
+        $input = new logOn('valid', 'valid');
+        $output = self::$instance->logOn($input);
+        $this->assertTrue($output->logOnResult);
     }
 
     /**

@@ -31,6 +31,16 @@ class TestAdapter extends Adapter
 
     public function authenticate($username, $password)
     {
+        if ($username == 'exception' && $password == 'exception')
+            throw new AdapterException('Error in adapter');
+
+        if ($username == 'invalid' && $password == 'invalid')
+            return false;
+
+        if ($username == 'valid' && $password == 'valid')
+            return true;
+
+        return false;
     }
 
     public function contentListExists($list)

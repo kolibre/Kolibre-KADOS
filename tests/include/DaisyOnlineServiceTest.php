@@ -128,7 +128,59 @@ class DaisyOnlineServiceTest extends PHPUnit_Framework_TestCase
      */
     public function testGetServiceAttributes()
     {
-        $this->assertTrue(true);
+        // minimal settings
+        $input = new getServiceAttributes($input);
+        $output = self::$instance->getServiceAttributes($input);
+        $this->assertNull($output->serviceAttributes->serviceProvider);
+        $this->assertNull($output->serviceAttributes->service);
+        $this->assertCount(1, $output->serviceAttributes->supportedContentSelectionMethods->method);
+        $this->assertContains('OUT_OF_BAND', $output->serviceAttributes->supportedContentSelectionMethods->method);
+        $this->assertFalse($output->serviceAttributes->supportsServerSideBack);
+        $this->assertFalse($output->serviceAttributes->supportsSearch);
+        $this->assertNull($output->serviceAttributes->supportedUplinkAudioCodecs->codec);
+        $this->assertFalse($output->serviceAttributes->supportsAudioLabels);
+        $this->assertNull($output->serviceAttributes->supportedOptionalOperations->operation);
+
+        // full settings
+        $settings = array();
+        $settings['Service'] = array();
+        $settings['Service']['serviceProvider'] = 'org-kolibre';
+        $settings['Service']['service'] = 'org-kolibre-daisyonline';
+        $settings['Service']['supportedContentSelectionMethods'] = array('OUT_OF_BAND', 'BROWSE');
+        $settings['Service']['supportsServerSideBack'] = 1;
+        $settings['Service']['supportsSearch'] = 1;
+        $settings['Service']['supportedUplinkAudioCodecs'] = array('codec 1', 'codec 2');
+        $settings['Service']['supportsAudioLabels'] = 1;
+        $settings['Service']['supportedOptionalOperations'] = array();
+        $settings['Service']['supportedOptionalOperations'][] = 'SERVICE_ANNOUNCEMENTS';
+        $settings['Service']['supportedOptionalOperations'][] = 'SET_BOOKMARKS';
+        $settings['Service']['supportedOptionalOperations'][] = 'GET_BOOKMARKS';
+        $settings['Service']['supportedOptionalOperations'][] = 'DYNAMIC_MENUS';
+        $settings['Service']['supportedOptionalOperations'][] = 'PDTB2_KEY_PROVISION';
+        $settings['Adapter']['name'] = 'TestAdapter';
+        $settings['Adapter']['path'] = realpath(dirname(__FILE__));
+        self::write_ini_file($settings, self::$inifile);
+        self::$instance = new DaisyOnlineService(self::$inifile);
+        self::$instance->disableInternalSessionHandling();
+        $input = new getServiceAttributes($input);
+        $output = self::$instance->getServiceAttributes($input);
+        $this->assertEquals($output->serviceAttributes->serviceProvider->id, 'org-kolibre');
+        $this->assertEquals($output->serviceAttributes->service->id, 'org-kolibre-daisyonline');
+        $this->assertCount(2, $output->serviceAttributes->supportedContentSelectionMethods->method);
+        $this->assertContains('OUT_OF_BAND', $output->serviceAttributes->supportedContentSelectionMethods->method);
+        $this->assertContains('BROWSE', $output->serviceAttributes->supportedContentSelectionMethods->method);
+        $this->assertTrue($output->serviceAttributes->supportsServerSideBack);
+        $this->assertTrue($output->serviceAttributes->supportsSearch);
+        $this->assertCount(2, $output->serviceAttributes->supportedUplinkAudioCodecs->codec);
+        $this->assertContains('codec 1', $output->serviceAttributes->supportedUplinkAudioCodecs->codec);
+        $this->assertContains('codec 2', $output->serviceAttributes->supportedUplinkAudioCodecs->codec);
+        $this->assertTrue($output->serviceAttributes->supportsAudioLabels);
+        $this->assertCount(5, $output->serviceAttributes->supportedOptionalOperations->operation);
+        $this->assertContains('SERVICE_ANNOUNCEMENTS', $output->serviceAttributes->supportedOptionalOperations->operation);
+        $this->assertContains('SET_BOOKMARKS', $output->serviceAttributes->supportedOptionalOperations->operation);
+        $this->assertContains('GET_BOOKMARKS', $output->serviceAttributes->supportedOptionalOperations->operation);
+        $this->assertContains('DYNAMIC_MENUS', $output->serviceAttributes->supportedOptionalOperations->operation);
+        $this->assertContains('PDTB2_KEY_PROVISION', $output->serviceAttributes->supportedOptionalOperations->operation);
     }
 
     /**

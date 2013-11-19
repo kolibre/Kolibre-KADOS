@@ -117,7 +117,9 @@ class DaisyOnlineServiceTest extends PHPUnit_Framework_TestCase
      */
     public function testLogOff()
     {
-        $this->assertTrue(true);
+        $input = new logOff();
+        $output = self::$instance->logOff($input);
+        $this->assertTrue($output->logOffResult);
     }
 
     /**

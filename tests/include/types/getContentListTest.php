@@ -71,7 +71,7 @@ class getContentListTest extends PHPUnit_Framework_TestCase
      */
     public function testLastItem()
     {
-        $instance = new getContentList('id', 0, null);
+        $instance = new getContentList('id', 1, null);
         $this->assertFalse($instance->validate());
         $this->assertContains('getContentList.lastItem', $instance->getError());
         $instance->lastItem = 'lastItem';
@@ -83,11 +83,9 @@ class getContentListTest extends PHPUnit_Framework_TestCase
         $instance->lastItem = -2;
         $this->assertFalse($instance->validate());
         $this->assertContains('getContentList.lastItem', $instance->getError());
-        $instance->firstItem = 1;
-        $instance->lastItem = 0;
-        $this->assertFalse($instance->validate());
-        $this->assertContains('getContentList.lastItem', $instance->getError());
         $instance->lastItem = -1;
+        $this->assertTrue($instance->validate(), $instance->getError());
+        $instance->lastItem = 1;
         $this->assertTrue($instance->validate(), $instance->getError());
         $instance->lastItem = 2;
         $this->assertTrue($instance->validate(), $instance->getError());

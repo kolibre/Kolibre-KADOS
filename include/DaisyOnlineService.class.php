@@ -347,7 +347,7 @@ class DaisyOnlineService
         if ($this->adapter->startSession() === false)
         {
             $this->logger->warn("Backend session not active");
-            return setReadingSystemAttributesResponse(false);
+            return new setReadingSystemAttributesResponse(false);
         }
 
         // store reading system attributes

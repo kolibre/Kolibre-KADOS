@@ -251,7 +251,88 @@ class DaisyOnlineServiceTest extends PHPUnit_Framework_TestCase
      */
     public function testGetContentList()
     {
-        $this->assertTrue(true);
+        // request is not valid
+        $input = new getContentList();
+        $this->assertTrue($this->callOperation('getContentList', $input, 'invalidParameterFault'));
+
+        // adapter throws exception on contentListExists
+        $input = new getContentList('exception-list-exists', 0, -1);
+        $this->assertTrue($this->callOperation('getContentList', $input, 'internalServerErrorFault'));
+
+        // adapter returns false on contentListExists
+        $input = new getContentList('invalid-list', 0, -1);
+        $this->assertTrue($this->callOperation('getContentList', $input, 'invalidParameterFault'));
+
+        // adapter throws exception on contentList
+        $input = new getContentList('exception-list', 0, -1);
+        $this->assertTrue($this->callOperation('getContentList', $input, 'internalServerErrorFault'));
+
+        // adapter throws exception on label contentlist
+        $input = new getContentList('empty-list-label-exception', 0, -1);
+        $output = self::$instance->getContentList($input);
+        $this->assertEquals($output->contentList->totalItems, 0);
+        $this->assertNull($output->contentList->firstItem);
+        $this->assertNull($output->contentList->lastItem);
+        $this->assertNull($output->contentList->contentItem);
+
+        // empty list with content list label
+        $input = new getContentList('empty-list-label', 0, -1);
+        $output = self::$instance->getContentList($input);
+        $this->assertEquals($output->contentList->totalItems, 0);
+        $this->assertNull($output->contentList->firstItem);
+        $this->assertNull($output->contentList->lastItem);
+        $this->assertNull($output->contentList->contentItem);
+        $this->assertEquals($output->contentList->label->text, 'text');
+        $this->assertEquals($output->contentList->label->audio->uri, 'uri');
+        $this->assertEquals($output->contentList->label->audio->rangeBegin, 0);
+        $this->assertEquals($output->contentList->label->audio->rangeEnd, 1);
+        $this->assertEquals($output->contentList->label->audio->size, 2);
+        $this->assertEquals($output->contentList->label->lang, 'en');
+        $this->assertEquals($output->contentList->label->dir, 'ltr');
+
+        // adapter throws exception on label contentitem
+        $input = new getContentList('valid-list-label-exception', 0, -1);
+        $this->assertTrue($this->callOperation('getContentList', $input, 'internalServerErrorFault'));
+
+        // sublist first item greater than total items
+        $input = new getContentList('sublist-first-item-exceed-total-items', 3, -1);
+        $output = self::$instance->getContentList($input);
+        $this->assertEquals($output->contentList->totalItems, 3);
+        $this->assertNull($output->contentList->firstItem);
+        $this->assertNull($output->contentList->lastItem);
+        $this->assertNull($output->contentList->contentItem);
+
+        // sublist last item greater than total items
+        $input = new getContentList('sublist-last-item-exceed-total-items', 0, 3);
+        $output = self::$instance->getContentList($input);
+        $this->assertEquals($output->contentList->totalItems, 3);
+        $this->assertNull($output->contentList->firstItem);
+        $this->assertNull($output->contentList->lastItem);
+        $this->assertNull($output->contentList->contentItem);
+
+        // sublist with single item
+        $input = new getContentList('sublist-single-item', 1, 1);
+        $output = self::$instance->getContentList($input);
+        $this->assertEquals($output->contentList->totalItems, 3);
+        $this->assertEquals($output->contentList->firstItem, 1);
+        $this->assertEquals($output->contentList->lastItem, 1);
+        $this->assertCount(1, $output->contentList->contentItem);
+
+        // sublist with multiple items
+        $input = new getContentList('sublist-multiple-items', 1, -1);
+        $output = self::$instance->getContentList($input);
+        $this->assertEquals($output->contentList->totalItems, 3);
+        $this->assertEquals($output->contentList->firstItem, 1);
+        $this->assertEquals($output->contentList->lastItem, 2);
+        $this->assertCount(2, $output->contentList->contentItem);
+
+        // complete list
+        $input = new getContentList('full-list', 0, -1);
+        $output = self::$instance->getContentList($input);
+        $this->assertEquals($output->contentList->totalItems, 3);
+        $this->assertEquals($output->contentList->firstItem, 0);
+        $this->assertEquals($output->contentList->lastItem, 2);
+        $this->assertCount(3, $output->contentList->contentItem);
     }
 
     /**

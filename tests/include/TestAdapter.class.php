@@ -40,6 +40,36 @@ class TestAdapter extends Adapter
 
     public function label($id, $type, $language = null)
     {
+        $audio = array();
+        $audio['uri'] = 'uri';
+        $audio['rangeBegin'] = 0;
+        $audio['rangeEnd'] = 1;
+        $audio['size'] = 2;
+
+        $label = array();
+        $label['text'] = 'text';
+        $label['lang'] = 'en';
+        $label['dir'] = 'ltr';
+        $label['audio'] = $audio;
+
+        switch ($type)
+        {
+        case Adapter::LABEL_CONTENTLIST:
+            if ($id == 'empty-list-label-exception')
+                throw new AdapterException('Error in adapter');
+            if ($id == 'empty-list-label')
+                return $label;
+            break;
+        case Adapter::LABEL_CONTENTITEM:
+            if ($id == 'valid-list-label-exception')
+                throw new AdapterException('Error in adapter');
+            return $label;
+            break;
+        default:
+            return false;
+        }
+
+        return false;
     }
 
     public function authenticate($username, $password)
@@ -58,10 +88,30 @@ class TestAdapter extends Adapter
 
     public function contentListExists($list)
     {
+        if ($list == 'exception-list-exists')
+            throw new AdapterException('Error in adapter');
+
+        if ($list == 'invalid-list')
+            return false;
+
+        return true;
     }
 
     public function contentList($list, $contentFormats = null, $protectionFormats = null, $mimeTypes = null)
     {
+        if ($list == 'exception-list')
+            throw new AdapterException('Error in adapter');
+
+        if ($list == 'valid-list-label-exception')
+            return array('valid-list-label-exception');
+
+        if ($list == 'sublist-first-item-exceed-total-items' || $list == 'sublist-last-item-exceed-total-items')
+            return array('valid-identifier-1', 'valid-identifier-2', 'valid-identifier-3');
+
+        if ($list == 'sublist-single-item' || $list == 'sublist-multiple-items' || $list == 'full-list')
+            return array('valid-identifier-1', 'valid-identifier-2', 'valid-identifier-3');
+
+        return array();
     }
 
     public function contentExists($contentId)

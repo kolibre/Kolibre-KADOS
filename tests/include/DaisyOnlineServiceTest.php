@@ -189,7 +189,58 @@ class DaisyOnlineServiceTest extends PHPUnit_Framework_TestCase
      */
     public function testSetReadingSystemAttributes()
     {
-        $this->assertTrue(true);
+        // request is not valid
+        $SoapFault = false;
+        $input = new setReadingSystemAttributes();
+        try {
+            $output = self::$instance->setReadingSystemAttributes($input);
+        } catch (SoapFault $f) {
+            if ($f->_name == 'setReadingSystemAttributes_invalidParameterFault')
+                $SoapFault = true;
+        }
+        $this->assertTrue($SoapFault);
+
+        // build readingSystemAttributes object
+        $supportsMultipleSelections = false;
+        $preferredUILanguage = 'preferredUILanguage';
+        $bandwidth = null;
+        $supportedContentFormats = new supportedContentFormats();
+        $supportedContentProtectionFormats = new supportedContentProtectionFormats();
+        $keyRing = null;
+        $supportedMimeTypes = new supportedMimeTypes();
+        $supportedInputTypes = new supportedInputTypes();
+        $requiresAudioLabels = false;
+        $additionalTransferProtocols = null;
+        $config = new config(
+            $supportsMultipleSelections,
+            $preferredUILanguage,
+            $bandwidth,
+            $supportedContentFormats,
+            $supportedContentProtectionFormats,
+            $keyRing,
+            $supportedMimeTypes,
+            $supportedInputTypes,
+            $requiresAudioLabels,
+            $additionalTransferProtocols);
+        $manufacturer = 'manufacturer';
+        $model = 'model';
+        $serialNumber = null;
+        $version = 'version';
+        $readingSystemAttributes = new readingSystemAttributes(
+            $manufacturer,
+            $model,
+            $serialNumber,
+            $version,
+            $config);
+
+        // adapter returns false on start_session
+        $input = new setReadingSystemAttributes($readingSystemAttributes);
+        $output = self::$instance->setReadingSystemAttributes($input);
+        $this->assertFalse($output->setReadingSystemAttributesResult);
+
+        // adapter returns true on start_session
+        $output = self::$instance->setReadingSystemAttributes($input);
+        $this->assertTrue($output->setReadingSystemAttributesResult);
     }
 
     /**

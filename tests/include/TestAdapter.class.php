@@ -25,6 +25,19 @@ require_once('Adapter.class.php');
 
 class TestAdapter extends Adapter
 {
+    protected $sessionStarted = false;
+
+    public function startSession()
+    {
+        if ($this->sessionStarted === false)
+        {
+            $this->sessionStarted = true;
+            return false;
+        }
+
+        return true;
+    }
+
     public function label($id, $type, $language = null)
     {
     }

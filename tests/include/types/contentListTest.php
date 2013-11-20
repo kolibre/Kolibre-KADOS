@@ -115,8 +115,7 @@ class contentListTest extends PHPUnit_Framework_TestCase
         $this->assertFalse($instance->validate());
         $this->assertContains('contentList.lastItem', $instance->getError());
         $instance->lastItem = 1;
-        $this->assertFalse($instance->validate());
-        $this->assertContains('contentList.lastItem', $instance->getError());
+        $this->assertTrue($instance->validate());
         $instance->lastItem = 2;
         $this->assertTrue($instance->validate());
     }

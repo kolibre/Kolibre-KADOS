@@ -341,7 +341,81 @@ class DaisyOnlineServiceTest extends PHPUnit_Framework_TestCase
      */
     public function testGetContentMetadata()
     {
-        $this->assertTrue(true);
+        // request is not valid
+        $input = new getContentMetadata();
+        $this->assertTrue($this->callOperation('getContentMetadata', $input, 'invalidParameterFault'));
+
+        // adapter throws exception on contentExists
+        $input = new getContentMetadata('exception-content-exists');
+        $this->assertTrue($this->callOperation('getContentMetadata', $input, 'internalServerErrorFault'));
+
+        // adapter returns false on contentExists
+        $input = new getContentMetadata('invalid-content-exists');
+        $this->assertTrue($this->callOperation('getContentMetadata', $input, 'invalidParameterFault'));
+
+        // adapter throws exception on contentAccessible
+        $input = new getContentMetadata('exception-content-accessible');
+        $this->assertTrue($this->callOperation('getContentMetadata', $input, 'internalServerErrorFault'));
+
+        // adapter returns false on contentAccessible
+        $input = new getContentMetadata('invalid-content-accessible');
+        $this->assertTrue($this->callOperation('getContentMetadata', $input, 'invalidParameterFault'));
+
+        // adapter throws exception on contentSample
+        $input = new getContentMetadata('exception-content-sample');
+        $this->assertTrue($this->callOperation('getContentMetadata', $input, 'internalServerErrorFault'));
+
+        // adapter throws exception on contentCategory
+        $input = new getContentMetadata('exception-content-category');
+        $this->assertTrue($this->callOperation('getContentMetadata', $input, 'internalServerErrorFault'));
+
+        // adapter throws exception on contentRetunDate
+        $input = new getContentMetadata('exception-content-returndate');
+        $this->assertTrue($this->callOperation('getContentMetadata', $input, 'internalServerErrorFault'));
+
+        // adapter throws exception on contentMetadata
+        $input = new getContentMetadata('exception-content-metadata');
+        $this->assertTrue($this->callOperation('getContentMetadata', $input, 'internalServerErrorFault'));
+
+        // required elements missing from metadata
+        $input = new getContentMetadata('invalid-content-metadata');
+        $this->assertTrue($this->callOperation('getContentMetadata', $input, 'internalServerErrorFault'));
+
+        // metadata contains requried elements
+        $input = new getContentMetadata('valid-content-metadata');
+        $output = self::$instance->getContentMetadata($input);
+        $this->assertEquals($output->contentMetadata->sample->id, 'sample');
+        $this->assertEquals($output->contentMetadata->metadata->title, 'dc:title');
+        $this->assertEquals($output->contentMetadata->metadata->identifier, 'valid-content-metadata');
+        $this->assertEquals($output->contentMetadata->metadata->publisher, 'dc:publisher');
+        $this->assertEquals($output->contentMetadata->metadata->format, 'dc:format');
+        $this->assertEquals($output->contentMetadata->metadata->date, 'dc:date');
+        $this->assertEquals($output->contentMetadata->metadata->source, 'dc:source');
+        $this->assertCount(1, $output->contentMetadata->metadata->type);
+        $this->assertContains('dc:type', $output->contentMetadata->metadata->type);
+        $this->assertCount(1, $output->contentMetadata->metadata->subject);
+        $this->assertContains('dc:subject', $output->contentMetadata->metadata->subject);
+        $this->assertCount(1, $output->contentMetadata->metadata->rights);
+        $this->assertContains('dc:rights', $output->contentMetadata->metadata->rights);
+        $this->assertCount(1, $output->contentMetadata->metadata->relation);
+        $this->assertContains('dc:relation', $output->contentMetadata->metadata->relation);
+        $this->assertCount(1, $output->contentMetadata->metadata->language);
+        $this->assertContains('dc:language', $output->contentMetadata->metadata->language);
+        $this->assertCount(1, $output->contentMetadata->metadata->description);
+        $this->assertContains('dc:description', $output->contentMetadata->metadata->description);
+        $this->assertCount(1, $output->contentMetadata->metadata->creator);
+        $this->assertContains('dc:creator', $output->contentMetadata->metadata->creator);
+        $this->assertCount(1, $output->contentMetadata->metadata->coverage);
+        $this->assertContains('dc:coverage', $output->contentMetadata->metadata->coverage);
+        $this->assertCount(1, $output->contentMetadata->metadata->contributor);
+        $this->assertContains('dc:contributor', $output->contentMetadata->metadata->contributor);
+        $this->assertNull($output->contentMetadata->metadata->narrator);
+        $this->assertEquals($output->contentMetadata->metadata->size, 1);
+        $this->assertEquals($output->contentMetadata->category, 'category');
+        $this->assertCount(1, $output->contentMetadata->metadata->meta);
+        $this->assertEquals($output->contentMetadata->metadata->meta[0]->name, 'pdtb2:specVersion');
+        $this->assertEquals($output->contentMetadata->metadata->meta[0]->content, 'PDTB2');
+        $this->assertTrue($output->contentMetadata->requiresReturn);
     }
 
     /**

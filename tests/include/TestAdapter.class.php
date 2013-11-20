@@ -116,18 +116,79 @@ class TestAdapter extends Adapter
 
     public function contentExists($contentId)
     {
+        if ($contentId == 'exception-content-exists')
+            throw new AdapterException('Error in adapter');
+
+        if ($contentId == 'invalid-content-exists')
+            return false;
+
+        return true;
     }
 
     public function contentAccessible($contentId)
     {
+        if ($contentId == 'exception-content-accessible')
+            throw new AdapterException('Error in adapter');
+
+        if ($contentId == 'invalid-content-accessible')
+            return false;
+
+        return true;
+    }
+
+    public function contentSample($contentId)
+    {
+        if ($contentId == 'exception-content-sample')
+            throw new AdapterException('Error in adapter');
+
+        return 'sample';
+    }
+
+    public function contentCategory($contentId)
+    {
+        if ($contentId == 'exception-content-category')
+            throw new AdapterException('Error in adapter');
+
+        return 'category';
     }
 
     public function contentReturnDate($contentId)
     {
+        if ($contentId == 'exception-content-returndate')
+            throw new AdapterException('Error in adapter');
+
+        return '1970-01-01T00:00:00';
     }
 
     public function contentMetadata($contentId)
     {
+        if ($contentId == 'exception-content-metadata')
+            throw new AdapterException('Error in adapter');
+
+        if ($contentId == 'valid-content-metadata')
+        {
+            $metadata = array();
+            $metadata['size'] = 1;
+            $metadata['dc:title'] = 'dc:title';
+            $metadata['dc:identifier'] = 'dc:identifier';
+            $metadata['dc:publisher'] = 'dc:publisher';
+            $metadata['dc:format'] = 'dc:format';
+            $metadata['dc:date'] = 'dc:date';
+            $metadata['dc:source'] = 'dc:source';
+            $metadata['dc:type'] = 'dc:type';
+            $metadata['dc:subject'] = 'dc:subject';
+            $metadata['dc:rights'] = 'dc:rights';
+            $metadata['dc:relation'] = 'dc:relation';
+            $metadata['dc:language'] = 'dc:language';
+            $metadata['dc:description'] = 'dc:description';
+            $metadata['dc:creator'] = 'dc:creator';
+            $metadata['dc:coverage'] = 'dc:coverage';
+            $metadata['dc:contributor'] = 'dc:contributor';
+            $metadata['pdtb2:specVersion'] = 'PDTB2';
+            return $metadata;
+        }
+
+        return array();
     }
 
     public function contentIssuable($contentId)

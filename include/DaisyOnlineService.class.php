@@ -397,7 +397,10 @@ class DaisyOnlineService
         // fetch content for the requested list
         try
         {
-            $contentItems = $this->adapter->contentList($listId);
+            $contentFormat = $this->getClientSupportedContentFormats();
+            $protectionFormat = $this->getClientSupportedProtectionFormats();
+            $mimeType = $this->getClientSupportedMimeTypes();
+            $contentItems = $this->adapter->contentList($listId, $contentFormat, $protectionFormat, $mimeType);
         }
         catch (AdapterException $e)
         {
@@ -1348,13 +1351,64 @@ class DaisyOnlineService
 
     /**
      * Client function getClientSupportedContentFormats
-     * @return array of strings
+     * @return null or array of strings
      */
     private function getClientSupportedContentFormats()
     {
-        $contentFormat = $this->readingSystemAttributes->getConfig()->getSupportedContentFormats()->getContentFormat();
-        if (is_null($contentFormat)) return array();
+        if (is_null($this->readingSystemAttributes))
+            return null;
+
+        if (is_a($this->readingSystemAttributes, 'readingSystemAttributes') === false)
+            return null;
+
+        $contentFormat = $this->readingSystemAttributes->config->supportedContentFormats->contentFormat;
+        if (is_null($contentFormat))
+            return null;
+
         return $contentFormat;
+    }
+
+    /**
+     * Client function getClientSupportedProtectionFormats
+     * @return null or array of strings
+     */
+    private function getClientSupportedProtectionFormats()
+    {
+        if (is_null($this->readingSystemAttributes))
+            return null;
+
+        if (is_a($this->readingSystemAttributes, 'readingSystemAttributes') === false)
+            return null;
+
+        $protectionFormat = $this->readingSystemAttributes->config->supportedContentProtectionFormats->protectionFormat;
+        if (is_null($protectionFormat))
+            return null;
+
+        return $protectionFormat;
+    }
+
+    /**
+     * Client function getClientSupportedMimeTypes
+     * @return null or array of strings
+     */
+    private function getClientSupportedMimeTypes()
+    {
+        if (is_null($this->readingSystemAttributes))
+            return null;
+
+        if (is_a($this->readingSystemAttributes, 'readingSystemAttributes') === false)
+            return null;
+
+        $mimeType = $this->readingSystemAttributes->config->supportedMimeTypes->mimeType;
+
+        if (is_null($mimeType))
+            return null;
+
+        $mimeTypes = array();
+        foreach ($mimeType as $mimetype)
+            array_push($mimeTypes, $mimetype->type);
+
+        return $mimeTypes;
     }
 
     /**

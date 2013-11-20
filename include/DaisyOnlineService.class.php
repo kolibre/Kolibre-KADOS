@@ -496,7 +496,7 @@ class DaisyOnlineService
 
         if ($input->validate() === false)
         {
-            $msg = "request is not valid " . $output->getError();
+            $msg = "request is not valid " . $input->getError();
             $this->logger->warn($msg);
             throw new SoapFault('Client', $input->getError(), '', '', 'getContentMetadata_invalidParameterFault');
         }
@@ -536,7 +536,7 @@ class DaisyOnlineService
         {
             // set sample [optional]
             $sample = $this->adapter->contentSample($contentId);
-            if (is_string($sample)) $contentMetadata->setSample($sample);
+            if (is_string($sample)) $contentMetadata->setSample(new sample($sample));
 
             // set category [optional]
             $category = $this->adapter->contentCategory($contentId);

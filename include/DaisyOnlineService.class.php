@@ -430,7 +430,6 @@ class DaisyOnlineService
         $contentList->setTotalItems($totalItems);
 
         // generate content list
-        if ($lastItem == -1) $lastItem = $totalItems-1;
         if ($totalItems > 0)
         {
             if ($firstItem >= $totalItems || $lastItem >= $totalItems)
@@ -441,6 +440,7 @@ class DaisyOnlineService
             }
             else
             {
+                if ($lastItem == -1) $lastItem = $totalItems-1;
                 for ($i = $firstItem; $i <= $lastItem; $i++)
                 {
                     $contentId = $contentItems[$i];

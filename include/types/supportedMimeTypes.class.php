@@ -123,7 +123,7 @@ class supportedMimeTypes extends AbstractType {
             foreach ($this->mimeType as $index => $mimeType) {
                 if ($mimeType->validate() === false) {
                     $this->error = __CLASS__ . '.' . $mimeType->getError();
-                    $this->error = str_replace('mimeType', "mimeType[$index]");
+                    $this->error = str_replace('mimeType', "mimeType[$index]", $this->error);
                     return false;
                 }
             }

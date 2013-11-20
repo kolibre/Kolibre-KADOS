@@ -1115,7 +1115,7 @@ class metadata extends AbstractType {
             foreach ($this->meta as $index => $meta) {
                 if ($meta->validate() === false) {
                     $this->error = __CLASS__ . '.' . $meta->getError();
-                    $this->error = str_replace('meta', "meta[$index]");
+                    $this->error = str_replace('meta', "meta[$index]", $this->error);
                     return false;
                 }
             }

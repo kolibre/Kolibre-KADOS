@@ -268,7 +268,7 @@ class contentList extends AbstractType {
             foreach ($this->contentItem as $index => $contentItem) {
                 if ($contentItem->validate() === false) {
                     $this->error = __CLASS__ . '.' . $contentItem->getError();
-                    $this->error = str_replace('contentItem', "contentItem[$index]");
+                    $this->error = str_replace('contentItem', "contentItem[$index]", $this->error);
                     return false;
                 }
             }

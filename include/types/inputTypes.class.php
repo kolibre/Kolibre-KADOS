@@ -124,7 +124,7 @@ class inputTypes extends AbstractType {
         foreach ($this->input as $index => $input) {
             if ($input->validate() === false) {
                 $this->error = __CLASS__ . '.' . $input->getError();
-                $this->error = str_replace('input', "input[$index]");
+                $this->error = str_replace('input', "input[$index]", $this->error);
                 return false;
             }
         }

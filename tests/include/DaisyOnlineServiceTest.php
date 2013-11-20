@@ -78,6 +78,22 @@ class DaisyOnlineServiceTest extends PHPUnit_Framework_TestCase
         return true;
     }
 
+    private function callOperation($operation, $input, $fault)
+    {
+        $soapFault = false;
+        try
+        {
+            self::$instance->$operation($input);
+        }
+        catch (SoapFault $f)
+        {
+            $name = $operation .'_' . $fault;
+            if ($f->_name == $name)
+                $soapFault = true;
+        }
+        return $soapFault;
+    }
+
     /**
      * @group daisyonlineservice
      * @group operation
@@ -90,15 +106,8 @@ class DaisyOnlineServiceTest extends PHPUnit_Framework_TestCase
         $this->assertFalse($output->logOnResult);
 
         // adapter throws exception on authenticate
-        $SoapFault = false;
         $input = new logOn('exception', 'exception');
-        try {
-            $output = self::$instance->logOn($input);
-        } catch (SoapFault $f) {
-            if ($f->_name == 'logOn_internalServerErrorFault')
-                $SoapFault = true;
-        }
-        $this->assertTrue($SoapFault);
+        $this->assertTrue($this->callOperation('logOn', $input, 'internalServerErrorFault'));
 
         // adapter returns false on authenticate
         $input = new logOn('invalid', 'invalid');
@@ -190,15 +199,8 @@ class DaisyOnlineServiceTest extends PHPUnit_Framework_TestCase
     public function testSetReadingSystemAttributes()
     {
         // request is not valid
-        $SoapFault = false;
         $input = new setReadingSystemAttributes();
-        try {
-            $output = self::$instance->setReadingSystemAttributes($input);
-        } catch (SoapFault $f) {
-            if ($f->_name == 'setReadingSystemAttributes_invalidParameterFault')
-                $SoapFault = true;
-        }
-        $this->assertTrue($SoapFault);
+        $this->assertTrue($this->callOperation('setReadingSystemAttributes', $input, 'invalidParameterFault'));
 
         // build readingSystemAttributes object
         $supportsMultipleSelections = false;

@@ -543,7 +543,7 @@ class DemoAdapter extends Adapter
 
         try
         {
-            $query = 'SELECT requires_return, return_by FROM usercontent WHERE user_id = :userId AND content_id = :contentId';
+            $query = 'SELECT return, return_at FROM usercontent WHERE user_id = :userId AND content_id = :contentId';
             $sth = $this->dbh->prepare($query);
             $sth->execute(array(':userId' => $this->user, ':contentId' => $contentId));
             $row = $sth->fetch(PDO::FETCH_ASSOC);
@@ -560,9 +560,9 @@ class DemoAdapter extends Adapter
             return false;
         }
 
-        if ($row['requires_return'] == 0) return false;
+        if ($row['return'] == 0) return false;
 
-        $returnDate = $row['return_by'];
+        $returnDate = $row['return_at'];
         if ($this->isValidDate($returnDate) === false)
         {
             $timestamp = time() + $this->loanDuration;
@@ -573,7 +573,7 @@ class DemoAdapter extends Adapter
             {
                 try
                 {
-                    $query = 'UPDATE usercontent SET return_by = :datetime, is_returned = 0
+                    $query = 'UPDATE usercontent SET return_at = :datetime, returned = 0
                         WHERE user_id = :userId AND content_id = :contentId';
                     $sth = $this->dbh->prepare($query);
                     $values = array();
@@ -767,7 +767,7 @@ class DemoAdapter extends Adapter
 
         try
         {
-            $query = 'SELECT requires_return FROM usercontent WHERE user_id = :userId AND content_id = :contentId';
+            $query = 'SELECT return FROM usercontent WHERE user_id = :userId AND content_id = :contentId';
             $sth = $this->dbh->prepare($query);
             $sth->execute(array(':userId' => $this->user, ':contentId' => $contentId));
             $row = $sth->fetch(PDO::FETCH_ASSOC);
@@ -784,7 +784,7 @@ class DemoAdapter extends Adapter
             return false;
         }
 
-        if ($row['requires_return'] == 0) return false;
+        if ($row['return'] == 0) return false;
         return true;
     }
 
@@ -800,7 +800,7 @@ class DemoAdapter extends Adapter
         {
             try
             {
-                $query = 'UPDATE usercontent SET is_returned = 1, contentlist_id = :listId WHERE user_id = :userId AND content_id = :contentId';
+                $query = 'UPDATE usercontent SET returned = 1, contentlist_id = :listId WHERE user_id = :userId AND content_id = :contentId';
                 $sth = $this->dbh->prepare($query);
                 $values = array();
                 $values[':listId'] = $this->contentListId('returned');

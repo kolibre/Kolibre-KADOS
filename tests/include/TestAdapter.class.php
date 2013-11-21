@@ -252,10 +252,24 @@ class TestAdapter extends Adapter
 
     public function contentReturnable($contentId)
     {
+        if ($contentId == 'exception-content-returnable')
+            throw new AdapterException('Error in adapter');
+
+        if ($contentId == 'invalid-content-returnable')
+            return false;
+
+        return true;
     }
 
     public function contentReturn($contentId)
     {
+        if ($contentId == 'exception-content-return')
+            throw new AdapterException('Error in adapter');
+
+        if ($contentId == 'invalid-content-return')
+            return false;
+
+        return true;
     }
 }
 

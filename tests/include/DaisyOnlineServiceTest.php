@@ -535,7 +535,46 @@ class DaisyOnlineServiceTest extends PHPUnit_Framework_TestCase
      */
     public function testReturnContent()
     {
-        $this->assertTrue(true);
+        // request is not valid
+        $input = new returnContent();
+        $this->assertTrue($this->callOperation('returnContent', $input, 'invalidParameterFault'));
+
+        // adapter throws exception on contentExists
+        $input = new returnContent('exception-content-exists');
+        $this->assertTrue($this->callOperation('returnContent', $input, 'internalServerErrorFault'));
+
+        // adapter returns false on contentExists
+        $input = new returnContent('invalid-content-exists');
+        $this->assertTrue($this->callOperation('returnContent', $input, 'invalidParameterFault'));
+
+        // adapter throws exception on contentAccessible
+        $input = new returnContent('exception-content-accessible');
+        $this->assertTrue($this->callOperation('returnContent', $input, 'internalServerErrorFault'));
+
+        // adapter returns false on contentAccessible
+        $input = new returnContent('invalid-content-accessible');
+        $this->assertTrue($this->callOperation('returnContent', $input, 'invalidParameterFault'));
+
+        // adapter throws exception on contentReturnable
+        $input = new returnContent('exception-content-returnable');
+        $this->assertTrue($this->callOperation('returnContent', $input, 'internalServerErrorFault'));
+
+        // adapter returns false on contentReturnable
+        $input = new returnContent('invalid-content-returnable');
+        $this->assertTrue($this->callOperation('returnContent', $input, 'invalidParameterFault'));
+
+        // adapter throws exception on contentReturn
+        $input = new returnContent('exception-content-return');
+        $this->assertTrue($this->callOperation('returnContent', $input, 'internalServerErrorFault'));
+
+        // adapter returns false on contentReturn
+        $input = new returnContent('invalid-content-return');
+        $this->assertTrue($this->callOperation('returnContent', $input, 'internalServerErrorFault'));
+
+        // return successful
+        $input = new returnContent('valid-content-return');
+        $output = self::$instance->returnContent($input);
+        $this->assertTrue($output->returnContentResult);
     }
 }
 

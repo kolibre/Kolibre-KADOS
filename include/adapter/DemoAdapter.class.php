@@ -102,7 +102,8 @@ class DemoAdapter extends Adapter
 
         try
         {
-            $query = 'INSERT INTO userlog VALUES(:user_id, :datetime, :request, :response, :ip)';
+            $query = "INSERT INTO userlog ('user_id', 'datetime', 'request', 'response', 'ip')
+                VALUES(:user_id, :datetime, :request, :response, :ip)";
             $sth = $this->dbh->prepare($query);
             $values = array();
             $values[':user_id'] = $this->user;

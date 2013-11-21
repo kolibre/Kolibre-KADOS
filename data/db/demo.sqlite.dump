@@ -237,8 +237,8 @@ INSERT INTO "usercontent" VALUES (1,2,1,1,NULL,1,'0000-00-00 00:00:00');
 CREATE TABLE "userlog" (
   "user_id" INTEGER  NOT NULL,
   "datetime" datetime NOT NULL,
-  "request" text NOT NULL,
-  "response" text NOT NULL,
+  "request" TEXT NOT NULL,
+  "response" TEXT NOT NULL,
   "ip" TEXT NOT NULL DEFAULT '0.0.0.0'
 );
 END TRANSACTION;

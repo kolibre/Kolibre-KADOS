@@ -2,14 +2,14 @@ PRAGMA synchronous = OFF;
 PRAGMA journal_mode = MEMORY;
 BEGIN TRANSACTION;
 CREATE TABLE "category" (
-  "name" varchar(45) NOT NULL
+  "name" TEXT NOT NULL
 );
 INSERT INTO "category" VALUES ('BOOK');
 INSERT INTO "category" VALUES ('MAGAZINE');
 INSERT INTO "category" VALUES ('NEWSPAPER');
 INSERT INTO "category" VALUES ('OTHER');
 CREATE TABLE "daisyformat" (
-  "format" varchar(45) NOT NULL
+  "format" TEXT NOT NULL
 );
 INSERT INTO "daisyformat" VALUES ('Daisy 2.02');
 INSERT INTO "daisyformat" VALUES ('ANSI/NISO Z39.86-2005');
@@ -17,7 +17,7 @@ INSERT INTO "daisyformat" VALUES ('PDTB2');
 CREATE TABLE "content" (
   "category_id" int(10)  NOT NULL,
   "daisyformat_id" int(10)  NOT NULL,
-  "title" varchar(45) NOT NULL,
+  "title" TEXT NOT NULL,
   "date" datetime NOT NULL
 );
 INSERT INTO "content" VALUES (1,1,'A light Man','2009-06-22 00:00:00');
@@ -31,7 +31,7 @@ CREATE TABLE "contentaudio" (
 INSERT INTO "contentaudio" VALUES (1,37798,6315);
 INSERT INTO "contentaudio" VALUES (2,14020,5201);
 CREATE TABLE "contentlist" (
-  "name" varchar(45) NOT NULL
+  "name" TEXT NOT NULL
 );
 INSERT INTO "contentlist" VALUES ('new');
 INSERT INTO "contentlist" VALUES ('issued');
@@ -39,8 +39,8 @@ INSERT INTO "contentlist" VALUES ('expired');
 INSERT INTO "contentlist" VALUES ('returned');
 CREATE TABLE "contentmetadata" (
   "content_id" int(10)  NOT NULL ,
-  "key" varchar(255) NOT NULL,
-  "value" varchar(255) NOT NULL,
+  "key" TEXT NOT NULL,
+  "value" TEXT NOT NULL,
   PRIMARY KEY ("content_id","key")
 );
 INSERT INTO "contentmetadata" VALUES (1,'dc:creator','Henry James');
@@ -86,9 +86,9 @@ INSERT INTO "contentmetadata" VALUES (2,'dc:subject','A Short Manual for Disaste
 INSERT INTO "contentmetadata" VALUES (2,'dc:title','ARE YOU READY?');
 CREATE TABLE "contentresource" (
   "content_id" int(11)  NOT NULL DEFAULT '0',
-  "filename" varchar(255) NOT NULL DEFAULT '',
+  "filename" TEXT NOT NULL DEFAULT '',
   "bytes" int(11)  NOT NULL DEFAULT '0',
-  "mimetype" varchar(45) NOT NULL DEFAULT 'unknown',
+  "mimetype" TEXT NOT NULL DEFAULT 'unknown',
   PRIMARY KEY ("content_id","filename")
 );
 INSERT INTO "contentresource" VALUES (1,'01_A_light_Man.mp3',45531,'application/octet-stream');
@@ -217,8 +217,8 @@ INSERT INTO "contentresource" VALUES (2,'speechgen0034.smil',2480,'text/plain');
 INSERT INTO "contentresource" VALUES (2,'tpbnarrator.res',9458,'text/html');
 INSERT INTO "contentresource" VALUES (2,'tpbnarrator_res.mp3',117656,'application/octet-stream');
 CREATE TABLE "user" (
-  "username" varchar(45) NOT NULL,
-  "password" varchar(32) NOT NULL,
+  "username" TEXT NOT NULL,
+  "password" TEXT NOT NULL,
   "log" tinyint(1) NOT NULL DEFAULT '0'
 );
 INSERT INTO "user" VALUES ('kolibre','kolibre',1);
@@ -239,6 +239,6 @@ CREATE TABLE "userlog" (
   "datetime" datetime NOT NULL,
   "request" text NOT NULL,
   "response" text NOT NULL,
-  "ip" varchar(15) NOT NULL DEFAULT '0.0.0.0'
+  "ip" TEXT NOT NULL DEFAULT '0.0.0.0'
 );
 END TRANSACTION;

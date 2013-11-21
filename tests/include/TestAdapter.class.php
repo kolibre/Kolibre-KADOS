@@ -193,10 +193,24 @@ class TestAdapter extends Adapter
 
     public function contentIssuable($contentId)
     {
+        if ($contentId == 'exception-content-issuable')
+            throw new AdapterException('Error in adapter');
+
+        if ($contentId == 'invalid-content-issuable')
+            return false;
+
+        return true;
     }
 
     public function contentIssue($contentId)
     {
+        if ($contentId == 'exception-content-issue')
+            throw new AdapterException('Error in adapter');
+
+        if ($contentId == 'invalid-content-issue')
+            return false;
+
+        return true;
     }
 
     public function contentResources($contentId)

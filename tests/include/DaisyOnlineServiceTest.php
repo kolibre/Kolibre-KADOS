@@ -424,7 +424,47 @@ class DaisyOnlineServiceTest extends PHPUnit_Framework_TestCase
      */
     public function testIssueContent()
     {
-        $this->assertTrue(true);
+        // request is not valid
+        $input = new issueContent();
+        $this->assertTrue($this->callOperation('issueContent', $input, 'invalidParameterFault'));
+
+        // adapter throws exception on contentExists
+        $input = new issueContent('exception-content-exists');
+        $this->assertTrue($this->callOperation('issueContent', $input, 'internalServerErrorFault'));
+
+        // adapter returns false on contentExists
+        $input = new issueContent('invalid-content-exists');
+        $this->assertTrue($this->callOperation('issueContent', $input, 'invalidParameterFault'));
+
+        // adapter throws exception on contentAccessible
+        $input = new issueContent('exception-content-accessible');
+        $this->assertTrue($this->callOperation('issueContent', $input, 'internalServerErrorFault'));
+
+        // adapter returns false on contentAccessible
+        $input = new issueContent('invalid-content-accessible');
+        $this->assertTrue($this->callOperation('issueContent', $input, 'invalidParameterFault'));
+
+        // adapter throws exception on contentIssuable
+        $input = new issueContent('exception-content-issuable');
+        $this->assertTrue($this->callOperation('issueContent', $input, 'internalServerErrorFault'));
+
+        // adapter returns false on contentIssuable
+        $input = new issueContent('invalid-content-issuable');
+        $this->assertTrue($this->callOperation('issueContent', $input, 'invalidParameterFault'));
+
+        // adapter throws exception on contentIssue
+        $input = new issueContent('exception-content-issue');
+        $this->assertTrue($this->callOperation('issueContent', $input, 'internalServerErrorFault'));
+
+        // adapter return false on contentIssue
+        $input = new issueContent('invalid-content-issue');
+        $output = self::$instance->issueContent($input);
+        $this->assertFalse($output->issueContentResult);
+
+        // issue successful
+        $input = new issueContent('valid-content-issue');
+        $output = self::$instance->issueContent($input);
+        $this->assertTrue($output->issueContentResult);
     }
 
     /**

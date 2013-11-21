@@ -18,7 +18,7 @@ CREATE TABLE "content" (
   "category_id" INTEGER  NOT NULL,
   "daisyformat_id" INTEGER  NOT NULL,
   "title" TEXT NOT NULL,
-  "date" datetime NOT NULL
+  "date" NUMERIC NOT NULL
 );
 INSERT INTO "content" VALUES (1,1,'A light Man','2009-06-22 00:00:00');
 INSERT INTO "content" VALUES (1,2,'Are you ready?','2009-04-26 00:00:00');
@@ -227,16 +227,16 @@ CREATE TABLE "usercontent" (
   "content_id" INTEGER  NOT NULL,
   "contentlist_id" INTEGER  NOT NULL,
   "requires_return" INTEGER NOT NULL,
-  "return_by" datetime DEFAULT NULL,
+  "return_by" NUMERIC DEFAULT NULL,
   "is_returned" INTEGER NOT NULL DEFAULT '1',
-  "updated_at" timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  "updated_at" NUMERIC NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY ("user_id","content_id")
 );
 INSERT INTO "usercontent" VALUES (1,1,1,1,NULL,1,'0000-00-00 00:00:00');
 INSERT INTO "usercontent" VALUES (1,2,1,1,NULL,1,'0000-00-00 00:00:00');
 CREATE TABLE "userlog" (
   "user_id" INTEGER  NOT NULL,
-  "datetime" datetime NOT NULL,
+  "datetime" NUMERIC NOT NULL,
   "request" TEXT NOT NULL,
   "response" TEXT NOT NULL,
   "ip" TEXT NOT NULL DEFAULT '0.0.0.0'

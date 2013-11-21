@@ -236,28 +236,28 @@ class DemoAdapterTest extends PHPUnit_Framework_TestCase
         foreach (self::$adapter->contentResources(1) as $resource)
         {
             $this->assertArrayHasKey('uri', $resource);
-            $this->assertArrayHasKey('mimetype', $resource);
+            $this->assertArrayHasKey('mimeType', $resource);
             $this->assertArrayHasKey('size', $resource);
             $this->assertArrayHasKey('localURI', $resource);
         }
         foreach (self::$adapter->contentResources('con_1') as $resource)
         {
             $this->assertArrayHasKey('uri', $resource);
-            $this->assertArrayHasKey('mimetype', $resource);
+            $this->assertArrayHasKey('mimeType', $resource);
             $this->assertArrayHasKey('size', $resource);
             $this->assertArrayHasKey('localURI', $resource);
         }
         foreach (self::$adapter->contentResources(2) as $resource)
         {
             $this->assertArrayHasKey('uri', $resource);
-            $this->assertArrayHasKey('mimetype', $resource);
+            $this->assertArrayHasKey('mimeType', $resource);
             $this->assertArrayHasKey('size', $resource);
             $this->assertArrayHasKey('localURI', $resource);
         }
         foreach (self::$adapter->contentResources('con_2') as $resource)
         {
             $this->assertArrayHasKey('uri', $resource);
-            $this->assertArrayHasKey('mimetype', $resource);
+            $this->assertArrayHasKey('mimeType', $resource);
             $this->assertArrayHasKey('size', $resource);
             $this->assertArrayHasKey('localURI', $resource);
         }

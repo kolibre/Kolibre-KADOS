@@ -114,6 +114,14 @@ class TestAdapter extends Adapter
         return array();
     }
 
+    public function contentLastModifiedDate($contentId)
+    {
+        if ($contentId == 'exception-content-lastmodifieddate')
+            throw new AdapterException('Error in adapter');
+
+        return '1970-01-01T00:00:00';
+    }
+
     public function contentExists($contentId)
     {
         if ($contentId == 'exception-content-exists')
@@ -215,6 +223,31 @@ class TestAdapter extends Adapter
 
     public function contentResources($contentId)
     {
+        if ($contentId == 'exception-content-resources')
+            throw new AdapterException('Error in adapter');
+
+        if ($contentId == 'invalid-content-resources')
+        {
+            $resources = array(array('uri' => 'uri'));
+            return $resources;
+        }
+
+        if ($contentId == 'valid-content-resources')
+        {
+            $resources = array();
+            $resource = array();
+            $resource['uri'] = 'uri';
+            $resource['mimeType'] = 'mimeType';
+            $resource['size'] = 1;
+            $resource['localURI'] = 'localURI';
+            $resource['lastModifiedDate'] = '1970-01-01T00:00:00';
+            array_push($resources, $resource);
+            array_push($resources, $resource);
+            array_push($resources, $resource);
+            return $resources;
+        }
+
+        return array();
     }
 
     public function contentReturnable($contentId)

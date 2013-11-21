@@ -473,7 +473,60 @@ class DaisyOnlineServiceTest extends PHPUnit_Framework_TestCase
      */
     public function testGetContentResouces()
     {
-        $this->assertTrue(true);
+        // request is not valid
+        $input = new getContentResources();
+        $this->assertTrue($this->callOperation('getContentResources', $input, 'invalidParameterFault'));
+
+        // adapter throws exception on contentExists
+        $input = new getContentResources('exception-content-exists');
+        $this->assertTrue($this->callOperation('getContentResources', $input, 'internalServerErrorFault'));
+
+        // adapter returns false on contentExists
+        $input = new getContentResources('invalid-content-exists');
+        $this->assertTrue($this->callOperation('getContentResources', $input, 'invalidParameterFault'));
+
+        // adapter throws exception on contentAccessible
+        $input = new getContentResources('exception-content-accessible');
+        $this->assertTrue($this->callOperation('getContentResources', $input, 'internalServerErrorFault'));
+
+        // adapter returns false on contentAccessible
+        $input = new getContentResources('invalid-content-accessible');
+        $this->assertTrue($this->callOperation('getContentResources', $input, 'invalidParameterFault'));
+
+        // adapter throws exception on contentReturnDate
+        $input = new getContentResources('exception-content-returndate');
+        $this->assertTrue($this->callOperation('getContentResources', $input, 'internalServerErrorFault'));
+
+        // adapter throws exception on contentLastModifiedDate
+        $input = new getContentResources('exception-content-lastmodifieddate');
+        $this->assertTrue($this->callOperation('getContentResources', $input, 'internalServerErrorFault'));
+
+        // adapter throws exception on contentResources
+        $input = new getContentResources('exception-content-resources');
+        $this->assertTrue($this->callOperation('getContentResources', $input, 'internalServerErrorFault'));
+
+        // adapter returns empty resources
+        $input = new getContentResources('empty-content-resources');
+        $this->assertTrue($this->callOperation('getContentResources', $input, 'invalidOperationFault'));
+
+        // required elements missing from resources
+        $input = new getContentResources('invalid-content-resources');
+        $this->assertTrue($this->callOperation('getContentResources', $input, 'internalServerErrorFault'));
+
+        // resources contains required elements
+        $input = new getContentResources('valid-content-resources');
+        $output = self::$instance->getContentResources($input);
+        $this->assertEquals($output->resources->returnBy, '1970-01-01T00:00:00');
+        $this->assertEquals($output->resources->lastModifiedDate, '1970-01-01T00:00:00');
+        $this->assertCount(3, $output->resources->resource);
+        foreach ($output->resources->resource as $resource)
+        {
+            $this->assertEquals($resource->uri, 'uri');
+            $this->assertEquals($resource->mimeType, 'mimeType');
+            $this->assertEquals($resource->size, 1);
+            $this->assertEquals($resource->localURI, 'localURI');
+            $this->assertEquals($resource->lastModifiedDate, '1970-01-01T00:00:00');
+        }
     }
 
     /**

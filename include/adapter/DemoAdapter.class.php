@@ -180,7 +180,7 @@ class DemoAdapter extends Adapter
 
         try
         {
-            $query = 'SELECT size FROM contentaudio WHERE rowid = :contentId';
+            $query = 'SELECT size FROM contentaudio WHERE id = :contentId';
             $sth = $this->dbh->prepare($query);
             $sth->execute(array(':contentId' => $contentId));
             $row = $sth->fetch(PDO::FETCH_ASSOC);
@@ -207,7 +207,7 @@ class DemoAdapter extends Adapter
 
         try
         {
-            $query = 'SELECT title FROM content WHERE rowid = :contentId';
+            $query = 'SELECT title FROM content WHERE id = :contentId';
             $sth = $this->dbh->prepare($query);
             $sth->execute(array(':contentId' => $contentId));
             $row = $sth->fetch(PDO::FETCH_ASSOC);
@@ -277,7 +277,7 @@ class DemoAdapter extends Adapter
     {
         try
         {
-            $query = 'SELECT rowid, * FROM user WHERE username = :username AND password = :password';
+            $query = 'SELECT * FROM user WHERE username = :username AND password = :password';
             $sth = $this->dbh->prepare($query);
             $values = array(':username' => $username, ':password' => $password);
             $sth->execute($values);
@@ -303,7 +303,7 @@ class DemoAdapter extends Adapter
             return false;
         }
 
-        $this->user = $users[0]['rowid'];
+        $this->user = $users[0]['id'];
         if ($users[0]['log'] == 1)
             $this->userLoggingEnabled = true;
 
@@ -334,7 +334,7 @@ class DemoAdapter extends Adapter
     {
         try
         {
-            $query = 'SELECT rowid FROM contentlist WHERE name = :name';
+            $query = 'SELECT id FROM contentlist WHERE name = :name';
             $sth = $this->dbh->prepare($query);
             $sth->execute(array(':name' => $list));
             $row = $sth->fetch(PDO::FETCH_ASSOC);
@@ -351,14 +351,14 @@ class DemoAdapter extends Adapter
             return -1;
         }
 
-        return $row['rowid'];
+        return $row['id'];
     }
 
     public function supportedContentFormats()
     {
         try
         {
-            $query = 'SELECT rowid, * FROM daisyformat';
+            $query = 'SELECT * FROM daisyformat';
             $sth = $this->dbh->prepare($query);
             $sth->execute();
             $formats = $sth->fetchAll(PDO::FETCH_ASSOC);
@@ -371,7 +371,7 @@ class DemoAdapter extends Adapter
 
         $contentFormats = array();
         foreach ($formats as $format)
-            $contentFormats[$format['format']] = $format['rowid'];
+            $contentFormats[$format['format']] = $format['id'];
 
         return $contentFormats;
     }
@@ -383,7 +383,7 @@ class DemoAdapter extends Adapter
 
         try
         {
-            $query = 'SELECT daisyformat_id FROM content WHERE rowid = :contentId';
+            $query = 'SELECT daisyformat_id FROM content WHERE id = :contentId';
             $sth = $this->dbh->prepare($query);
             $sth->execute(array(':contentId' => $contentId));
             $row = $sth->fetch(PDO::FETCH_ASSOC);
@@ -409,7 +409,7 @@ class DemoAdapter extends Adapter
 
         try
         {
-            $query = 'SELECT rowid, * FROM usercontent WHERE user_id = :userId AND contentlist_id = :listId ORDER BY updated_at DESC';
+            $query = 'SELECT * FROM usercontent WHERE user_id = :userId AND contentlist_id = :listId ORDER BY updated_at DESC';
             $sth = $this->dbh->prepare($query);
             $sth->execute(array(':userId' => $this->user, ':listId' => $listId));
             $content = $sth->fetchAll(PDO::FETCH_ASSOC);
@@ -431,7 +431,7 @@ class DemoAdapter extends Adapter
         $contentList = array();
         foreach ($content as $item)
         {
-            $contentId = "con_" . $item['rowid'];
+            $contentId = "con_" . $item['id'];
 
             // filter content based on DAISY format
             if (is_null($contentFormats) === false && is_array($contentFormats))
@@ -460,7 +460,7 @@ class DemoAdapter extends Adapter
 
         try
         {
-            $query = 'SELECT rowid FROM content WHERE rowid = :contentId';
+            $query = 'SELECT id FROM content WHERE id = :contentId';
             $sth = $this->dbh->prepare($query);
             $sth->execute(array(':contentId' => $contentId));
             $row = $sth->fetch(PDO::FETCH_ASSOC);
@@ -482,7 +482,7 @@ class DemoAdapter extends Adapter
 
         try
         {
-            $query = 'SELECT rowid FROM usercontent WHERE user_id = :userId AND content_id = :contentId';
+            $query = 'SELECT id FROM usercontent WHERE user_id = :userId AND content_id = :contentId';
             $sth = $this->dbh->prepare($query);
             $sth->execute(array(':userId' => $this->user, ':contentId' => $contentId));
             $row = $sth->fetch(PDO::FETCH_ASSOC);
@@ -505,8 +505,8 @@ class DemoAdapter extends Adapter
         try
         {
             $query = 'SELECT category.name FROM content
-                JOIN category ON content.category_id = category.rowid
-                WHERE content.rowid = :contentId';
+                JOIN category ON content.category_id = category.id
+                WHERE content.id = :contentId';
             $sth = $this->dbh->prepare($query);
             $sth->execute(array(':contentId' => $contentId));
             $row = $sth->fetch(PDO::FETCH_ASSOC);
@@ -647,7 +647,7 @@ class DemoAdapter extends Adapter
         try
         {
             $query = 'SELECT contentlist.name FROM usercontent
-                JOIN contentlist ON usercontent.contentlist_id = contentlist.rowid
+                JOIN contentlist ON usercontent.contentlist_id = contentlist.id
                 WHERE user_id = :userId AND content_id = :contentId AND contentlist.name = :list';
             $sth = $this->dbh->prepare($query);
             $sth->execute(array(':userId' => $this->user, ':contentId' => $contentId, ':list' => $list));

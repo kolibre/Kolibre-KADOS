@@ -1,228 +1,240 @@
 PRAGMA synchronous = OFF;
 PRAGMA journal_mode = MEMORY;
+PRAGMA foreign_keys = OFF;
 BEGIN TRANSACTION;
 CREATE TABLE "category" (
+  "id" INTEGER PRIMARY KEY AUTOINCREMENT,
   "name" TEXT NOT NULL
 );
-INSERT INTO "category" VALUES ('BOOK');
-INSERT INTO "category" VALUES ('MAGAZINE');
-INSERT INTO "category" VALUES ('NEWSPAPER');
-INSERT INTO "category" VALUES ('OTHER');
+INSERT INTO "category" VALUES (1, 'BOOK');
+INSERT INTO "category" VALUES (2, 'MAGAZINE');
+INSERT INTO "category" VALUES (3, 'NEWSPAPER');
+INSERT INTO "category" VALUES (4, 'OTHER');
 CREATE TABLE "daisyformat" (
+  "id" INTEGER PRIMARY KEY AUTOINCREMENT,
   "format" TEXT NOT NULL
 );
-INSERT INTO "daisyformat" VALUES ('Daisy 2.02');
-INSERT INTO "daisyformat" VALUES ('ANSI/NISO Z39.86-2005');
-INSERT INTO "daisyformat" VALUES ('PDTB2');
+INSERT INTO "daisyformat" VALUES (1, 'Daisy 2.02');
+INSERT INTO "daisyformat" VALUES (2, 'ANSI/NISO Z39.86-2005');
+INSERT INTO "daisyformat" VALUES (3, 'PDTB2');
 CREATE TABLE "content" (
+  "id" INTEGER PRIMARY KEY AUTOINCREMENT,
   "category_id" INTEGER  NOT NULL,
   "daisyformat_id" INTEGER  NOT NULL,
   "title" TEXT NOT NULL,
-  "date" NUMERIC NOT NULL
+  "date" NUMERIC NOT NULL,
+  FOREIGN KEY("category_id") REFERENCES "category"("id") ON DELETE SET NULL ON UPDATE SET NULL,
+  FOREIGN KEY("daisyformat_id") REFERENCES "daisyformat"("id") ON DELETE SET NULL ON UPDATE SET NULL
 );
-INSERT INTO "content" VALUES (1,1,'A light Man','2009-06-22 00:00:00');
-INSERT INTO "content" VALUES (1,2,'Are you ready?','2009-04-26 00:00:00');
+INSERT INTO "content" VALUES (1,1,1,'A light Man','2009-06-22 00:00:00');
+INSERT INTO "content" VALUES (2,1,2,'Are you ready?','2009-04-26 00:00:00');
 CREATE TABLE "contentaudio" (
+  "id" INTEGER PRIMARY KEY AUTOINCREMENT,
   "content_id" INTEGER  NOT NULL,
   "size" INTEGER  NOT NULL,
   "length" INTEGER  NOT NULL,
-  PRIMARY KEY ("content_id")
+  FOREIGN KEY("content_id") REFERENCES "content"("id") ON DELETE SET NULL ON UPDATE SET NULL
 );
-INSERT INTO "contentaudio" VALUES (1,37798,6315);
-INSERT INTO "contentaudio" VALUES (2,14020,5201);
+INSERT INTO "contentaudio" VALUES (1,1,37798,6315);
+INSERT INTO "contentaudio" VALUES (2,2,14020,5201);
 CREATE TABLE "contentlist" (
+  "id" INTEGER PRIMARY KEY AUTOINCREMENT,
   "name" TEXT NOT NULL
 );
-INSERT INTO "contentlist" VALUES ('new');
-INSERT INTO "contentlist" VALUES ('issued');
-INSERT INTO "contentlist" VALUES ('expired');
-INSERT INTO "contentlist" VALUES ('returned');
+INSERT INTO "contentlist" VALUES (1,'new');
+INSERT INTO "contentlist" VALUES (2,'issued');
+INSERT INTO "contentlist" VALUES (3,'expired');
+INSERT INTO "contentlist" VALUES (4,'returned');
 CREATE TABLE "contentmetadata" (
+  "id" INTEGER PRIMARY KEY AUTOINCREMENT,
   "content_id" INTEGER  NOT NULL ,
   "key" TEXT NOT NULL,
   "value" TEXT NOT NULL,
-  PRIMARY KEY ("content_id","key")
+  FOREIGN KEY("content_id") REFERENCES "content"("id") ON DELETE SET NULL ON UPDATE SET NULL
 );
-INSERT INTO "contentmetadata" VALUES (1,'dc:creator','Henry James');
-INSERT INTO "contentmetadata" VALUES (1,'dc:date','2009-06-22');
-INSERT INTO "contentmetadata" VALUES (1,'dc:format','Daisy 2.02');
-INSERT INTO "contentmetadata" VALUES (1,'dc:identifier','Unknown');
-INSERT INTO "contentmetadata" VALUES (1,'dc:language','en');
-INSERT INTO "contentmetadata" VALUES (1,'dc:publisher','DC');
-INSERT INTO "contentmetadata" VALUES (1,'dc:source','The galaxy vol. 8 no. 1 (July 1869),   pages 49-68');
-INSERT INTO "contentmetadata" VALUES (1,'dc:subject','Relationships, betrayal');
-INSERT INTO "contentmetadata" VALUES (1,'dc:title','A light Man');
-INSERT INTO "contentmetadata" VALUES (1,'ncc:charset','utf-8');
-INSERT INTO "contentmetadata" VALUES (1,'ncc:depth','1');
-INSERT INTO "contentmetadata" VALUES (1,'ncc:files','36');
-INSERT INTO "contentmetadata" VALUES (1,'ncc:footnotes','0');
-INSERT INTO "contentmetadata" VALUES (1,'ncc:generator','EasePublisher 2.13 Build 163 # 044FS2212172434');
-INSERT INTO "contentmetadata" VALUES (1,'ncc:kbytesize','35930');
-INSERT INTO "contentmetadata" VALUES (1,'ncc:maxpagenormal','26');
-INSERT INTO "contentmetadata" VALUES (1,'ncc:multimediatype','audioNcc');
-INSERT INTO "contentmetadata" VALUES (1,'ncc:narrator','OM');
-INSERT INTO "contentmetadata" VALUES (1,'ncc:pagefront','0');
-INSERT INTO "contentmetadata" VALUES (1,'ncc:pagenormal','26');
-INSERT INTO "contentmetadata" VALUES (1,'ncc:pagespecial','0');
-INSERT INTO "contentmetadata" VALUES (1,'ncc:prodnotes','0');
-INSERT INTO "contentmetadata" VALUES (1,'ncc:setinfo','1 of 1');
-INSERT INTO "contentmetadata" VALUES (1,'ncc:sidebars','0');
-INSERT INTO "contentmetadata" VALUES (1,'ncc:sourcedate','2009-07-18');
-INSERT INTO "contentmetadata" VALUES (1,'ncc:sourceedition','1.');
-INSERT INTO "contentmetadata" VALUES (1,'ncc:sourcepublisher','The galaxy vol. 8 no. 1 (July 1869),   pages 49-68');
-INSERT INTO "contentmetadata" VALUES (1,'ncc:sourcerights','Gutenberg project');
-INSERT INTO "contentmetadata" VALUES (1,'ncc:sourcetitle','A light man');
-INSERT INTO "contentmetadata" VALUES (1,'ncc:tocitems','43');
-INSERT INTO "contentmetadata" VALUES (1,'ncc:totaltime','01:27:15');
-INSERT INTO "contentmetadata" VALUES (1,'prod:ep_update','');
-INSERT INTO "contentmetadata" VALUES (1,'prod:last_used_id','');
-INSERT INTO "contentmetadata" VALUES (2,'dc:creator','WikiHow');
-INSERT INTO "contentmetadata" VALUES (2,'dc:date','2009-04-26');
-INSERT INTO "contentmetadata" VALUES (2,'dc:format','ANSI/NIZO Z39.86-2005');
-INSERT INTO "contentmetadata" VALUES (2,'dc:identifier','5078727220897727718');
-INSERT INTO "contentmetadata" VALUES (2,'dc:language','en-IN');
-INSERT INTO "contentmetadata" VALUES (2,'dc:publisher','DAISY India');
-INSERT INTO "contentmetadata" VALUES (2,'dc:subject','A Short Manual for Disaster Management');
-INSERT INTO "contentmetadata" VALUES (2,'dc:title','ARE YOU READY?');
+INSERT INTO "contentmetadata" VALUES (1,1,'dc:creator','Henry James');
+INSERT INTO "contentmetadata" VALUES (2,1,'dc:date','2009-06-22');
+INSERT INTO "contentmetadata" VALUES (3,1,'dc:format','Daisy 2.02');
+INSERT INTO "contentmetadata" VALUES (4,1,'dc:identifier','Unknown');
+INSERT INTO "contentmetadata" VALUES (5,1,'dc:language','en');
+INSERT INTO "contentmetadata" VALUES (6,1,'dc:publisher','DC');
+INSERT INTO "contentmetadata" VALUES (7,1,'dc:source','The galaxy vol. 8 no. 1 (July 1869),   pages 49-68');
+INSERT INTO "contentmetadata" VALUES (8,1,'dc:subject','Relationships, betrayal');
+INSERT INTO "contentmetadata" VALUES (9,1,'dc:title','A light Man');
+INSERT INTO "contentmetadata" VALUES (10,1,'ncc:charset','utf-8');
+INSERT INTO "contentmetadata" VALUES (11,1,'ncc:depth','1');
+INSERT INTO "contentmetadata" VALUES (12,1,'ncc:files','36');
+INSERT INTO "contentmetadata" VALUES (13,1,'ncc:footnotes','0');
+INSERT INTO "contentmetadata" VALUES (14,1,'ncc:generator','EasePublisher 2.13 Build 163 # 044FS2212172434');
+INSERT INTO "contentmetadata" VALUES (15,1,'ncc:kbytesize','35930');
+INSERT INTO "contentmetadata" VALUES (16,1,'ncc:maxpagenormal','26');
+INSERT INTO "contentmetadata" VALUES (17,1,'ncc:multimediatype','audioNcc');
+INSERT INTO "contentmetadata" VALUES (18,1,'ncc:narrator','OM');
+INSERT INTO "contentmetadata" VALUES (19,1,'ncc:pagefront','0');
+INSERT INTO "contentmetadata" VALUES (20,1,'ncc:pagenormal','26');
+INSERT INTO "contentmetadata" VALUES (21,1,'ncc:pagespecial','0');
+INSERT INTO "contentmetadata" VALUES (22,1,'ncc:prodnotes','0');
+INSERT INTO "contentmetadata" VALUES (23,1,'ncc:setinfo','1 of 1');
+INSERT INTO "contentmetadata" VALUES (24,1,'ncc:sidebars','0');
+INSERT INTO "contentmetadata" VALUES (25,1,'ncc:sourcedate','2009-07-18');
+INSERT INTO "contentmetadata" VALUES (26,1,'ncc:sourceedition','1.');
+INSERT INTO "contentmetadata" VALUES (27,1,'ncc:sourcepublisher','The galaxy vol. 8 no. 1 (July 1869),   pages 49-68');
+INSERT INTO "contentmetadata" VALUES (28,1,'ncc:sourcerights','Gutenberg project');
+INSERT INTO "contentmetadata" VALUES (29,1,'ncc:sourcetitle','A light man');
+INSERT INTO "contentmetadata" VALUES (30,1,'ncc:tocitems','43');
+INSERT INTO "contentmetadata" VALUES (31,1,'ncc:totaltime','01:27:15');
+INSERT INTO "contentmetadata" VALUES (32,1,'prod:ep_update','');
+INSERT INTO "contentmetadata" VALUES (33,1,'prod:last_used_id','');
+INSERT INTO "contentmetadata" VALUES (34,2,'dc:creator','WikiHow');
+INSERT INTO "contentmetadata" VALUES (35,2,'dc:date','2009-04-26');
+INSERT INTO "contentmetadata" VALUES (36,2,'dc:format','ANSI/NIZO Z39.86-2005');
+INSERT INTO "contentmetadata" VALUES (37,2,'dc:identifier','5078727220897727718');
+INSERT INTO "contentmetadata" VALUES (38,2,'dc:language','en-IN');
+INSERT INTO "contentmetadata" VALUES (39,2,'dc:publisher','DAISY India');
+INSERT INTO "contentmetadata" VALUES (40,2,'dc:subject','A Short Manual for Disaster Management');
+INSERT INTO "contentmetadata" VALUES (41,2,'dc:title','ARE YOU READY?');
 CREATE TABLE "contentresource" (
+  "id" INTEGER PRIMARY KEY AUTOINCREMENT,
   "content_id" INTEGER  NOT NULL DEFAULT '0',
   "filename" TEXT NOT NULL DEFAULT '',
   "bytes" INTEGER  NOT NULL DEFAULT '0',
   "mimetype" TEXT NOT NULL DEFAULT 'unknown',
-  PRIMARY KEY ("content_id","filename")
+  FOREIGN KEY("content_id") REFERENCES "content"("id") ON DELETE SET NULL ON UPDATE SET NULL
 );
-INSERT INTO "contentresource" VALUES (1,'01_A_light_Man.mp3',45531,'application/octet-stream');
-INSERT INTO "contentresource" VALUES (1,'02_Epigraph.mp3',176822,'application/octet-stream');
-INSERT INTO "contentresource" VALUES (1,'03_April_4th_1857.mp3',1540205,'application/octet-stream');
-INSERT INTO "contentresource" VALUES (1,'04_7th_.mp3',1204845,'application/octet-stream');
-INSERT INTO "contentresource" VALUES (1,'05_D_the_14th_.mp3',8934948,'application/octet-stream');
-INSERT INTO "contentresource" VALUES (1,'06_19th_.mp3',2863908,'application/octet-stream');
-INSERT INTO "contentresource" VALUES (1,'07_22d_.mp3',4464640,'application/octet-stream');
-INSERT INTO "contentresource" VALUES (1,'08_26th_.mp3',1939748,'application/octet-stream');
-INSERT INTO "contentresource" VALUES (1,'09_May_3d_.mp3',1940662,'application/octet-stream');
-INSERT INTO "contentresource" VALUES (1,'10_8th_.mp3',2005028,'application/octet-stream');
-INSERT INTO "contentresource" VALUES (1,'11_13th_.mp3',741302,'application/octet-stream');
-INSERT INTO "contentresource" VALUES (1,'12_18th_.mp3',691565,'application/octet-stream');
-INSERT INTO "contentresource" VALUES (1,'13_20th_.mp3',2834468,'application/octet-stream');
-INSERT INTO "contentresource" VALUES (1,'14_21st_.mp3',1639497,'application/octet-stream');
-INSERT INTO "contentresource" VALUES (1,'15_22d_.mp3',451657,'application/octet-stream');
-INSERT INTO "contentresource" VALUES (1,'16_23d_.mp3',4836205,'application/octet-stream');
-INSERT INTO "contentresource" VALUES (1,'17_24th_.mp3',348342,'application/octet-stream');
-INSERT INTO "contentresource" VALUES (1,'er_book_info.xml',1108,'text/plain');
-INSERT INTO "contentresource" VALUES (1,'icth0001.smil',1086,'text/plain');
-INSERT INTO "contentresource" VALUES (1,'icth0002.smil',2128,'text/plain');
-INSERT INTO "contentresource" VALUES (1,'icth0003.smil',6888,'text/plain');
-INSERT INTO "contentresource" VALUES (1,'icth0004.smil',4667,'text/plain');
-INSERT INTO "contentresource" VALUES (1,'icth0005.smil',27641,'text/plain');
-INSERT INTO "contentresource" VALUES (1,'icth0006.smil',10464,'text/plain');
-INSERT INTO "contentresource" VALUES (1,'icth0007.smil',12533,'text/plain');
-INSERT INTO "contentresource" VALUES (1,'icth0008.smil',6417,'text/plain');
-INSERT INTO "contentresource" VALUES (1,'icth0009.smil',6967,'text/plain');
-INSERT INTO "contentresource" VALUES (1,'icth000a.smil',6154,'text/plain');
-INSERT INTO "contentresource" VALUES (1,'icth000b.smil',2248,'text/plain');
-INSERT INTO "contentresource" VALUES (1,'icth000c.smil',2417,'text/plain');
-INSERT INTO "contentresource" VALUES (1,'icth000d.smil',7990,'text/plain');
-INSERT INTO "contentresource" VALUES (1,'icth000e.smil',5311,'text/plain');
-INSERT INTO "contentresource" VALUES (1,'icth000f.smil',2517,'text/plain');
-INSERT INTO "contentresource" VALUES (1,'icth0010.smil',17455,'text/plain');
-INSERT INTO "contentresource" VALUES (1,'icth0011.smil',2217,'text/plain');
-INSERT INTO "contentresource" VALUES (1,'master.smil',1866,'text/plain');
-INSERT INTO "contentresource" VALUES (1,'ncc.html',5759,'text/html');
-INSERT INTO "contentresource" VALUES (1,'smil10.dtd',7496,'text/html');
-INSERT INTO "contentresource" VALUES (1,'xhtml-lat1.ent',11789,'text/html');
-INSERT INTO "contentresource" VALUES (1,'xhtml-special.ent',4144,'text/html');
-INSERT INTO "contentresource" VALUES (1,'xhtml-symbol.ent',14127,'text/html');
-INSERT INTO "contentresource" VALUES (1,'xhtml1-transitional.dtd',33441,'text/html');
-INSERT INTO "contentresource" VALUES (2,'AreYouReadyV3.xml',89235,'text/plain');
-INSERT INTO "contentresource" VALUES (2,'dtbookbasic.css',12801,'text/x-c');
-INSERT INTO "contentresource" VALUES (2,'image1.jpg',6168,'image/jpeg');
-INSERT INTO "contentresource" VALUES (2,'image11.jpg',5586,'image/jpeg');
-INSERT INTO "contentresource" VALUES (2,'image12.jpg',4826,'image/jpeg');
-INSERT INTO "contentresource" VALUES (2,'image13.jpg',12586,'image/jpeg');
-INSERT INTO "contentresource" VALUES (2,'image14.jpg',17587,'image/jpeg');
-INSERT INTO "contentresource" VALUES (2,'image2.jpg',8577,'image/jpeg');
-INSERT INTO "contentresource" VALUES (2,'image3.jpg',5981,'image/jpeg');
-INSERT INTO "contentresource" VALUES (2,'image4.jpg',4720,'image/jpeg');
-INSERT INTO "contentresource" VALUES (2,'image5.jpg',6589,'image/jpeg');
-INSERT INTO "contentresource" VALUES (2,'speechgen.ncx',18280,'text/plain');
-INSERT INTO "contentresource" VALUES (2,'speechgen.opf',8897,'text/plain');
-INSERT INTO "contentresource" VALUES (2,'speechgen0001.mp3',32757,'application/octet-stream');
-INSERT INTO "contentresource" VALUES (2,'speechgen0001.smil',882,'text/plain');
-INSERT INTO "contentresource" VALUES (2,'speechgen0002.mp3',215823,'application/octet-stream');
-INSERT INTO "contentresource" VALUES (2,'speechgen0002.smil',2716,'text/plain');
-INSERT INTO "contentresource" VALUES (2,'speechgen0003.mp3',285257,'application/octet-stream');
-INSERT INTO "contentresource" VALUES (2,'speechgen0003.smil',5457,'text/plain');
-INSERT INTO "contentresource" VALUES (2,'speechgen0004.mp3',228832,'application/octet-stream');
-INSERT INTO "contentresource" VALUES (2,'speechgen0004.smil',1477,'text/plain');
-INSERT INTO "contentresource" VALUES (2,'speechgen0005.mp3',1865456,'application/octet-stream');
-INSERT INTO "contentresource" VALUES (2,'speechgen0005.smil',10463,'text/plain');
-INSERT INTO "contentresource" VALUES (2,'speechgen0006.mp3',735399,'application/octet-stream');
-INSERT INTO "contentresource" VALUES (2,'speechgen0006.smil',4470,'text/plain');
-INSERT INTO "contentresource" VALUES (2,'speechgen0007.mp3',105482,'application/octet-stream');
-INSERT INTO "contentresource" VALUES (2,'speechgen0007.smil',1438,'text/plain');
-INSERT INTO "contentresource" VALUES (2,'speechgen0008.mp3',95294,'application/octet-stream');
-INSERT INTO "contentresource" VALUES (2,'speechgen0008.smil',1491,'text/plain');
-INSERT INTO "contentresource" VALUES (2,'speechgen0009.mp3',794801,'application/octet-stream');
-INSERT INTO "contentresource" VALUES (2,'speechgen0009.smil',7443,'text/plain');
-INSERT INTO "contentresource" VALUES (2,'speechgen0010.mp3',258299,'application/octet-stream');
-INSERT INTO "contentresource" VALUES (2,'speechgen0010.smil',2873,'text/plain');
-INSERT INTO "contentresource" VALUES (2,'speechgen0011.mp3',249835,'application/octet-stream');
-INSERT INTO "contentresource" VALUES (2,'speechgen0011.smil',2192,'text/plain');
-INSERT INTO "contentresource" VALUES (2,'speechgen0012.mp3',225071,'application/octet-stream');
-INSERT INTO "contentresource" VALUES (2,'speechgen0012.smil',2285,'text/plain');
-INSERT INTO "contentresource" VALUES (2,'speechgen0013.mp3',1677374,'application/octet-stream');
-INSERT INTO "contentresource" VALUES (2,'speechgen0013.smil',11510,'text/plain');
-INSERT INTO "contentresource" VALUES (2,'speechgen0014.mp3',372872,'application/octet-stream');
-INSERT INTO "contentresource" VALUES (2,'speechgen0014.smil',2480,'text/plain');
-INSERT INTO "contentresource" VALUES (2,'speechgen0015.mp3',439327,'application/octet-stream');
-INSERT INTO "contentresource" VALUES (2,'speechgen0015.smil',3243,'text/plain');
-INSERT INTO "contentresource" VALUES (2,'speechgen0016.mp3',121469,'application/octet-stream');
-INSERT INTO "contentresource" VALUES (2,'speechgen0016.smil',1691,'text/plain');
-INSERT INTO "contentresource" VALUES (2,'speechgen0017.mp3',2289110,'application/octet-stream');
-INSERT INTO "contentresource" VALUES (2,'speechgen0017.smil',17070,'text/plain');
-INSERT INTO "contentresource" VALUES (2,'speechgen0018.mp3',1220493,'application/octet-stream');
-INSERT INTO "contentresource" VALUES (2,'speechgen0018.smil',9825,'text/plain');
-INSERT INTO "contentresource" VALUES (2,'speechgen0019.mp3',181185,'application/octet-stream');
-INSERT INTO "contentresource" VALUES (2,'speechgen0019.smil',1640,'text/plain');
-INSERT INTO "contentresource" VALUES (2,'speechgen0020.mp3',1113756,'application/octet-stream');
-INSERT INTO "contentresource" VALUES (2,'speechgen0020.smil',7023,'text/plain');
-INSERT INTO "contentresource" VALUES (2,'speechgen0021.mp3',446694,'application/octet-stream');
-INSERT INTO "contentresource" VALUES (2,'speechgen0021.smil',3453,'text/plain');
-INSERT INTO "contentresource" VALUES (2,'speechgen0022.mp3',191216,'application/octet-stream');
-INSERT INTO "contentresource" VALUES (2,'speechgen0022.smil',1492,'text/plain');
-INSERT INTO "contentresource" VALUES (2,'speechgen0023.mp3',1083977,'application/octet-stream');
-INSERT INTO "contentresource" VALUES (2,'speechgen0023.smil',6373,'text/plain');
-INSERT INTO "contentresource" VALUES (2,'speechgen0024.mp3',354690,'application/octet-stream');
-INSERT INTO "contentresource" VALUES (2,'speechgen0024.smil',2690,'text/plain');
-INSERT INTO "contentresource" VALUES (2,'speechgen0025.mp3',193410,'application/octet-stream');
-INSERT INTO "contentresource" VALUES (2,'speechgen0025.smil',1835,'text/plain');
-INSERT INTO "contentresource" VALUES (2,'speechgen0026.mp3',112222,'application/octet-stream');
-INSERT INTO "contentresource" VALUES (2,'speechgen0026.smil',1493,'text/plain');
-INSERT INTO "contentresource" VALUES (2,'speechgen0027.mp3',605466,'application/octet-stream');
-INSERT INTO "contentresource" VALUES (2,'speechgen0027.smil',4580,'text/plain');
-INSERT INTO "contentresource" VALUES (2,'speechgen0028.mp3',136516,'application/octet-stream');
-INSERT INTO "contentresource" VALUES (2,'speechgen0028.smil',1430,'text/plain');
-INSERT INTO "contentresource" VALUES (2,'speechgen0029.mp3',92943,'application/octet-stream');
-INSERT INTO "contentresource" VALUES (2,'speechgen0029.smil',1439,'text/plain');
-INSERT INTO "contentresource" VALUES (2,'speechgen0030.mp3',112535,'application/octet-stream');
-INSERT INTO "contentresource" VALUES (2,'speechgen0030.smil',1493,'text/plain');
-INSERT INTO "contentresource" VALUES (2,'speechgen0031.mp3',1319863,'application/octet-stream');
-INSERT INTO "contentresource" VALUES (2,'speechgen0031.smil',10153,'text/plain');
-INSERT INTO "contentresource" VALUES (2,'speechgen0032.mp3',584150,'application/octet-stream');
-INSERT INTO "contentresource" VALUES (2,'speechgen0032.smil',5658,'text/plain');
-INSERT INTO "contentresource" VALUES (2,'speechgen0033.mp3',256104,'application/octet-stream');
-INSERT INTO "contentresource" VALUES (2,'speechgen0033.smil',1850,'text/plain');
-INSERT INTO "contentresource" VALUES (2,'speechgen0034.mp3',284630,'application/octet-stream');
-INSERT INTO "contentresource" VALUES (2,'speechgen0034.smil',2480,'text/plain');
-INSERT INTO "contentresource" VALUES (2,'tpbnarrator.res',9458,'text/html');
-INSERT INTO "contentresource" VALUES (2,'tpbnarrator_res.mp3',117656,'application/octet-stream');
+INSERT INTO "contentresource" VALUES (1,1,'01_A_light_Man.mp3',45531,'application/octet-stream');
+INSERT INTO "contentresource" VALUES (2,1,'02_Epigraph.mp3',176822,'application/octet-stream');
+INSERT INTO "contentresource" VALUES (3,1,'03_April_4th_1857.mp3',1540205,'application/octet-stream');
+INSERT INTO "contentresource" VALUES (4,1,'04_7th_.mp3',1204845,'application/octet-stream');
+INSERT INTO "contentresource" VALUES (5,1,'05_D_the_14th_.mp3',8934948,'application/octet-stream');
+INSERT INTO "contentresource" VALUES (6,1,'06_19th_.mp3',2863908,'application/octet-stream');
+INSERT INTO "contentresource" VALUES (7,1,'07_22d_.mp3',4464640,'application/octet-stream');
+INSERT INTO "contentresource" VALUES (8,1,'08_26th_.mp3',1939748,'application/octet-stream');
+INSERT INTO "contentresource" VALUES (9,1,'09_May_3d_.mp3',1940662,'application/octet-stream');
+INSERT INTO "contentresource" VALUES (10,1,'10_8th_.mp3',2005028,'application/octet-stream');
+INSERT INTO "contentresource" VALUES (11,1,'11_13th_.mp3',741302,'application/octet-stream');
+INSERT INTO "contentresource" VALUES (12,1,'12_18th_.mp3',691565,'application/octet-stream');
+INSERT INTO "contentresource" VALUES (13,1,'13_20th_.mp3',2834468,'application/octet-stream');
+INSERT INTO "contentresource" VALUES (14,1,'14_21st_.mp3',1639497,'application/octet-stream');
+INSERT INTO "contentresource" VALUES (15,1,'15_22d_.mp3',451657,'application/octet-stream');
+INSERT INTO "contentresource" VALUES (16,1,'16_23d_.mp3',4836205,'application/octet-stream');
+INSERT INTO "contentresource" VALUES (17,1,'17_24th_.mp3',348342,'application/octet-stream');
+INSERT INTO "contentresource" VALUES (18,1,'er_book_info.xml',1108,'text/plain');
+INSERT INTO "contentresource" VALUES (19,1,'icth0001.smil',1086,'text/plain');
+INSERT INTO "contentresource" VALUES (20,1,'icth0002.smil',2128,'text/plain');
+INSERT INTO "contentresource" VALUES (21,1,'icth0003.smil',6888,'text/plain');
+INSERT INTO "contentresource" VALUES (22,1,'icth0004.smil',4667,'text/plain');
+INSERT INTO "contentresource" VALUES (23,1,'icth0005.smil',27641,'text/plain');
+INSERT INTO "contentresource" VALUES (24,1,'icth0006.smil',10464,'text/plain');
+INSERT INTO "contentresource" VALUES (25,1,'icth0007.smil',12533,'text/plain');
+INSERT INTO "contentresource" VALUES (26,1,'icth0008.smil',6417,'text/plain');
+INSERT INTO "contentresource" VALUES (27,1,'icth0009.smil',6967,'text/plain');
+INSERT INTO "contentresource" VALUES (28,1,'icth000a.smil',6154,'text/plain');
+INSERT INTO "contentresource" VALUES (29,1,'icth000b.smil',2248,'text/plain');
+INSERT INTO "contentresource" VALUES (30,1,'icth000c.smil',2417,'text/plain');
+INSERT INTO "contentresource" VALUES (31,1,'icth000d.smil',7990,'text/plain');
+INSERT INTO "contentresource" VALUES (32,1,'icth000e.smil',5311,'text/plain');
+INSERT INTO "contentresource" VALUES (33,1,'icth000f.smil',2517,'text/plain');
+INSERT INTO "contentresource" VALUES (34,1,'icth0010.smil',17455,'text/plain');
+INSERT INTO "contentresource" VALUES (35,1,'icth0011.smil',2217,'text/plain');
+INSERT INTO "contentresource" VALUES (36,1,'master.smil',1866,'text/plain');
+INSERT INTO "contentresource" VALUES (37,1,'ncc.html',5759,'text/html');
+INSERT INTO "contentresource" VALUES (38,1,'smil10.dtd',7496,'text/html');
+INSERT INTO "contentresource" VALUES (39,1,'xhtml-lat1.ent',11789,'text/html');
+INSERT INTO "contentresource" VALUES (40,1,'xhtml-special.ent',4144,'text/html');
+INSERT INTO "contentresource" VALUES (41,1,'xhtml-symbol.ent',14127,'text/html');
+INSERT INTO "contentresource" VALUES (42,1,'xhtml1-transitional.dtd',33441,'text/html');
+INSERT INTO "contentresource" VALUES (43,2,'AreYouReadyV3.xml',89235,'text/plain');
+INSERT INTO "contentresource" VALUES (44,2,'dtbookbasic.css',12801,'text/x-c');
+INSERT INTO "contentresource" VALUES (45,2,'image1.jpg',6168,'image/jpeg');
+INSERT INTO "contentresource" VALUES (46,2,'image11.jpg',5586,'image/jpeg');
+INSERT INTO "contentresource" VALUES (47,2,'image12.jpg',4826,'image/jpeg');
+INSERT INTO "contentresource" VALUES (48,2,'image13.jpg',12586,'image/jpeg');
+INSERT INTO "contentresource" VALUES (49,2,'image14.jpg',17587,'image/jpeg');
+INSERT INTO "contentresource" VALUES (50,2,'image2.jpg',8577,'image/jpeg');
+INSERT INTO "contentresource" VALUES (51,2,'image3.jpg',5981,'image/jpeg');
+INSERT INTO "contentresource" VALUES (52,2,'image4.jpg',4720,'image/jpeg');
+INSERT INTO "contentresource" VALUES (53,2,'image5.jpg',6589,'image/jpeg');
+INSERT INTO "contentresource" VALUES (54,2,'speechgen.ncx',18280,'text/plain');
+INSERT INTO "contentresource" VALUES (55,2,'speechgen.opf',8897,'text/plain');
+INSERT INTO "contentresource" VALUES (56,2,'speechgen0001.mp3',32757,'application/octet-stream');
+INSERT INTO "contentresource" VALUES (57,2,'speechgen0001.smil',882,'text/plain');
+INSERT INTO "contentresource" VALUES (58,2,'speechgen0002.mp3',215823,'application/octet-stream');
+INSERT INTO "contentresource" VALUES (59,2,'speechgen0002.smil',2716,'text/plain');
+INSERT INTO "contentresource" VALUES (60,2,'speechgen0003.mp3',285257,'application/octet-stream');
+INSERT INTO "contentresource" VALUES (61,2,'speechgen0003.smil',5457,'text/plain');
+INSERT INTO "contentresource" VALUES (62,2,'speechgen0004.mp3',228832,'application/octet-stream');
+INSERT INTO "contentresource" VALUES (63,2,'speechgen0004.smil',1477,'text/plain');
+INSERT INTO "contentresource" VALUES (64,2,'speechgen0005.mp3',1865456,'application/octet-stream');
+INSERT INTO "contentresource" VALUES (65,2,'speechgen0005.smil',10463,'text/plain');
+INSERT INTO "contentresource" VALUES (66,2,'speechgen0006.mp3',735399,'application/octet-stream');
+INSERT INTO "contentresource" VALUES (67,2,'speechgen0006.smil',4470,'text/plain');
+INSERT INTO "contentresource" VALUES (68,2,'speechgen0007.mp3',105482,'application/octet-stream');
+INSERT INTO "contentresource" VALUES (69,2,'speechgen0007.smil',1438,'text/plain');
+INSERT INTO "contentresource" VALUES (70,2,'speechgen0008.mp3',95294,'application/octet-stream');
+INSERT INTO "contentresource" VALUES (71,2,'speechgen0008.smil',1491,'text/plain');
+INSERT INTO "contentresource" VALUES (72,2,'speechgen0009.mp3',794801,'application/octet-stream');
+INSERT INTO "contentresource" VALUES (73,2,'speechgen0009.smil',7443,'text/plain');
+INSERT INTO "contentresource" VALUES (74,2,'speechgen0010.mp3',258299,'application/octet-stream');
+INSERT INTO "contentresource" VALUES (75,2,'speechgen0010.smil',2873,'text/plain');
+INSERT INTO "contentresource" VALUES (76,2,'speechgen0011.mp3',249835,'application/octet-stream');
+INSERT INTO "contentresource" VALUES (77,2,'speechgen0011.smil',2192,'text/plain');
+INSERT INTO "contentresource" VALUES (78,2,'speechgen0012.mp3',225071,'application/octet-stream');
+INSERT INTO "contentresource" VALUES (79,2,'speechgen0012.smil',2285,'text/plain');
+INSERT INTO "contentresource" VALUES (80,2,'speechgen0013.mp3',1677374,'application/octet-stream');
+INSERT INTO "contentresource" VALUES (81,2,'speechgen0013.smil',11510,'text/plain');
+INSERT INTO "contentresource" VALUES (82,2,'speechgen0014.mp3',372872,'application/octet-stream');
+INSERT INTO "contentresource" VALUES (83,2,'speechgen0014.smil',2480,'text/plain');
+INSERT INTO "contentresource" VALUES (84,2,'speechgen0015.mp3',439327,'application/octet-stream');
+INSERT INTO "contentresource" VALUES (85,2,'speechgen0015.smil',3243,'text/plain');
+INSERT INTO "contentresource" VALUES (86,2,'speechgen0016.mp3',121469,'application/octet-stream');
+INSERT INTO "contentresource" VALUES (87,2,'speechgen0016.smil',1691,'text/plain');
+INSERT INTO "contentresource" VALUES (88,2,'speechgen0017.mp3',2289110,'application/octet-stream');
+INSERT INTO "contentresource" VALUES (89,2,'speechgen0017.smil',17070,'text/plain');
+INSERT INTO "contentresource" VALUES (90,2,'speechgen0018.mp3',1220493,'application/octet-stream');
+INSERT INTO "contentresource" VALUES (91,2,'speechgen0018.smil',9825,'text/plain');
+INSERT INTO "contentresource" VALUES (92,2,'speechgen0019.mp3',181185,'application/octet-stream');
+INSERT INTO "contentresource" VALUES (93,2,'speechgen0019.smil',1640,'text/plain');
+INSERT INTO "contentresource" VALUES (94,2,'speechgen0020.mp3',1113756,'application/octet-stream');
+INSERT INTO "contentresource" VALUES (95,2,'speechgen0020.smil',7023,'text/plain');
+INSERT INTO "contentresource" VALUES (96,2,'speechgen0021.mp3',446694,'application/octet-stream');
+INSERT INTO "contentresource" VALUES (97,2,'speechgen0021.smil',3453,'text/plain');
+INSERT INTO "contentresource" VALUES (98,2,'speechgen0022.mp3',191216,'application/octet-stream');
+INSERT INTO "contentresource" VALUES (99,2,'speechgen0022.smil',1492,'text/plain');
+INSERT INTO "contentresource" VALUES (100,2,'speechgen0023.mp3',1083977,'application/octet-stream');
+INSERT INTO "contentresource" VALUES (101,2,'speechgen0023.smil',6373,'text/plain');
+INSERT INTO "contentresource" VALUES (102,2,'speechgen0024.mp3',354690,'application/octet-stream');
+INSERT INTO "contentresource" VALUES (103,2,'speechgen0024.smil',2690,'text/plain');
+INSERT INTO "contentresource" VALUES (104,2,'speechgen0025.mp3',193410,'application/octet-stream');
+INSERT INTO "contentresource" VALUES (105,2,'speechgen0025.smil',1835,'text/plain');
+INSERT INTO "contentresource" VALUES (106,2,'speechgen0026.mp3',112222,'application/octet-stream');
+INSERT INTO "contentresource" VALUES (107,2,'speechgen0026.smil',1493,'text/plain');
+INSERT INTO "contentresource" VALUES (108,2,'speechgen0027.mp3',605466,'application/octet-stream');
+INSERT INTO "contentresource" VALUES (109,2,'speechgen0027.smil',4580,'text/plain');
+INSERT INTO "contentresource" VALUES (110,2,'speechgen0028.mp3',136516,'application/octet-stream');
+INSERT INTO "contentresource" VALUES (111,2,'speechgen0028.smil',1430,'text/plain');
+INSERT INTO "contentresource" VALUES (112,2,'speechgen0029.mp3',92943,'application/octet-stream');
+INSERT INTO "contentresource" VALUES (113,2,'speechgen0029.smil',1439,'text/plain');
+INSERT INTO "contentresource" VALUES (114,2,'speechgen0030.mp3',112535,'application/octet-stream');
+INSERT INTO "contentresource" VALUES (115,2,'speechgen0030.smil',1493,'text/plain');
+INSERT INTO "contentresource" VALUES (116,2,'speechgen0031.mp3',1319863,'application/octet-stream');
+INSERT INTO "contentresource" VALUES (117,2,'speechgen0031.smil',10153,'text/plain');
+INSERT INTO "contentresource" VALUES (118,2,'speechgen0032.mp3',584150,'application/octet-stream');
+INSERT INTO "contentresource" VALUES (119,2,'speechgen0032.smil',5658,'text/plain');
+INSERT INTO "contentresource" VALUES (120,2,'speechgen0033.mp3',256104,'application/octet-stream');
+INSERT INTO "contentresource" VALUES (121,2,'speechgen0033.smil',1850,'text/plain');
+INSERT INTO "contentresource" VALUES (122,2,'speechgen0034.mp3',284630,'application/octet-stream');
+INSERT INTO "contentresource" VALUES (123,2,'speechgen0034.smil',2480,'text/plain');
+INSERT INTO "contentresource" VALUES (124,2,'tpbnarrator.res',9458,'text/html');
+INSERT INTO "contentresource" VALUES (125,2,'tpbnarrator_res.mp3',117656,'application/octet-stream');
 CREATE TABLE "user" (
+  "id" INTEGER PRIMARY KEY AUTOINCREMENT,
   "username" TEXT NOT NULL,
   "password" TEXT NOT NULL,
   "log" INTEGER NOT NULL DEFAULT '0'
 );
-INSERT INTO "user" VALUES ('kolibre','kolibre',1);
+INSERT INTO "user" VALUES (1,'kolibre','kolibre',1);
 CREATE TABLE "usercontent" (
+  "id" INTEGER PRIMARY KEY AUTOINCREMENT,
   "user_id" INTEGER  NOT NULL,
   "content_id" INTEGER  NOT NULL,
   "contentlist_id" INTEGER  NOT NULL,
@@ -230,15 +242,37 @@ CREATE TABLE "usercontent" (
   "return_by" NUMERIC DEFAULT NULL,
   "is_returned" INTEGER NOT NULL DEFAULT '1',
   "updated_at" NUMERIC NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  PRIMARY KEY ("user_id","content_id")
+  FOREIGN KEY("user_id") REFERENCES "user"("id") ON DELETE SET NULL ON UPDATE SET NULL,
+  FOREIGN KEY("content_id") REFERENCES "content"("id") ON DELETE SET NULL ON UPDATE SET NULL,
+  FOREIGN KEY("contentlist_id") REFERENCES "contentlist"("id") ON DELETE SET NULL ON UPDATE SET NULL
 );
-INSERT INTO "usercontent" VALUES (1,1,1,1,NULL,1,'0000-00-00 00:00:00');
-INSERT INTO "usercontent" VALUES (1,2,1,1,NULL,1,'0000-00-00 00:00:00');
+INSERT INTO "usercontent" VALUES (1,1,1,1,1,NULL,1,'0000-00-00 00:00:00');
+INSERT INTO "usercontent" VALUES (2,1,2,1,1,NULL,1,'0000-00-00 00:00:00');
 CREATE TABLE "userlog" (
+  "id" INTEGER PRIMARY KEY AUTOINCREMENT,
   "user_id" INTEGER  NOT NULL,
   "datetime" NUMERIC NOT NULL,
   "request" TEXT NOT NULL,
   "response" TEXT NOT NULL,
   "ip" TEXT NOT NULL DEFAULT '0.0.0.0'
 );
+DELETE FROM sqlite_sequence;
+INSERT INTO "sqlite_sequence" VALUES('category',4);
+INSERT INTO "sqlite_sequence" VALUES('daisyformat',3);
+INSERT INTO "sqlite_sequence" VALUES('content',2);
+INSERT INTO "sqlite_sequence" VALUES('contentaudio',2);
+INSERT INTO "sqlite_sequence" VALUES('contentlist',4);
+INSERT INTO "sqlite_sequence" VALUES('contentmetadata',41);
+INSERT INTO "sqlite_sequence" VALUES('contentresource',125);
+INSERT INTO "sqlite_sequence" VALUES('user',1);
+INSERT INTO "sqlite_sequence" VALUES('usercontent',2);
+CREATE INDEX index_foreignkey_content_daisyformat ON "content" (daisyformat_id);
+CREATE INDEX index_foreignkey_content_category ON "content" (category_id);
+CREATE INDEX index_foreignkey_contentaudio_content ON "contentaudio" (content_id);
+CREATE INDEX index_foreignkey_contentmetadata_content ON "contentmetadata" (content_id);
+CREATE INDEX index_foreignkey_contentresource_content ON "contentresource" (content_id);
+CREATE INDEX index_foreignkey_usercontent_contentlist ON "usercontent" (contentlist_id);
+CREATE INDEX index_foreignkey_usercontent_content ON "usercontent" (content_id);
+CREATE INDEX index_foreignkey_usercontent_user ON "usercontent" (user_id);
+CREATE INDEX index_foreignkey_userlog_user ON "userlog" (user_id);
 END TRANSACTION;

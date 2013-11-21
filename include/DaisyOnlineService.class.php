@@ -767,7 +767,7 @@ class DaisyOnlineService
         {
             if ($this->adapter->contentExists($contentId) === false)
             {
-                $msg = "User '$this->sessionUsername' requested issuing of a nonexistent content '$contentId'";
+                $msg = "User '$this->sessionUsername' requested resources of a nonexistent content '$contentId'";
                 $this->logger->warn($msg);
                 $faultString = "content '$contentId' does not exist";
                 throw new SoapFault('Client', $faultString,'', '', 'getContentResources_invalidParameterFault');
@@ -775,7 +775,7 @@ class DaisyOnlineService
 
             if ($this->adapter->contentAccessible($contentId) === false)
             {
-                $msg = "User '$this->sessionUsername' requested issuing of an inaccessible content '$contentId'";
+                $msg = "User '$this->sessionUsername' requested resources of an inaccessible content '$contentId'";
                 $this->logger->warn($msg);
                 $faultString = "content '$contentId' not accessible";
                 throw new SoapFault('Client', $faultString,'', '', 'getContentResources_invalidParameterFault');
@@ -807,7 +807,7 @@ class DaisyOnlineService
                 $msg = "User '$this->sessionUsername' requested resources for non-issued content '$contentId'";
                 $this->logger->warn($msg);
                 $faultString = "content '$contentId' is not issued";
-                throw new SoapFault('Client', $faultString,'', '', 'getContentResources_invalidParameterFault');
+                throw new SoapFault('Client', $faultString,'', '', 'getContentResources_invalidOperationFault');
             }
             foreach ($contentResources as $resource)
                 $resources->addResource($this->createResource($resource));
@@ -1298,7 +1298,7 @@ class DaisyOnlineService
     private function createResource($resourceArray)
     {
         $uri = null;
-        $mimetype = null;
+        $mimeType = null;
         $size = null;
         $localURI = null;
         $lastModifiedDate = null;
@@ -1309,11 +1309,11 @@ class DaisyOnlineService
         else
             $uri = $resourceArray['uri'];
 
-        // mimetype [mandatory]
-        if (array_key_exists('mimetype', $resourceArray) === false)
-            $this->logger->error("Required field 'mimetype' is missing in resource");
+        // mimeType [mandatory]
+        if (array_key_exists('mimeType', $resourceArray) === false)
+            $this->logger->error("Required field 'mimeType' is missing in resource");
         else
-            $mimetype = $resourceArray['mimetype'];
+            $mimeType = $resourceArray['mimeType'];
 
         // size [mandatory]
         if (array_key_exists('size', $resourceArray) === false)
@@ -1331,7 +1331,7 @@ class DaisyOnlineService
         if (array_key_exists('lastModifiedDate', $resourceArray))
             $lastModifiedDate = $resourceArray['lastModifiedDate'];
 
-        $resource = new resource($uri, $mimetype, $size, $localURI, $lastModifiedDate);
+        $resource = new resource($uri, $mimeType, $size, $localURI, $lastModifiedDate);
         return $resource;
     }
 

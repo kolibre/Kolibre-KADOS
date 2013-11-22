@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="windows-1252"?>
+<!DOCTYPE smil PUBLIC "-//W3C//DTD SMIL 1.0//EN" "http://www.w3.org/TR/REC-smil/SMIL10.dtd">
+<smil>
+	<head>
+		<meta name="dc:format" content="Daisy 2.02"/>
+		<meta name="dc:title" content="Climbing the Highest Mountain"/>
+		<layout>
+			<region id="txtView"/>
+		</layout>
+		<meta name="ncc:totalElapsedTime" content="00:04:32"/>
+		<meta name="ncc:timeInThisSmil" content="00:00:56"/>
+		<meta name="ncc:generator" content="Skippability Tweaker 0.1.53"/>
+		<meta name="title" content="Chapter 2: Travelling to Norway"/>
+		<meta name="dc:identifier" content="skipdemo-amsterdam"/>
+	</head>
+	<body>
+		<seq dur="55.969s">
+			<par endsync="last">
+				<text src="ncconlydemo.html#bagw_0015" id="bagw_0015"/>
+				<seq>
+					<audio src="bagw001D.mp3" clip-begin="npt=0.000s" clip-end="npt=3.709s" id="qwrt_0001"/>
+				</seq>
+			</par>
+			<par endsync="last">
+				<text src="ncconlydemo.html#bagw_0015" id="xbag_000d"/>
+				<seq>
+					<audio src="bagw001D.mp3" clip-begin="npt=3.709s" clip-end="npt=17.159s" id="qwrt_0002"/>
+				</seq>
+			</par>
+			<seq>
+				<par endsync="last">
+					<text src="ncconlydemo.html#bagw_0016" id="bagw_0016"/>
+					<seq>
+						<audio src="bagw001D.mp3" clip-begin="npt=17.159s" clip-end="npt=18.432s" id="qwrt_0003"/>
+					</seq>
+				</par>
+				<par endsync="last" system-required="footnote-on">
+					<text src="ncconlydemo.html#fn_1" id="ntbd_001"/>
+					<seq>
+						<audio src="bagw001D.mp3" clip-begin="npt=29.032s" clip-end="npt=31.355s" id="ntbd_001_au_001"/>
+						<audio src="bagw001D.mp3" clip-begin="npt=31.355s" clip-end="npt=39.432s" id="ntbd_001_au_002"/>
+					</seq>
+				</par>
+			</seq>
+			<par endsync="last">
+				<text src="ncconlydemo.html#xbag_000e" id="xbag_000e"/>
+				<seq>
+					<audio src="bagw001D.mp3" clip-begin="npt=18.432s" clip-end="npt=24.205s" id="qwrt_0004"/>
+					<audio src="bagw001D.mp3" clip-begin="npt=24.205s" clip-end="npt=29.032s" id="qwrt_0005"/>
+				</seq>
+			</par>
+			<par endsync="last" system-required="pagenumber-on">
+				<text src="ncconlydemo.html#bagw_0017" id="bagw_0017"/>
+				<seq>
+					<audio src="bagw001D.mp3" clip-begin="npt=39.432s" clip-end="npt=40.927s" id="qwrt_0008"/>
+				</seq>
+			</par>
+			<par endsync="last">
+				<text src="ncconlydemo.html#bagw_0017" id="xbag_000f"/>
+				<seq>
+					<audio src="bagw001D.mp3" clip-begin="npt=40.927s" clip-end="npt=44.746s" id="qwrt_0009"/>
+					<audio src="bagw001D.mp3" clip-begin="npt=44.746s" clip-end="npt=52.446s" id="qwrt_000a"/>
+					<audio src="bagw001D.mp3" clip-begin="npt=52.446s" clip-end="npt=55.969s" id="qwrt_000b"/>
+				</seq>
+			</par>
+		</seq>
+	</body>
+</smil>

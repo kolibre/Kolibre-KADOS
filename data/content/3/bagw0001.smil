@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="windows-1252"?>
+<!DOCTYPE smil PUBLIC "-//W3C//DTD SMIL 1.0//EN" "http://www.w3.org/TR/REC-smil/SMIL10.dtd">
+<smil>
+	<head>
+		<meta name="dc:format" content="Daisy 2.02"/>
+		<meta name="title" content="Climbing the Highest Mountain"/>
+		<meta name="dc:title" content="Climbing the Highest Mountain"/>
+		<meta name="ncc:totalElapsedTime" content="00:00:00"/>
+		<meta name="ncc:timeInThisSmil" content="00:00:30"/>
+		<meta name="ncc:generator" content="Skippability Tweaker 0.1.53"/>
+		<layout>
+			<region id="txtView"/>
+		</layout>
+		<meta name="dc:identifier" content="skipdemo-amsterdam"/>
+	</head>
+	<body>
+		<seq dur="30.076s">
+			<par endsync="last">
+				<text src="ncconlydemo.html#bagw_0001" id="bagw_0001"/>
+				<seq>
+					<audio src="bagw0019.mp3" clip-begin="npt=0.000s" clip-end="npt=2.035s" id="qwrt_0001"/>
+				</seq>
+			</par>
+			<par endsync="last">
+				<text src="ncconlydemo.html#bagw_0001" id="xbag_0001"/>
+				<seq>
+					<audio src="bagw0019.mp3" clip-begin="npt=2.035s" clip-end="npt=8.901s" id="qwrt_0002"/>
+				</seq>
+			</par>
+			<par endsync="last" system-required="prodnote-on">
+				<text src="ncconlydemo.html#bagw_0002" id="bagw_0002"/>
+				<seq>
+					<audio src="bagw0019.mp3" clip-begin="npt=8.901s" clip-end="npt=19.554s" id="qwrt_0003"/>
+					<audio src="bagw0019.mp3" clip-begin="npt=19.554s" clip-end="npt=28.774s" id="qwrt_0004"/>
+				</seq>
+			</par>
+			<par endsync="last" system-required="pagenumber-on">
+				<text src="ncconlydemo.html#bagw_0003" id="bagw_0003"/>
+				<seq>
+					<audio src="bagw0019.mp3" clip-begin="npt=28.774s" clip-end="npt=30.076s" id="qwrt_0005"/>
+				</seq>
+			</par>
+		</seq>
+	</body>
+</smil>

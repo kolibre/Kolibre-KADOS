@@ -26,6 +26,7 @@ CREATE TABLE "content" (
 );
 INSERT INTO "content" VALUES(1,1,1,'A light Man','2009-06-22 00:00:00');
 INSERT INTO "content" VALUES(2,1,2,'Are you ready?','2009-04-26 00:00:00');
+INSERT INTO "content" VALUES(3,1,1,'Climbing the Highest Mountain','2003-05-08 00:00:00');
 CREATE TABLE "contentaudio" (
   "id" INTEGER PRIMARY KEY AUTOINCREMENT,
   "content_id" INTEGER  NOT NULL,
@@ -35,6 +36,7 @@ CREATE TABLE "contentaudio" (
 );
 INSERT INTO "contentaudio" VALUES(1,1,37798,6315);
 INSERT INTO "contentaudio" VALUES(2,2,14020,5201);
+INSERT INTO "contentaudio" VALUES(3,3,20335,1945);
 CREATE TABLE "contentlist" (
   "id" INTEGER PRIMARY KEY AUTOINCREMENT,
   "name" TEXT NOT NULL
@@ -91,6 +93,32 @@ INSERT INTO "contentmetadata" VALUES(38,2,'dc:language','en-IN');
 INSERT INTO "contentmetadata" VALUES(39,2,'dc:publisher','DAISY India');
 INSERT INTO "contentmetadata" VALUES(40,2,'dc:subject','A Short Manual for Disaster Management');
 INSERT INTO "contentmetadata" VALUES(41,2,'dc:title','ARE YOU READY?');
+INSERT INTO "contentmetadata" VALUES(42,3,'dc:title','Climbing the Highest Mountain');
+INSERT INTO "contentmetadata" VALUES(43,3,'dc:creator','Per Sennels');
+INSERT INTO "contentmetadata" VALUES(44,3,'dc:date','2003-05-08');
+INSERT INTO "contentmetadata" VALUES(45,3,'dc:format','Daisy 2.02');
+INSERT INTO "contentmetadata" VALUES(46,3,'dc:identifier','skipdemo-amsterdam');
+INSERT INTO "contentmetadata" VALUES(47,3,'dc:language','en');
+INSERT INTO "contentmetadata" VALUES(48,3,'dc:publisher','DAISY Consortium');
+INSERT INTO "contentmetadata" VALUES(49,3,'dc:subject','Mountains');
+INSERT INTO "contentmetadata" VALUES(50,3,'ncc:pagefront','0');
+INSERT INTO "contentmetadata" VALUES(51,3,'ncc:pagenormal','8');
+INSERT INTO "contentmetadata" VALUES(52,3,'ncc:pagespecial','0');
+INSERT INTO "contentmetadata" VALUES(53,3,'ncc:setinfo','1 of 1');
+INSERT INTO "contentmetadata" VALUES(54,3,'ncc:depth','3');
+INSERT INTO "contentmetadata" VALUES(55,3,'ncc:maxpagenormal','8');
+INSERT INTO "contentmetadata" VALUES(56,3,'ncc:multimediatype','audioNcc');
+INSERT INTO "contentmetadata" VALUES(57,3,'ncc:narrator','Joan Dahm-Simonsen');
+INSERT INTO "contentmetadata" VALUES(58,3,'ncc:producer','Huseby kompetansesenter');
+INSERT INTO "contentmetadata" VALUES(59,3,'ncc:generator','Skippability Tweaker 0.1.53');
+INSERT INTO "contentmetadata" VALUES(60,3,'ncc:sidebars','4');
+INSERT INTO "contentmetadata" VALUES(61,3,'ncc:prodnotes','2');
+INSERT INTO "contentmetadata" VALUES(62,3,'ncc:footnotes','1');
+INSERT INTO "contentmetadata" VALUES(63,3,'ncc:totaltime','00:05:27');
+INSERT INTO "contentmetadata" VALUES(64,3,'ncc:charset','windows-1252');
+INSERT INTO "contentmetadata" VALUES(65,3,'ncc:files','20');
+INSERT INTO "contentmetadata" VALUES(66,3,'ncc:kbytesize','1975');
+INSERT INTO "contentmetadata" VALUES(67,3,'ncc:tocitems','23');
 CREATE TABLE "contentresource" (
   "id" INTEGER PRIMARY KEY AUTOINCREMENT,
   "content_id" INTEGER  NOT NULL DEFAULT '0',
@@ -224,6 +252,27 @@ INSERT INTO "contentresource" VALUES(122,2,'speechgen0034.mp3',284630,'applicati
 INSERT INTO "contentresource" VALUES(123,2,'speechgen0034.smil',2480,'text/plain');
 INSERT INTO "contentresource" VALUES(124,2,'tpbnarrator.res',9458,'text/html');
 INSERT INTO "contentresource" VALUES(125,2,'tpbnarrator_res.mp3',117656,'application/octet-stream');
+INSERT INTO "contentresource" VALUES(126,3,'ncconlydemo.html',3642,'application/xml');
+INSERT INTO "contentresource" VALUES(127,3,'bagw0008.smil',2714,'application/xml');
+INSERT INTO "contentresource" VALUES(128,3,'bagw0017.mp3',124760,'audio/mpeg');
+INSERT INTO "contentresource" VALUES(129,3,'bagw0019.mp3',180558,'audio/mpeg');
+INSERT INTO "contentresource" VALUES(130,3,'bagw0006.smil',2765,'application/xml');
+INSERT INTO "contentresource" VALUES(131,3,'bagw001B.mp3',285570,'audio/mpeg');
+INSERT INTO "contentresource" VALUES(132,3,'bagw0014.mp3',391836,'audio/mpeg');
+INSERT INTO "contentresource" VALUES(133,3,'bagw0007.smil',1567,'application/xml');
+INSERT INTO "contentresource" VALUES(134,3,'bagw0018.mp3',65515,'audio/mpeg');
+INSERT INTO "contentresource" VALUES(135,3,'bagw001A.mp3',129776,'audio/mpeg');
+INSERT INTO "contentresource" VALUES(136,3,'bagw0005.smil',1130,'application/xml');
+INSERT INTO "contentresource" VALUES(137,3,'master.smil',1196,'application/xml');
+INSERT INTO "contentresource" VALUES(138,3,'bagw0003.smil',2419,'application/xml');
+INSERT INTO "contentresource" VALUES(139,3,'ncc.html',4296,'application/xml');
+INSERT INTO "contentresource" VALUES(140,3,'bagw0002.smil',1334,'application/xml');
+INSERT INTO "contentresource" VALUES(141,3,'narrator_1.css',5204,'text/plain');
+INSERT INTO "contentresource" VALUES(142,3,'default_1.css',5053,'text/plain');
+INSERT INTO "contentresource" VALUES(143,3,'bagw001C.mp3',451552,'audio/mpeg');
+INSERT INTO "contentresource" VALUES(144,3,'bagw0001.smil',1728,'application/xml');
+INSERT INTO "contentresource" VALUES(145,3,'bagw001D.mp3',335882,'audio/mpeg');
+INSERT INTO "contentresource" VALUES(146,3,'bagw0004.smil',3047,'application/xml');
 CREATE TABLE "user" (
   "id" INTEGER PRIMARY KEY AUTOINCREMENT,
   "username" TEXT NOT NULL,
@@ -246,6 +295,7 @@ CREATE TABLE "usercontent" (
 );
 INSERT INTO "usercontent" VALUES(1,1,1,1,1,1,NULL,'0000-00-00 00:00:00');
 INSERT INTO "usercontent" VALUES(2,1,2,1,1,1,NULL,'0000-00-00 00:00:00');
+INSERT INTO "usercontent" VALUES(3,1,3,1,1,1,NULL,'0000-00-00 00:00:00');
 CREATE TABLE "userlog" (
   "id" INTEGER PRIMARY KEY AUTOINCREMENT,
   "user_id" INTEGER  NOT NULL,
@@ -257,13 +307,13 @@ CREATE TABLE "userlog" (
 DELETE FROM sqlite_sequence;
 INSERT INTO "sqlite_sequence" VALUES('category',4);
 INSERT INTO "sqlite_sequence" VALUES('daisyformat',3);
-INSERT INTO "sqlite_sequence" VALUES('content',2);
-INSERT INTO "sqlite_sequence" VALUES('contentaudio',2);
+INSERT INTO "sqlite_sequence" VALUES('content',3);
+INSERT INTO "sqlite_sequence" VALUES('contentaudio',3);
 INSERT INTO "sqlite_sequence" VALUES('contentlist',4);
-INSERT INTO "sqlite_sequence" VALUES('contentmetadata',41);
-INSERT INTO "sqlite_sequence" VALUES('contentresource',125);
+INSERT INTO "sqlite_sequence" VALUES('contentmetadata',67);
+INSERT INTO "sqlite_sequence" VALUES('contentresource',146);
 INSERT INTO "sqlite_sequence" VALUES('user',1);
-INSERT INTO "sqlite_sequence" VALUES('usercontent',2);
+INSERT INTO "sqlite_sequence" VALUES('usercontent',3);
 CREATE INDEX index_foreignkey_content_daisyformat ON "content" (daisyformat_id);
 CREATE INDEX index_foreignkey_content_category ON "content" (category_id);
 CREATE INDEX index_foreignkey_contentaudio_content ON "contentaudio" (content_id);

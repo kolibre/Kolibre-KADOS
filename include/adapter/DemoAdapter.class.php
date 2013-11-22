@@ -132,18 +132,18 @@ class DemoAdapter extends Adapter
         $host = 'localhost';
         if (isset($_SERVER['SERVER_NAME'])) $host = $_SERVER['SERVER_NAME'];
 
-        $port = '80';
+        $port = '';
         if (isset($_SERVER['SERVER_PORT']))
         {
             switch ($protocol)
             {
                 case 'http':
-                    if (!($_SERVER['SERVER_PORT'] == 80 || $_SERVER['SERVER_PORT'] == 443))
-                        $port = $_SERVER['SERVER_PORT'];
+                    if ($_SERVER['SERVER_PORT'] != 80)
+                        $port = ':' . $_SERVER['SERVER_PORT'];
                     break;
                 case 'https':
                     if ($_SERVER['SERVER_PORT'] != 443)
-                        $port = $_SERVER['SERVER_PORT'];
+                        $port = ':' . $_SERVER['SERVER_PORT'];
                     break;
             }
         }
@@ -152,7 +152,7 @@ class DemoAdapter extends Adapter
         if (isset($_SERVER['SCRIPT_NAME'])) $path = dirname($_SERVER['SCRIPT_NAME']);
         if (strlen($path) > 0 && substr($path, -1) != '/') $path .= '/';
 
-        return "$protocol://$host:$port$path";
+        return "$protocol://$host$port$path";
     }
 
     public function extractId($identifier)

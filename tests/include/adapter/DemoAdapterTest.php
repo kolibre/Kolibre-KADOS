@@ -85,14 +85,14 @@ class DemoAdapterTest extends PHPUnit_Framework_TestCase
     public function testContentList()
     {
         // unfiltered
-        $this->assertCount(2, self::$adapter->contentList('new'));
+        $this->assertCount(3, self::$adapter->contentList('new'));
         $this->assertEmpty(self::$adapter->contentList('issued'));
         $this->assertEmpty(self::$adapter->contentList('expired'));
         $this->assertEmpty(self::$adapter->contentList('returned'));
 
         // filtered
-        $this->assertCount(1, self::$adapter->contentList('new', array('Daisy 2.02')));
-        $this->assertCount(1, self::$adapter->contentList('new', array('DAISY 2.02')));
+        $this->assertCount(2, self::$adapter->contentList('new', array('Daisy 2.02')));
+        $this->assertCount(2, self::$adapter->contentList('new', array('DAISY 2.02')));
         $this->assertCount(1, self::$adapter->contentList('new', array('Ansi/Niso Z39.86-2005')));
         $this->assertCount(1, self::$adapter->contentList('new', array('ANSI/NISO Z39.86-2005')));
     }

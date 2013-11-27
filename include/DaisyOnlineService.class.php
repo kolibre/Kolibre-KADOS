@@ -277,15 +277,33 @@ class DaisyOnlineService
     {
         $this->sessionHandle(__FUNCTION__);
 
-        // set serviceProvider
-        $serviceProvider = null;
-        if (array_key_exists('serviceProvider', $this->serviceAttributes))
-            $serviceProvider = new serviceProvider(null, $this->serviceAttributes['serviceProvider']);
+        try
+        {
+            // set serviceProvider
+            $serviceProvider = null;
+            if (array_key_exists('serviceProvider', $this->serviceAttributes))
+            {
+                $serviceProvider = new serviceProvider(null, $this->serviceAttributes['serviceProvider']);
+                $label = $this->adapter->label($this->serviceAttributes['serviceProvider'], Adapter::LABEL_SERVICE);
+                if (is_array($label))
+                    $serviceProvider->setLabel($this->createLabel($label));
+            }
 
-        // set service
-        $service = null;
-        if (array_key_exists('service', $this->serviceAttributes))
-            $service = new service(null, $this->serviceAttributes['service']);
+            // set service
+            $service = null;
+            if (array_key_exists('service', $this->serviceAttributes))
+            {
+                $service = new service(null, $this->serviceAttributes['service']);
+                $label = $this->adapter->label($this->serviceAttributes['service'], Adapter::LABEL_SERVICE);
+                if (is_array($label))
+                    $service->setLabel($this->createLabel($label));
+            }
+        }
+        catch (AdapterException $e)
+        {
+            $this->logger->fatal($e->getMessage());
+            throw new SoapFault('Server', 'Internal Server Error', '', '', 'getServiceAttributes_internalServerErrorFault');
+        }
 
         // set supportedContentSelectionMethods
         $supportedContentSelectionMethods = new supportedContentSelectionMethods();

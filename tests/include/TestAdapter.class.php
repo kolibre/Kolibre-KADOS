@@ -54,6 +54,12 @@ class TestAdapter extends Adapter
 
         switch ($type)
         {
+        case Adapter::LABEL_SERVICE:
+            if ($id == 'label-exception')
+                throw new AdapterException('Error in adapter');
+            if ($id == 'org-kolibre')
+                return $label;
+            break;
         case Adapter::LABEL_CONTENTLIST:
             if ($id == 'empty-list-label-exception')
                 throw new AdapterException('Error in adapter');

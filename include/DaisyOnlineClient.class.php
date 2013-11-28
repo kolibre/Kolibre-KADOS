@@ -61,6 +61,11 @@ class DaisyOnlineClient
     private $serviceAttributes = null;
     private $readingSystemAttributes = null;
 
+    // place holders to store fault information from last operation
+    private $operationFailed = null;
+    private $faultType = null;
+    private $faultString = null;
+
     public function __construct($wsdl_url, $wsdl_cache_disable = null)
     {
         if ($wsdl_cache_disable)
@@ -103,9 +108,39 @@ class DaisyOnlineClient
         $this->readingSystemAttributes = new readingSystemAttributes($manufacturer, $model, $serialnumber, $version, $config);
     }
 
+    private function extractFaultType($fault)
+    {
+        $type = '';
+        if (isset($fault->detail))
+        {
+            $vars = get_object_vars($fault->detail);
+            foreach ($vars as $name => $value)
+            {
+                $type = $name;
+                break;
+            }
+        }
+        return $type;
+    }
+
+    public function operationFailed()
+    {
+        return $this->operationFailed;
+    }
+
+    public function getFaultType()
+    {
+        return $this->faultType;
+    }
+
+    public function getFaultString()
+    {
+        return $this->faultString;
+    }
+
     public function logOn($username, $password)
     {
-        echo "invoke " .  __FUNCTION__ . "\n";
+        $this->operationFailed = false;
         try
         {
             $input = new logOn($username, $password);
@@ -113,8 +148,10 @@ class DaisyOnlineClient
         }
         catch (SoapFault $f)
         {
-            echo "$f\n";
-            return false;
+            $this->operationFailed = true;
+            $this->faultType = $this->extractFaultType($f);
+            $this->faultString = $f->faultstring;
+            return null;
         }
 
         return $logOnResponse->logOnResult;
@@ -122,7 +159,7 @@ class DaisyOnlineClient
 
     public function logOff()
     {
-        echo "invoke " . __FUNCTION__ . "\n";
+        $this->operationFailed = false;
         try
         {
             $input = new logOff();
@@ -130,8 +167,10 @@ class DaisyOnlineClient
         }
         catch (SoapFault $f)
         {
-            echo "$f\n";
-            return false;
+            $this->operationFailed = true;
+            $this->faultType = $this->extractFaultType($f);
+            $this->faultString = $f->faultstring;
+            return null;
         }
 
         return $logOffResponse->logOffResult;
@@ -139,7 +178,7 @@ class DaisyOnlineClient
 
     public function getServiceAttributes()
     {
-        echo "invoke " . __FUNCTION__ . "\n";
+        $this->operationFailed = false;
         try
         {
             $input = new getServiceAttributes();
@@ -147,8 +186,10 @@ class DaisyOnlineClient
         }
         catch (SoapFault $f)
         {
-            echo "$f\n";
-            return false;
+            $this->operationFailed = true;
+            $this->faultType = $this->extractFaultType($f);
+            $this->faultString = $f->faultstring;
+            return null;
         }
 
         $this->serviceAttributes = $getServiceAttributesResponse->getServiceAttributes();
@@ -157,7 +198,7 @@ class DaisyOnlineClient
 
     public function setReadingSystemAttributes()
     {
-        echo "invoke " . __FUNCTION__ . "\n";
+        $this->operationFailed = false;
         try
         {
             $input = new setReadingSystemAttributes($this->readingSystemAttributes);
@@ -165,8 +206,10 @@ class DaisyOnlineClient
         }
         catch (SoapFault $f)
         {
-            echo "$f\n";
-            return false;
+            $this->operationFailed = true;
+            $this->faultType = $this->extractFaultType($f);
+            $this->faultString = $f->faultstring;
+            return null;
         }
 
         return $setReadingSystemAttributesResponse->setReadingSystemAttributesResult;
@@ -174,7 +217,7 @@ class DaisyOnlineClient
 
     public function getContentList($name, $firstItem = 0, $lastItem = -1)
     {
-        echo "invoke " . __FUNCTION__ . "\n";
+        $this->operationFailed = false;
         try
         {
             $input = new getContentList($name, $firstItem, $lastItem);
@@ -182,8 +225,10 @@ class DaisyOnlineClient
         }
         catch (SoapFault $f)
         {
-            echo "$f\n";
-            return false;
+            $this->operationFailed = true;
+            $this->faultType = $this->extractFaultType($f);
+            $this->faultString = $f->faultstring;
+            return null;
         }
 
         return $getContentListResponse->getContentList();
@@ -191,7 +236,7 @@ class DaisyOnlineClient
 
     public function getContentMetadata($contentId)
     {
-        echo "invoke " . __FUNCTION__ . "\n";
+        $this->operationFailed = false;
         try
         {
             $input = new getContentMetadata($contentId);
@@ -199,8 +244,10 @@ class DaisyOnlineClient
         }
         catch (SoapFault $f)
         {
-            echo "$f\n";
-            return false;
+            $this->operationFailed = true;
+            $this->faultType = $this->extractFaultType($f);
+            $this->faultString = $f->faultstring;
+            return null;
         }
 
         return $getContentMetadataResponse->getContentMetadata();
@@ -208,7 +255,7 @@ class DaisyOnlineClient
 
     public function issueContent($contentId)
     {
-        echo "invoke " . __FUNCTION__ . "\n";
+        $this->operationFailed = false;
         try
         {
             $input = new issueContent($contentId);
@@ -216,8 +263,10 @@ class DaisyOnlineClient
         }
         catch (SoapFault $f)
         {
-            echo "$f\n";
-            return false;
+            $this->operationFailed = true;
+            $this->faultType = $this->extractFaultType($f);
+            $this->faultString = $f->faultstring;
+            return null;
         }
 
         return $issueContentResponse->issueContentResult;
@@ -225,7 +274,7 @@ class DaisyOnlineClient
 
     public function getContentResources($contentId)
     {
-        echo "invoke " . __FUNCTION__ . "\n";
+        $this->operationFailed = false;
         try
         {
             $input = new getContentResources($contentId);
@@ -233,8 +282,10 @@ class DaisyOnlineClient
         }
         catch (SoapFault $f)
         {
-            echo "$f\n";
-            return false;
+            $this->operationFailed = true;
+            $this->faultType = $this->extractFaultType($f);
+            $this->faultString = $f->faultstring;
+            return null;
         }
 
         return $getContentResourcesResponse->getResources();
@@ -242,7 +293,7 @@ class DaisyOnlineClient
 
     public function returnContent($contentId)
     {
-        echo "invoke " . __FUNCTION__ . "\n";
+        $this->operationFailed = false;
         try
         {
             $input = new returnContent($contentId);
@@ -250,8 +301,10 @@ class DaisyOnlineClient
         }
         catch (SoapFault $f)
         {
-            echo "$f\n";
-            return false;
+            $this->operationFailed = true;
+            $this->faultType = $this->extractFaultType($f);
+            $this->faultString = $f->faultstring;
+            return null;
         }
 
         return $returnContentResponse->returnContentResult;
@@ -259,7 +312,7 @@ class DaisyOnlineClient
 
     public function getServiceAnnouncements()
     {
-        echo "invoke " . __FUNCTION__ . "\n";
+        $this->operationFailed = false;
         try
         {
             $input = new getServiceAnnouncements();
@@ -267,8 +320,10 @@ class DaisyOnlineClient
         }
         catch (SoapFault $f)
         {
-            echo "$f\n";
-            return false;
+            $this->operationFailed = true;
+            $this->faultType = $this->extractFaultType($f);
+            $this->faultString = $f->faultstring;
+            return null;
         }
 
         return $getServiceAnnouncementsResponse->getAnnouncements();
@@ -276,7 +331,7 @@ class DaisyOnlineClient
 
     public function markAnnouncementsAsRead($read)
     {
-        echo "invoke " . __FUNCTION__ . "\n";
+        $this->operationFailed = false;
         try
         {
             $input = new markAnnouncementsAsRead($read);
@@ -284,8 +339,10 @@ class DaisyOnlineClient
         }
         catch (SoapFault $f)
         {
-            echo "$f\n";
-            return false;
+            $this->operationFailed = true;
+            $this->faultType = $this->extractFaultType($f);
+            $this->faultString = $f->faultstring;
+            return null;
         }
 
         return $markAnnouncementsAsReadResponse->markAnnouncementsAsReadResult;
@@ -293,7 +350,7 @@ class DaisyOnlineClient
 
     public function setBookmarks($contentId, $bookmarkSet)
     {
-        echo "invoke " . __FUNCTION__ . "\n";
+        $this->operationFailed = false;
         try
         {
             $input = new setBookmarks($contentId, $bookmarkSet);
@@ -301,8 +358,10 @@ class DaisyOnlineClient
         }
         catch (SoapFault $f)
         {
-            echo "$f\n";
-            return false;
+            $this->operationFailed = true;
+            $this->faultType = $this->extractFaultType($f);
+            $this->faultString = $f->faultstring;
+            return null;
         }
 
         return $setBookmarksResponse->setBookmarksResult;
@@ -310,7 +369,7 @@ class DaisyOnlineClient
 
     public function getBookmarks($contentId)
     {
-        echo "invoke " . __FUNCTION__ . "\n";
+        $this->operationFailed = false;
         try
         {
             $input = new getBookmarks($contentId);
@@ -318,8 +377,10 @@ class DaisyOnlineClient
         }
         catch (SoapFault $f)
         {
-            echo "$f\n";
-            return false;
+            $this->operationFailed = true;
+            $this->faultType = $this->extractFaultType($f);
+            $this->faultString = $f->faultstring;
+            return null;
         }
 
         return $getBookmarksResponse->getBookmarkSet();
@@ -327,7 +388,7 @@ class DaisyOnlineClient
 
     public function getQuestions($userResponses)
     {
-        echo "invoke " . __FUNCTION__ . "\n";
+        $this->operationFailed = false;
         try
         {
             $input = new getQuestions($userResponses);
@@ -335,8 +396,10 @@ class DaisyOnlineClient
         }
         catch (SoapFault $f)
         {
-            echo "$f\n";
-            return false;
+            $this->operationFailed = true;
+            $this->faultType = $this->extractFaultType($f);
+            $this->faultString = $f->faultstring;
+            return null;
         }
 
         return $getQuestionsResponse->getQuestions();
@@ -344,7 +407,7 @@ class DaisyOnlineClient
 
     public function getKeyExchangeObject($keyName)
     {
-        echo "invoke " . __FUNCTION__ . "\n";
+        $this->operationFailed = false;
         try
         {
             $input = new getKeyExchangeObject($keyName);
@@ -352,8 +415,10 @@ class DaisyOnlineClient
         }
         catch (SoapFault $f)
         {
-            echo "$f\n";
-            return false;
+            $this->operationFailed = true;
+            $this->faultType = $this->extractFaultType($f);
+            $this->faultString = $f->faultstring;
+            return null;
         }
 
         return $getKeyExchangeObjectResponse->KeyExcahnge;

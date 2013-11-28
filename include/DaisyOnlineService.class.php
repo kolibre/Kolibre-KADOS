@@ -56,6 +56,8 @@ require_once('getKeyExchangeObjectResponse.class.php');
 
 class DaisyOnlineService
 {
+    const VERSION = '0.1';
+
     private $serviceAttributes = array();
     private $readingSystemAttributes = null;
 
@@ -155,6 +157,14 @@ class DaisyOnlineService
         array_push($instance_variables_to_serialize, 'adapter');
         array_push($instance_variables_to_serialize, 'adapterIncludeFile');
         return $instance_variables_to_serialize;
+    }
+
+    /**
+     * Returns the current version
+     */
+    public function getVersion()
+    {
+        return self::VERSION;
     }
 
     /**

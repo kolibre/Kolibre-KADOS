@@ -83,6 +83,9 @@ class DaisyOnlineService
     // boolean indicating if session handling is disabled, use with debugging and testing only
     private $sessionHandleDisabled = false;
 
+    // boolean indicating if cookie check is disabled in session handling, use with debugging and testing only
+    private $sessionHandleCookieDisabled = false;
+
     // logger instance
     private $logger = null;
 
@@ -164,6 +167,15 @@ class DaisyOnlineService
         $this->sessionHandleDisabled = true;
     }
 
+    /**
+     * Disables check for chookie in session handling.
+     *
+     * Warning. Don not invoke this functin unless you are testing or debugging this class.
+     */
+    public function disableCookieCheckInSessionHandle()
+    {
+        $this->sessionHandleCookieDisabled = true;
+    }
 
     /**
      * Log function logRequestAndResponse, log SOAP request and response, invoked from service.php
@@ -1192,7 +1204,11 @@ class DaisyOnlineService
         }
 
         // client must send HTTP Cookies in requests
-        if (!isset($_COOKIE['PHPSESSID']))
+        if ($this->sessionHandleCookieDisabled)
+        {
+            $this->logger->warn('Cookie check in session handle disabled');
+        }
+        else if (!isset($_COOKIE['PHPSESSID']))
         {
             $msg = 'No cookie found in request';
             $this->logger->warn($msg);

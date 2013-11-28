@@ -48,6 +48,69 @@ if (in_array('wsdl', array_map('strtolower', array_keys($_GET))))
     die(str_replace('SERVICE_WSDL_URI_PLACEHOLDER', $endpointUri, $wsdl_data));
 }
 
+// if info page was requested (no POST)
+if ($_SERVER['REQUEST_METHOD'] != 'POST')
+{
+?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtmlitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<style>
+.heading {
+    width: 100%;
+    padding: 10px 0px;
+    margin-top: 0px;
+    font-size: 26px;
+    font-weight: bold;
+    color: #406685;
+    background-color: #58c9e4;
+}
+.operations {
+    padding-left: 10px;
+}
+</style>
+<title>DAISYOnlineService</title>
+</head>
+<body>
+<p class="heading">&nbsp;&nbsp;DAISYOnlineService&nbsp;&nbsp;v<? echo DaisyOnlineService::getVersion();?></p>
+This service implements the DAISY Online Delivery protocol as specified in the Technical Recommendation approved in May 29, 2010.
+<h3>Supported operations</h3>
+<p class="operations">Required operations</p>
+<ul>
+<li>logOn</li>
+<li>logOff</li>
+<li>getServiceAttributes</li>
+<li>setReadingSystemAttributes</li>
+<li>getContentList</li>
+<li>getContentMetadata</li>
+<li>issueContent</li>
+<li>getContentResources</li>
+</ul>
+<p class="operations">Optional operations</p>
+<ul>
+<li>returnContent</li>
+<?
+    $DaisyOnlineService = new DaisyOnlineService();
+    $operations = $DaisyOnlineService->getServiceSupportedOptionalOperations();
+    if (in_array('SERVICE_ANNOUNCEMENTS', $operations))
+        echo "<li>getServiceAnnouncements</li>\n<li>markAnnouncementsAsRead</li>\n";
+    if (in_array('SET_BOOKMARKS', $operations))
+        echo "<li>setBookmarks</li>\n";
+    if (in_array('GET_BOOKMARKS', $operations))
+        echo "<li>getBookmarks</li>\n";
+    if (in_array('DYNAMIC_MENUS', $operations))
+        echo "<li>getQuestions</li>\n";
+    if (in_array('PDTB2_KEY_PROVISION', $operations))
+        echo "<li>getKeyExchangeObject</li>\n";
+?>
+</ul>
+</body>
+</html>
+<?
+    die();
+}
+
 // Include class map
 require_once('classmap.php');
 

@@ -26,6 +26,7 @@ require_once('Adapter.class.php');
 class SystemTestAdapter extends Adapter
 {
     protected $sessionActive = true;
+    protected $contentLists = array('new' => array('id_1', 'id_2'), 'issued' => array('id_3'), 'expired' => array('id_4'), 'returned' => array());
 
     public function startSession()
     {
@@ -73,8 +74,14 @@ class SystemTestAdapter extends Adapter
 
     public function contentList($list, $contentFormats = null, $protectionFormats = null, $mimeTypes = null)
     {
+        $contentList = array();
         if ($list == 'stop-backend-session') $this->sessionActive = false;
-        return array();
+        if (array_key_exists($list, $this->contentLists))
+        {
+            foreach ($this->contentLists[$list] as $item)
+                array_push($contentList, $item);
+        }
+        return $contentList;
     }
 
     public function contentExists($contentId)
@@ -122,6 +129,11 @@ class SystemTestAdapter extends Adapter
 
     public function contentIssue($contentId)
     {
+        if (in_array($contentId, $this->contentLists['new']))
+        {
+            $this->contentLists['new'] = array_diff($this->contentLists['new'], array($contentId));
+            array_push($this->contentLists['issued'], $contentId);
+        }
         return true;
     }
 
@@ -144,6 +156,16 @@ class SystemTestAdapter extends Adapter
 
     public function contentReturn($contentId)
     {
+        if (in_array($contentId, $this->contentLists['issued']))
+        {
+            $this->contentLists['issued'] = array_diff($this->contentLists['issued'], array($contentId));
+            array_push($this->contentLists['returned'], $contentId);
+        }
+        else if (in_array($contentId, $this->contentLists['expired']))
+        {
+            $this->contentLists['expired'] = array_diff($this->contentLists['expired'], array($contentId));
+            array_push($this->contentLists['returned'], $contentId);
+        }
         return true;
     }
 }

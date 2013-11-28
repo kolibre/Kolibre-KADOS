@@ -750,7 +750,7 @@ class DaisyOnlineService
         {
             $this->logger->warn("No prior call to getContentMetadata for content '$contentId'");
             $faultString = "Metadata for content has not been requested, call getContentMetadata for content '$contentId'";
-            throw new SoapFault('Client', $faultString, '', '', 'issueContent_invalidOperatonFault');
+            throw new SoapFault('Client', $faultString, '', '', 'issueContent_invalidOperationFault');
         }
 
         // check if content is issuable and issue content

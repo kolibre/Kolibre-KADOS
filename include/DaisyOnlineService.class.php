@@ -162,7 +162,7 @@ class DaisyOnlineService
     /**
      * Returns the current version
      */
-    public function getVersion()
+    public static function getVersion()
     {
         return self::VERSION;
     }
@@ -213,7 +213,7 @@ class DaisyOnlineService
      * Service helper getServiceBaseUri
      * @return string
      */
-    public function getServiceBaseUri($allowencrypted = false)
+    public static function getServiceBaseUri($allowencrypted = false)
     {
         $protocol = 'http';
         if ($allowencrypted === true)

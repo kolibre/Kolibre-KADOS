@@ -43,6 +43,10 @@ class resourcesTest extends PHPUnit_Framework_TestCase
         $instance->resource = array('resource');
         $this->assertFalse($instance->validate());
         $this->assertContains('resources.resource', $instance->getError());
+        $resource = array(new resource('uri', null, 1, 'localURI'));
+        $instance->resource = $resource;
+        $this->assertFalse($instance->validate());
+        $this->assertContains('resources.resource', $instance->getError());
         $resource = array(new resource('uri', 'mimeType', 1, 'localURI'));
         $instance->resource = $resource;
         $this->assertTrue($instance->validate());

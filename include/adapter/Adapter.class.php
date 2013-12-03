@@ -1,0 +1,726 @@
+<?php
+
+/*
+ * Copyright (C) 2013 Kolibre
+ *
+ * This file is part of Kolibre-KADOS.
+ * Kolibre-KADOS is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 2.1 of the License, or
+ * at your option) any later version.
+ *
+ * Kolibre-KADOS is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with Kolibre-KADOS. If not, see <http://www.gnu.org/licenses/>.
+ */
+
+/**
+ * Definition of abstract class Adapter and exception AdapterException.
+ */
+
+/**
+ * An adapter exception
+ *
+ * This is an exception that the adapter shall throw when an error occurs.
+ * Errors might be a database query that failed or any other internal error.
+ */
+class AdapterException extends Exception
+{
+    /**
+     * Contructor
+     *
+     * @param string $message The error message
+     */
+    public function __construct($message)
+    {
+        if (is_string($message)) $this->message = $message;
+    }
+}
+
+/**
+ * Abstract class definition for an adapter
+ *
+ * The adapter is utilized by the DaisyOnlineService to fetch/store data from/to a backend.
+ *
+ */
+abstract class Adapter
+{
+    /**
+     * Placeholder to store user information which , e.g. user id, user object or array containing user information
+     *
+     * @var mixed $user Instance of a object
+     * @access protected
+     */
+    protected $user = null;
+
+    /**
+     * Placeholder to store the device's information
+     *
+     * @var string $deviceManufaturer Name of the device manufacturer
+     * @access public
+     */
+    public $deviceManufaturer = null;
+
+    /**
+     * Placeholder to store the device's information
+     *
+     * @var string $deviceModel Name of the device model
+     * @access public
+     */
+    public $deviceModel = null;
+
+    /**
+     * Placeholder to store the device's information
+     *
+     * @var string $deviceSerial The device serial number
+     * @access public
+     */
+    public $deviceSerial = null;
+
+    /**
+     * Placeholder to store the device's information
+     *
+     * @var string $deviceVersion The device version number
+     * @access public
+     */
+    public $deviceVersion = null;
+
+    /**
+     * Enum for retrieving a service attribute label
+     */
+    const LABEL_SERVICE = 1;
+    /**
+     * Enum for retrieving a content list label
+     */
+    const LABEL_CONTENTLIST = 2;
+    /**
+     * Enum for retrieving a content item label
+     */
+    const LABEL_CONTENTITEM = 3;
+    /**
+     * Enum for retrieving a service announcement label
+     */
+    const LABEL_ANNOUNCEMENT = 4;
+    /**
+     * Enum for retrieving a input question label
+     */
+    const LABEL_INPUTQUESTION = 5;
+    /**
+     * Enum for retrieving a multiple choice question label
+     */
+    const LABEL_CHOICEQUESTION = 6;
+    /**
+     * Enum for retrieving a question label
+     */
+    const LABEL_CHOICE = 7;
+
+
+    /**
+     * Store the SOAP request and response for an invoke of a service operation.
+     *
+     * This method is optional and does not require implementation.
+     * It is invoked by the service at the very end of the execution.
+     *
+     * @param string $request The request as an XML snippet
+     * @param string $response The response as an XML snippet
+     * @param int $timestamp The time of the invoke measured in the number of seconds since the Unix Epoch (January 1 1970 00:00:00 GMT)
+     * @param string $ip IP address from where the request originated
+     */
+    public function logSoapRequestAndResponse($request, $response, $timestamp, $ip)
+    {
+    }
+
+    /**
+     * Start a session on the backend or check if the session is still active
+     *
+     * This method is optional and does not require implementation.
+     * It is invoked by the service when the session initialization sequence is completed and for every subsequent call, except for logOff or logOn.
+     *
+     * @return boolean Returns True if the backend session is active, otherwise False.
+     */
+    public function startSession()
+    {
+        return true;
+    }
+
+    /**
+     * Stop a session on the backend
+     *
+     * This method is optional and does not require implementation.
+     * It is invoked by the service when the session initialization sequence is completer and either logOff or logOn operation is called.
+     *
+     * @return boolean Returns True if the backend session is stopped, otherwise False.
+     */
+    public function stopSession()
+    {
+        return true;
+    }
+
+    /**
+     * Get label for a resource
+     *
+     * This method is required and must be implemeted for a basic service.
+     * It is invoked by the service whenever a label may occur in the response.
+     *
+     * @param string $id Id for the label, i.e. a content id or an announcement id
+     * @param int $type Type of the label. Must be one of the defined LABEL_ values.
+     * @param string $language Optional. The preferred language for the label specified as an ISO 2 letter language code. If not set the backend may choose which language to use.
+     * @return mixed Returns False if no label exists, otherwise returns an associative array.
+     *
+     * <p>The associative array must be a direct match a of label object and must contain the required elements.
+     * Example of an array with an optional audio element.</p>
+     * <pre>
+     * Array
+     * (
+     *     [text] => "A sample label"
+     *     [lang] => "en"
+     *     [audio] => Array
+     *         (
+     *             [uri] => "http://localhost/sample.mp3"
+     *             [size] => 123
+     *         )
+     * )
+     * </pre>
+     */
+    abstract public function label($id, $type, $language = null);
+
+    /**
+     * Authenticate a client for the service
+     *
+     * This method is required and must be implemeted for a basic service.
+     * It is invoked by the service when logOn operation is called.
+     *
+     * @param string $username The username for the client
+     * @param string $password The password for the client
+     * @return boolean Returns True if a user exists with the provided username and password, otherwise False.
+     *
+     * @throws AdapterException
+     */
+    abstract public function authenticate($username, $password);
+
+    /**
+     * Check if the specified content list exists
+     *
+     * This method is required and must be implemented for a basic service.
+     * It is invoked by the service when getContentList operation is called.
+     *
+     * @param string $list The identifier of the list
+     * @return boolean Returns True if the list exists, otherwise False.
+     *
+     * @throws AdapterException
+     */
+    abstract public function contentListExists($list);
+
+    /**
+     * Retrieve a list of content
+     *
+     * This method is required and must be implemented for a basic service.
+     * It is invoked by the service when getContentList operation is called.
+     *
+     * @param string $list The identifier of the list
+     * @param array $contentFormats Optional array of strings. If present, the returned list shall be filtered and may not include content of other types not specified in the array.
+     * @param array $protectionFormats Optional array of strings. If present, the returned list shall be filtered and may not include protected content of other types not specified in the array.
+     * @param array $mimeTypes Optional array of strings. If present, the returned list shall be filtered and may not inlcude content consisting of other mime types then specified in the arrary.
+     * @return array Returns an array of content identifiers represented as strings.
+     *
+     * @throws AdapterException
+     */
+    abstract public function contentList($list, $contentFormats = null, $protectionFormats = null, $mimeTypes = null);
+
+    /**
+     * Retrive last modified data for a content
+     *
+     * This method is optional and does not require implementation.
+     * It is invoked by the service when operations getContentList or getContentResources is called.
+     *
+     * @param string $contentID The identifier of the content
+     * @return mixed Returns False if not supported, otherwise a date string with format 'YYYY-MM-DDThh:mm:ss'
+     *
+     * @throws AdapterException
+     */
+    public function contentLastModifiedDate($contentID)
+    {
+        return false;
+    }
+
+    /**
+     * Check if the specified content exists
+     *
+     * This method is required and must be implemented for a basic service.
+     * It is invoked by the service when operations getContentMetadata, issueContent, getContentResources or returnContent is called.
+     *
+     * @param string $contentID The identifier for the content
+     * @return boolean Returns True if the content exists, otherwise False.
+     *
+     * @throws AdapterException
+     */
+    abstract public function contentExists($contentID);
+
+    /**
+     * Check if the specified content is accessible for the current user
+     *
+     * This method is required and must be implemented for a basic service.
+     * It is invoked by the service when operations getContentMetadata, issueContent, getContentResources or returnContent is called.
+     *
+     * @param string $contentID The identifier for the content
+     * @return boolean Returns True if the content is accessible, otherwise False.
+     *
+     * @throws AdapterException
+     */
+    abstract public function contentAccessible($contentID);
+
+    /**
+     * Retrieve a sample for the specified content
+     *
+     * This method is optional and does not require implementation.
+     * It is invoked by the service when getContentMetadata operation is called.
+     *
+     * @param string $contentID The identifier for the content
+     * @return mixed Returns False if not supported, otherwise a string containing the identifier for the sample.
+     *
+     * @throws AdapterException
+     */
+    public function contentSample($contentID)
+    {
+        return false;
+    }
+
+    /**
+     * Retrieve a category for the specified content
+     *
+     * This method is optional and does not require implementation.
+     * It is invoked by the service when getContentMetadata operation is called.
+     *
+     * @param string $contentID The identifier for the content
+     * @return mixed Returns False if not supported, otherwise a string with the category as value. Recommended values are BOOK, MAGAZINE, NEWSPAPER and OTHER.
+     *
+     * @throws AdapterException
+     */
+    public function contentCategory($contentID)
+    {
+        return false;
+    }
+
+    /**
+     * Retrieve a return date for the specified content
+     *
+     * This method is optional and does not require implementation.
+     * It is invoked by the service when operations getContentMetadata or getContentResources is called.
+     *
+     * @param string $contentID The identifier for the content
+     * @return mixed Returns False if content does not require return, otherwise a date string with format 'YYYY-MM-DDThh:mm:ss'
+     *
+     * @throws AdapterException
+     */
+    abstract public function contentReturnDate($contentID);
+
+    /**
+     * Retrieve metadata for the specified content
+     *
+     * This method is required and must be implemented for a basic service.
+     * It is invoked by the service when getContentMetadata operation is called.
+     *
+     * @param string $contentID The identifier for the content
+     * @return array Returns an associative key and value array.
+     *
+     * <p>Valid key names are all elements the Dublin Core namespace plus the reserved key 'pdtb2:specVersion' which indicates that the content is protected using PDTB2.</p>
+     * <p>Apart from the valid keys, an additional key 'size' must be present. It's value should be the total size (in bytes) of the content.</p>
+     * <p>Example of an array with multiple creators.</p>
+     * <pre>
+     * Array
+     * (
+     *     [dc:title] => "Content title"
+     *     [dc:format] => "DAISY 2.02"
+     *     [dc:type] => "Genre"
+     *     [dc:creator] => Array
+     *         (
+     *             [0] => "Company A"
+     *             [1] => "Company B"
+     *         )
+     *     [size] => 12345
+     * )
+     * </pre>
+     *
+     * @throws AdapterException
+     */
+    abstract public function contentMetadata($contentID);
+
+    /**
+     * Check if the specified content is issuable by the current user
+     *
+     * This method is required and must be implemented for a basic service.
+     * It is invoked by the service when issueContent operation is called.
+     *
+     * @param string $contentID The identifier for the content
+     * @return boolean Returns True if content is issuable, otherwise False.
+     *
+     * @throws AdapterException
+     */
+    abstract public function contentIssuable($contentID);
+
+    /**
+     * Issue the specified content or check if the specified content is issued
+     *
+     * This method is required and must be implemented for a basic service.
+     * It is invoked by the service when operations issueContent or getContentResources is called.
+     *
+     * @param string $contentID The identifier for the content
+     * @return boolean Returns True if the content is issued, otherwise False.
+     *
+     * @throws AdapterException
+     */
+    abstract public function contentIssue($contentID);
+
+    /**
+     * Retrieve resources for the specified content
+     *
+     * This method is required and must be implemented for a basic service.
+     * It is invoked by the service when getContentResources operation is called.
+     *
+     * @param string $contentID The identifier for the content
+     * @return array Returns an associative array.
+     *
+     * <p>The associative array must be a direct match of a resources object and must contain the required elements.
+     * Example of an array with two resources</p>
+     * <pre>
+     * Array
+     * (
+     *     [0] => Array
+     *         (
+     *             [uri] => "http://localhost/ncc.html"
+     *             [mimeType] => "text/html"
+     *             [size] => 1233
+     *             [localURI] => "ncc.html"
+     *         )
+     *     [1] => Array
+     *         (
+     *             [uri] => "http://localhost/master.smil"
+     *             [mimeType] => "text/plain"
+     *             [size] => 12
+     *             [localURI] => "master.smil"
+     *         )
+     * )
+     * </pre>
+     *
+     * @throws AdapterException
+     */
+    abstract public function contentResources($contentID);
+
+    /**
+     * Check if the specified content is returnable by the current user
+     *
+     * This method is required and must be implemented for a basic service.
+     * It is invoked by the service when returnContent operation is called.
+     *
+     * @param string $contentID The identifier for the content
+     * @return boolean Return True if content is returnable, otherwise False.
+     *
+     * @throws AdapterException
+     */
+    abstract public function contentReturnable($contentID);
+
+    /**
+     * Return the specified content or check if the specified content is returned
+     *
+     * This method is required and must be implemented for a basic service.
+     * It is invoked by the service when returnContent operation is called.
+     *
+     * @param string $contentID The identifier for the content
+     * @return boolean Returns True if content is returned, otherwise False.
+     *
+     * @throws AdapterException
+     */
+    abstract public function contentReturn($contentID);
+
+    /**
+     * Retrieve a list of announcements
+     *
+     * This method is optional and does not require implementation.
+     * It is invoked by the service when getServiceAnnouncements operation is called.
+     * If the service supports SERVICE_ANNOUNCEMENTS, this method must be implemented.
+     *
+     * @return array Returns an array of announcement identifiers represented as strings
+     *
+     * @throws AdapterException
+     */
+    public function announcements()
+    {
+        return array();
+    }
+
+    /**
+     * Retrieve information for the specified announcement
+     *
+     * This method is optional and does not require implementation.
+     * It is invoked by the service when getServiceAnnouncements operation is called.
+     *
+     * @param string $announcementID The identifier for the announcement
+     * @return mixed Returns false is not supported, otherwise an associative kay and value array.
+     *
+     * <p>Valid key names are 'type' and 'priority'. Allowed values for key 'type' are: [WARNING, ERROR, INFORMATION, SYSTEM]. Allowed values for key 'priority' are: [1, 2, 3].</p>
+     * <p>Example of an array.</p>
+     * <pre>
+     * Array
+     * (
+     *     [type] => "INFORMATION"
+     *     [priority] => 3
+     * )
+     * </pre>
+     *
+     * @throws AdapterException
+     */
+    public function announcementInfo($announcementID)
+    {
+        return false;
+    }
+
+    /**
+     * Check if the specified announcement exists
+     *
+     * This method is optional and does not require implementation.
+     * It is invoked by the service when markAnnouncementsAsRead operation is called.
+     * If the service supports SERVICE_ANNOUNCEMENTS, this method must be implemented.
+     *
+     * @param string $announcementID The identifier for the announcement
+     * @return boolean Returns True if the announcement exists, otherwise False.
+     *
+     * @throws AdapterException
+     */
+    public function announcementExists($announcementID)
+    {
+        return false;
+    }
+
+    /**
+     * Mark the specified announcement as read of check if the announcement is read
+     *
+     * This method is optional and does not require implementation.
+     * It is invoked by the service when markAnnouncementsAsRead operation is called.
+     * If the service supports SERVICE_ANNOUNCEMENTS, this method must be implemented.
+     *
+     * @param string $announcementID The identifier for the announcement
+     * @return boolean Returns True is the announcement is read, otherwise False.
+     *
+     * @throws AdapterException
+     */
+    public function announcementRead($announcementID)
+    {
+        return false;
+    }
+
+    /**
+     * Save bookmark for the specified content
+     *
+     * This method is optional and does not require implementation.
+     * It is invoked by the service when setBookmarks operation is called.
+     * If the service supports SET_BOOKMARKS, this method must be implemented.
+     *
+     * @param string $contentID The identifier for the content
+     * @param string $bookmark A JSON encoded string of a bookmarkSet object
+     * @return boolean Returns True if the bookmark is saved, otherwise False.
+     *
+     * @throws AdapterException
+     */
+    public function setBookmarks($contentID, $bookmark)
+    {
+        return false;
+    }
+
+    /**
+     * Retrieve bookmark for the specified content
+     *
+     * This method is optional and does not require implementation.
+     * It is invoked by the service when getBookmarks operation is called.
+     * If the service supports GET_BOOKMARKS, this method must be implemented.
+     *
+     * @param string $contentID The identifier for the content
+     * @return mixed Returns false if bookmark not found, otherwise a JSON encoded string of a bookmarkSet object.
+     *
+     * @throws AdapterException
+     */
+    public function getBookmarks($contentID)
+    {
+        return false;
+    }
+
+    /**
+     * Retrieve main menu
+     *
+     * This method is optional and does not require implementation.
+     * It is invoked by the service when getQuestions operation is called.
+     * If the service supports DYNAMIC_MENUS, this method must be implemented.
+     *
+     * @return mixed Returns identifiers for questions and choices as an associative array. See example for menuNext.
+     *
+     * @throws AdapterException
+     */
+    public function menuDefault()
+    {
+        return array();
+    }
+
+    /**
+     * Retrieve search menu
+     *
+     * This method is optional and does not require implementation.
+     * It is invoked by the service when getQuestions operation is called.
+     * If the service supports DYNAMIC_MENUS and search, this method must be implemented.
+     *
+     * @return mixed Returns False in not supported, otherwise an associative array. See example for menuNext.
+     *
+     * @throws AdapterException
+     */
+    public function menuSearch()
+    {
+        return false;
+    }
+
+    /**
+     * Retrieve previous menu
+     *
+     * This method is optional and does not require implementation.
+     * It is invoked by the service when getQuestions operation is called.
+     * If the service supports DYNAMIC_MENUS and back, this method must be implemented.
+     *
+     * @return mixed Returns False in not supported, otherwise an associative array. See example for menuNext.
+     *
+     * @throws AdapterException
+     */
+    public function menuBack()
+    {
+        return false;
+    }
+
+    /**
+     * Retrieve next menu
+     *
+     * This method is optional and does not require implementation.
+     * It is invoked by the service when getQuestions operation is called.
+     * If the service supports DYNAMIC_MENUS, this method must be implemented.
+     *
+     * @param array $response An associative array containing the reponses from a previous question.
+     * <p>Example of an associative array</p>
+     * <pre>
+     * Array
+     * (
+     *     [0] => Array
+     *     (
+     *         [questionID] => "question 1"
+     *         [value] => "value is always a string"
+     *     )
+     *     [1] => Array
+     *     (
+     *         [questionID] => "question 2"
+     *         [base64] => "base64 encoded binary data"
+     *     )
+     * )
+     * </pre>
+     * @return mixed Returns either a content list identifier represented as a string or a label represented as an associative array, when an endpoint in the dynamic menu is reached. Otherwise an associative array is returned.
+     *
+     * <p>Example of an associative array for a dynamic menu</p>
+     * <pre>
+     * Array
+     * (
+     *     [0] => Array
+     *     (
+     *         [type] => "multipleChoiceQuestion"
+     *         [questionID] => "question 1"
+     *         [choices] => Array
+     *         (
+     *             [0] => "choice 1"
+     *             [1] => "choice 2"
+     *             [2] => "choice 3"
+     *         )
+     *     )
+     *     [1] => Array
+     *     (
+     *        [type] => "inputQuestions"
+     *        [questionID] => "question 2"
+     *     )
+     *     [2] => Array
+     *     (
+     *        [type] => "inputQuestions"
+     *        [questionID] => "question 3"
+     *     )
+     *     [3] => Array
+     *     (
+     *         [type] => "multipleChoiceQuestion"
+     *         [questionID] => "question 4"
+     *         [choices] => Array
+     *         (
+     *             [0] => "choice 1"
+     *             [1] => "choice 2"
+     *         )
+     *     )
+     * )
+     * </pre>
+     *
+     *
+     * @throws AdapterException
+     */
+    public function menuNext($response)
+    {
+        return array();
+    }
+
+    /**
+     * Retrieve public key for the requested key
+     *
+     * The service encrypts this key with one the client's public keys, thus only the client is able to decrypt the key.
+     *
+     * This method is optional and does not require implementation.
+     * It is invoked by the service when getKeyExchangeObject operation is called.
+     * If the service supports PDTB2_KEY_PROVISION, this method must be implemented.
+     *
+     * @param string $name Name of the requested key
+     * @return mixed Returns False if no key exists with the specified name, otherwise the public key as a string.
+     *
+     * @throws AdapterException
+     */
+    public function requestedKey($name)
+    {
+        return false;
+    }
+
+    /**
+     * Retrieve client's public key identified by name
+     *
+     * The service goes through each key in the client's key ring until a key is found on the backend.
+     *
+     * This method is optional and does not require implementation.
+     * It is invoked by the service when getKeyExchangeObject operation is called.
+     * If the service supports PDTB2_KEY_PROVISION, this method must be implemented.
+     *
+     * @param string $name Name of the client key
+     * @return mixed Return False if no key exists with the specified name, otherwise an associative array is returned.
+     * <p>The array must contain the following keys: 'key', 'modulus' and 'exponent'. Key is the public key, modulus and exponent represents the modulues and exponent values of the public key.</p>
+     *
+     * @throws AdapterException
+     */
+    public function clientKey($name)
+    {
+        return false;
+    }
+
+    /**
+     * Retrieve issuer information
+     *
+     * This method is optional and does not require implementation.
+     * It is invoked by the service when getKeyExchangeObject operation is called.
+     * If the service supports PDTB2_KEY_PROVISION, this method must be implemented.
+     *
+     * @return array Returns an associative array containing keys 'uid' and 'name'.
+     *
+     * @throws AdapterException
+     */
+    public function issuerInfo()
+    {
+        return array();
+    }
+}
+
+?>

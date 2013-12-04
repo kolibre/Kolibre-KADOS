@@ -51,8 +51,6 @@ require_once('getQuestionsResponse.class.php');
 require_once('getKeyExchangeObject.class.php');
 require_once('getKeyExchangeObjectResponse.class.php');
 
-require_once('ContentHelper.class.php');
-
 class DaisyOnlineService
 {
     private $serviceAttributes = array();
@@ -67,112 +65,53 @@ class DaisyOnlineService
     // stack containing operations to be invoked in initialization sequence
     private $sessionInitializationStack = array();
 
+    // stack containing content identifiers for which metadata has been retrieved
+    private $sessionContentMetadataRequests = array();
+
     // boolean indicating if a user has successfully logged on
     private $sessionUserLoggedOn = false;
 
     // boolean indicating if a session has been established
     private $sessionEstablished = false;
 
-    // placeholders for storing user information
-    private $sessionUserId = null;
+    // username for the active client/device in this session
     private $sessionUsername = null;
-    private $sessionUserLoggingEnabled = false;
 
     // logger instance
     private $logger = null;
 
-    // database connection handler
-    private $dbh = null;
+    // adapter instance
+    private $adapter = null;
+
+    // adapter file to include in wakeup
+    private $adapterIncludeFile = null;
 
     public function __construct()
     {
         // setup logger
         $this->logger = Logger::getLogger('kolibre.daisyonline.daisyonlineservice');
 
-        // setup database connection
-        try
-        {
-            $this->dbh = new PDO('sqlite:../data/db/demo.db');
-            $this->dbh->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-        }
-        catch (PDOException $e)
-        {
-            $this->logger->fatal($e->getMessage());
-            die("DB Error: $msg\n");
-        }
-
         // parse settings file
-        $settings = parse_ini_file('../service.ini');
+        $inifile = realpath(dirname(__FILE__)) . '/../service.ini';
+        $settings = parse_ini_file($inifile, true);
 
         // setup service attributes
-        if (array_key_exists('serviceProvider', $settings))
-            $this->serviceAttributes['serviceProvider'] = $settings['serviceProvider'];
-        if (array_key_exists('service', $settings))
-            $this->serviceAttributes['service'] = $settings['service'];
-        $this->serviceAttributes['supportedContentSelectionMethods'] = array();
-        if (array_key_exists('supportedContentSelectionMethods', $settings))
+        if (array_key_exists('Service', $settings))
+            $this->setupServiceAttributes($settings['Service']);
+        else
         {
-            if (in_array('OUT_OF_BAND', $settings['supportedContentSelectionMethods']))
-                array_push($this->serviceAttributes['supportedContentSelectionMethods'], 'OUT_OF_BAND');
-            if (in_array('BROWSE', $settings['supportedContentSelectionMethods']))
-                array_push($this->serviceAttributes['supportedContentSelectionMethods'], 'BROWSE');
+            $this->logger->error("Group 'Service' is missing in ini file");
+            die("Group 'Service' not found in ini file, please make sure the settings file is correct.");
         }
-        if (sizeof($this->serviceAttributes['supportedContentSelectionMethods']) == 0)
+
+        // setup adapter
+        if (array_key_exists('Adapter', $settings))
+            $this->setupAdapter($settings['Adapter']);
+        else
         {
-            $msg = 'No valid content selection method found in settings, using default OUT_OF_BAND';
-            $this->logger->error($msg);
-            array_push($this->serviceAttributes['supportedContentSelectionMethods'], 'OUT_OF_BAND');
+            $this->logger->error("Group 'Adapter' is missing in ini file");
+            die("Group 'Adapter' not found in ini file, please make sure the settings file is correct.");
         }
-        $this->serviceAttributes['supportedOptionalOperations'] = array();
-        if (array_key_exists('supportedOptionalOperations', $settings))
-        {
-            if (in_array('SERVICE_ANNOUNCEMENTS', $settings['supportedOptionalOperations']))
-                array_push($this->serviceAttributes['supportedOptionalOperations'], 'SERVICE_ANNOUNCEMENTS');
-            if (in_array('SET_BOOKMARKS', $settings['supportedOptionalOperations']))
-                array_push($this->serviceAttributes['supportedOptionalOperations'], 'SET_BOOKMARKS');
-            if (in_array('GET_BOOKMARKS', $settings['supportedOptionalOperations']))
-                array_push($this->serviceAttributes['supportedOptionalOperations'], 'GET_BOOKMARKS');
-            if (in_array('DYNAMIC_MENUS', $settings['supportedOptionalOperations']))
-                array_push($this->serviceAttributes['supportedOptionalOperations'], 'DYNAMIC_MENUS');
-            if (in_array('PDTB2_KEY_PROVISION', $settings['supportedOptionalOperations']))
-                array_push($this->serviceAttributes['supportedOptionalOperations'], 'PDTB2_KEY_PROVISION');
-        }
-        $this->serviceAttributes['supportsServerSideBack'] = false;
-        if (array_key_exists('supportsServerSideBack', $settings))
-        {
-            if (in_array('DYNAMIC_MENUS', $this->serviceAttributes['supportedOptionalOperations']))
-                $this->serviceAttributes['supportsServerSideBack'] = true;
-            else
-            {
-                $msg = "Reserved parameter 'search' supported in settings but DYNAMIC_MENUS not supported";
-                $this->logger->warn($msg);
-            }
-        }
-        $this->serviceAttributes['supportsSearch'] = false;
-        if (array_key_exists('supportsSearch', $settings))
-        {
-            if (in_array('DYNAMIC_MENUS', $this->serviceAttributes['supportedOptionalOperations']))
-                $this->serviceAttributes['supportsSearch'] = true;
-            else
-            {
-                $msg = "Reserved parameter 'back' supported in settings but DYNAMIC_MENUS not supported";
-                $this->logger->warn($msg);
-            }
-        }
-        $this->serviceAttributes['supportedUplinkAudioCodecs'] = array();
-        if (array_key_exists('supportedUplinkAudioCodecs', $settings))
-        {
-            if (in_array('DYNAMIC_MENUS', $this->serviceAttributes['supportedOptionalOperations']))
-                $this->serviceAttributes['supportedUplinkAudioCodecs'] = $settings['supportedUplinkAudioCodecs'];
-            else
-            {
-                $msg = "Uplink audio codes specified in settings but DYNAMIC_MENUS not supported";
-                $this->logger->warn($msg);
-            }
-        }
-        $this->serviceAttributes['supportsAudioLabels'] = false;
-        if (array_key_exists('supportsAudioLabels', $settings))
-            $this->serviceAttributes['supportsAudioLabels'] = true;
     }
 
     /**
@@ -183,17 +122,8 @@ class DaisyOnlineService
         // setup logger
         $this->logger = Logger::getLogger('kolibre.daisyonline.daisyonlineservice');
 
-        // setup database connection
-        try
-        {
-            $this->dbh = new PDO('sqlite:../data/db/demo.db');
-            $this->dbh->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-        }
-        catch (PDOException $e)
-        {
-            $this->logger->fatal($e->getMessage());
-            die("DB Error: $msg\n");
-        }
+        if (!is_null($this->adapterIncludeFile)) require_once($this->adapterIncludeFile);
+        $this->adapter = unserialize($this->adapter);
     }
 
     /**
@@ -201,17 +131,19 @@ class DaisyOnlineService
      */
     public function __sleep()
     {
+        $this->adapter = serialize($this->adapter);
         $instance_variables_to_serialize = array();
         array_push($instance_variables_to_serialize, 'serviceAttributes');
         array_push($instance_variables_to_serialize, 'readingSystemAttributes');
         array_push($instance_variables_to_serialize, 'sessionCurrentOperation');
         array_push($instance_variables_to_serialize, 'sessionInvokedOperations');
         array_push($instance_variables_to_serialize, 'sessionInitializationStack');
+        array_push($instance_variables_to_serialize, 'sessionContentMetadataRequests');
         array_push($instance_variables_to_serialize, 'sessionUserLoggedOn');
         array_push($instance_variables_to_serialize, 'sessionEstablished');
-        array_push($instance_variables_to_serialize, 'sessionUserId');
         array_push($instance_variables_to_serialize, 'sessionUsername');
-        array_push($instance_variables_to_serialize, 'sessionUserLoggingEnabled');
+        array_push($instance_variables_to_serialize, 'adapter');
+        array_push($instance_variables_to_serialize, 'adapterIncludeFile');
         return $instance_variables_to_serialize;
     }
 
@@ -220,30 +152,10 @@ class DaisyOnlineService
      * @param string $request, SOAP request
      * @param string $response, SOAP response
      */
-    public function logRequestAndResponse($request, $response)
+    public function logRequestAndResponse($request, $response, $timestamp)
     {
-        if ($this->sessionUserLoggingEnabled === false) return;
-
-        try
-        {
-            $query = 'INSERT INTO userlog VALUES(:user_id, :datetime, :request, :response, :ip)';
-            $values = array();
-            $values[':user_id'] = $this->sessionUserId;
-            $values[':datetime'] = date('Y-m-d H:i:s');
-            $values[':request'] = $request;
-            $values[':response'] = $response;
-            $values[':ip'] = $this->getClientIP();
-            $sth = $this->dbh->prepare($query);
-            $sth->execute($values);
-            $count = $sth->rowCount();
-            $msg = "$count line(s) inserted";
-            $this->logger->trace($msg);
-        }
-        catch (PDOException $e)
-        {
-            $msg = $e->getMessage();
-            $this->logger->fatal($msg);
-        }
+        $ip = $this->getClientIP();
+        $this->adapter->logSoapRequestAndResponse($request, $response, $timestamp, $ip);
     }
 
     /**
@@ -300,38 +212,18 @@ class DaisyOnlineService
 
         try
         {
-            $query = 'SELECT rowid, * FROM user WHERE username = :username AND password = :password';
-            $sth = $this->dbh->prepare($query);
-            $values = array(':username' => $username, ':password' => $password);
-            $sth->execute($values);
-            $users = $sth->fetchAll(PDO::FETCH_ASSOC);
+            if ($this->adapter->authenticate($username, $password) === false)
+                return new logOnResponse(false);
         }
-        catch (PDOException $e)
+        catch (AdapterException $e)
         {
             $this->logger->fatal($e->getMessage());
             throw new SoapFault('Server', 'Internal Server Error', '', '', 'logOn_internalServerErrorFault');
         }
 
-        if (sizeof($users) == 0)
-        {
-            $msg = "No user found with username = '$username' and password = <hidden>";
-            $this->logger->warn($msg);
-            return new logOnResponse(false);
-        }
-        else if (sizeof($users) > 1)
-        {
-            $count = sizeof($users);
-            $msg = "$count users found with username = '$username' and password = <hidden>";
-            $this->logger->error($msg);
-            return new logOnResponse(false);
-        }
-
         // store user information
-        $this->sessionUserId = $users[0]['rowid'];
         $this->sessionUsername = $username;
         $this->sessionUserLoggedOn = true;
-        if ($users[0]['log'] == 1)
-            $this->sessionUserLoggingEnabled = true;
 
         $msg = "User '$username' logged on";
         $this->logger->info($msg);
@@ -433,6 +325,13 @@ class DaisyOnlineService
             throw new SoapFault('Client', $input->getError(), '', '', 'setReadingSystemAttributes_invalidParameterFault');
         }
 
+        // start backend session
+        if ($this->adapter->startSession() === false)
+        {
+            $this->logger->warn("Backend session not active");
+            return setReadingSystemAttributesResponse(false);
+        }
+
         // store reading system attributes
         $this->readingSystemAttributes = $input->getReadingSystemAttributes();
         $this->sessionEstablished = true;
@@ -460,62 +359,51 @@ class DaisyOnlineService
 
         $listId = $input->getId();
 
-        // check if we support the requested list
-        $supportedListIds = ContentHelper::getSupportedContentLists($this->dbh);
-        if (!in_array($listId, $supportedListIds))
+        // check if the requested list exists
+        try
         {
-            $msg = "User '$this->sessionUsername' requested an unsupported content list '$listId'";
-            $this->logger->warn($msg);
-            $faultString = "contentList '$listId' does not exist";
-            throw new SoapFault('Client', $faultString,'', '', 'getContentList_invalidParameterFault');
+            if ($this->adapter->contentListExists($listId) === false)
+            {
+                $msg = "User '$this->sessionUsername' requested an unsupported content list '$listId'";
+                $this->logger->warn($msg);
+                $faultString = "contentList '$listId' does not exist";
+                throw new SoapFault('Client', $faultString,'', '', 'getContentList_invalidParameterFault');
+            }
         }
-
-        // get content list id
-        $contentListId = ContentHelper::getContentListId($this->dbh, $listId);
-        if ($contentListId === false)
+        catch (AdapterException $e)
         {
-            $msg = "failed to retrieve id for content list '$listId'";
-            $this->logger->fatal($msg);
+            $this->logger->fatal($e->getMessage());
             throw new SoapFault('Server', 'Internal Server Error', '', '', 'getContentList_internalServerErrorFault');
         }
 
-        // fetch content for user
-        $unfilteredContent = ContentHelper::getUserContent($this->dbh, $this->sessionUserId, $contentListId);
-        if ($unfilteredContent === false)
+        // fetch content for the requested list
+        try
         {
-            $msg = "failed to retrieve '$listId' content for user '$this->sessionUsername'";
-            $this->logger->fatal($msg);
+            $contentItems = $this->adapter->contentList($listId);
+        }
+        catch (AdapterException $e)
+        {
+            $this->logger->fatal($e->getMessage());
             throw new SoapFault('Server', 'Internal Server Error', '', '', 'getContentList_internalServerErrorFault');
         }
-
-        // filter content based on supported content formats
-        $msg = "content items before filtering: ".sizeof($unfilteredContent);
-        $this->logger->debug($msg);
-        $sscf = ContentHelper::getServiceSupportedContentFormats($this->dbh);
-        $cscf = $this->getClientSupportedContentFormats();
-        $formatFilter = array_intersect_ukey($sscf, $cscf, "strcasecmp");
-        $filteredContent = array();
-        foreach ($unfilteredContent as $content)
-        {
-            $contentFormatId = ContentHelper::getDaisyFormatId($this->dbh, $content['rowid']);
-            if (!in_array($contentFormatId, $formatFilter))
-                continue;
-            array_push($filteredContent, $content);
-        }
-        $msg = "content items after filtering: ".sizeof($filteredContent);
-        $this->logger->debug($msg);
 
         // build contentList
         $contentList = new contentList();
         $contentList->setId($listId);
 
         // set label
-        $langCode = $this->getClientLangCode();
-        $description = ContentHelper::getContentListDescription($this->dbh, $listId);
-        $contentListLabel = new label($description, null, $langCode);
-        $contentList->setLabel($contentListLabel);
+        try
+        {
+            $label = $this->adapter->label($listId, Adapter::LABEL_CONTENTLIST, $this->getClientLangCode());
+            if (is_array($label))
+                $contentList->setLabel($this->createLabel($label));
+        }
+        catch (AdapterException $e)
+        {
+            $this->logger->fatal($e->getMessage());
+        }
 
-        $totalItems = sizeof($filteredContent);
+        $totalItems = sizeof($contentItems);
         $firstItem = $input->getFirstItem();
         $lastItem = $input->getLastItem();
 
@@ -539,28 +427,24 @@ class DaisyOnlineService
             {
                 for ($i = $firstItem; $i <= $lastItem; $i++)
                 {
-                    $content = $filteredContent[$i];
-                    $filename = 'content_'.$content['rowid'].'.ogg';
-                    $audio = new audio($this->getServiceMediaUri($filename));
-                    $size = ContentHelper::getContentLabelAudioSize($this->dbh, $content['rowid']);
-                    if ($size > 0) $audio->setSize($size);
-
-                    $language = 'i-unknown';
-                    $title = 'unknown';
-                    foreach (ContentHelper::getContentMetadata($this->dbh, $content['rowid']) as $key => $value)
+                    $contentId = $contentItems[$i];
+                    $contentItem = new contentItem(null, $contentId);
+                    try
                     {
-                        if ($key == 'dc:language')
-                        {
-                            $language = $value;
-                        }
-                        else if ($key == 'dc:title')
-                        {
-                            $title = $value;
-                        }
-                    }
+                        $label = $this->adapter->label($contentId, Adapter::LABEL_CONTENTITEM, $this->getClientLangCode());
+                        if (is_array($label))
+                            $contentItem->setLabel($this->createLabel($label));
+                        else
+                            $this->logger->warn("Content with id '$contentId' has no label");
 
-                    $label = new label($title, $audio, $language);
-                    $contentItem = new contentItem($label, 'con_'.$content['rowid']);
+                        $lastModifiedDate = $this->adapter->contentLastModifiedDate($contentId);
+                        if (is_string($lastModifiedDate))
+                            $contentItem->setLastModifiedDate($lastModifiedDate);
+                    }
+                    catch (AdapterException $e)
+                    {
+                        $this->logger->fatal($e->getMessage());
+                    }
                     $contentList->addContentItem($contentItem);
                 }
 
@@ -599,36 +483,71 @@ class DaisyOnlineService
         }
 
         // parameters
-        $contentId = ContentHelper::parseContentId($input->getContentID());
+        $contentId = $input->getContentID();
+
+        // check if the requested content exists and is accessible
+        try
+        {
+            if ($this->adapter->contentExists($contentId) === false)
+            {
+                $msg = "User '$this->sessionUsername' requested metadata for a nonexistent content '$contentId'";
+                $this->logger->warn($msg);
+                $faultString = "content '$contentId' does not exist";
+                throw new SoapFault('Client', $faultString,'', '', 'getContentMetadata_invalidParameterFault');
+            }
+
+            if ($this->adapter->contentAccessible($contentId) === false)
+            {
+                $msg = "User '$this->sessionUsername' requested metadata for an inaccessible content '$contentId'";
+                $this->logger->warn($msg);
+                $faultString = "content '$contentId' not accessible";
+                throw new SoapFault('Client', $faultString,'', '', 'getContentMetadata_invalidParameterFault');
+            }
+        }
+        catch (AdapterException $e)
+        {
+            $this->logger->fatal($e->getMessage());
+            throw new SoapFault('Server', 'Internal Server Error', '', '', 'getContentMetadata_internalServerErrorFault');
+        }
 
         // build contentMetadata
         $contentMetadata = new contentMetadata();
 
-        // set category
-        $category = ContentHelper::getContentCategory($this->dbh, $contentId);
-        $contentMetadata->setCategory($category);
-
-        // set requiresReturn
-        $returnDate = ContentHelper::contentRequiresReturn($this->dbh, $this->sessionUserId, $contentId);
-        if ($returnDate === false)
-            $contentMetadata->setRequiresReturn(false);
-        else
-            $contentMetadata->setRequiresReturn(true);
-
-        // samples not supported
-
-        // build metadata
-        $metadata = new metadata();
-        $metadata->setIdentifier($input->getContentID());
-        foreach (ContentHelper::getContentMetadata($this->dbh, $contentId) as $key => $value)
+        try
         {
-            switch ($key)
+            // set sample [optional]
+            $sample = $this->adapter->contentSample($contentId);
+            if (is_string($sample)) $contentMetadata->setSample($sample);
+
+            // set category [optional]
+            $category = $this->adapter->contentCategory($contentId);
+            if (is_string($category)) $contentMetadata->setCategory($category);
+
+            // set requiresRetrn [mandatory]
+            $returnDate = $this->adapter->contentReturnDate($contentId);
+            if (is_string($returnDate)) $contentMetadata->setRequiresReturn(true);
+            else $contentMetadata->setRequiresReturn(false);
+
+            // build metadata
+            $metadata = new metadata();
+            $metadata->setIdentifier($input->getContentID());
+            $metadataValues = $this->adapter->contentMetadata($contentId);
+            if (is_array($metadataValues) === false) {
+                $this->logger->warn("Content with id '$contentId' has no metadata");
+                throw new SoapFault('Server', 'Internal Server Error', '', '', 'getContentMetadata_internalServerErrorFault');
+            }
+            foreach ($metadataValues as $key => $value)
             {
+                switch ($key)
+                {
+                case 'size':
+                    $metadata->setSize($value);
+                    break;
                 case 'dc:title':
                     $metadata->setTitle($value);
                     break;
                 case 'dc:identifier':
-                    // the identifier is not the identifier found in the fileset
+                    // the identifier is not the identifier found in metadata
                     break;
                 case 'dc:publisher':
                     $metadata->setPublisher($value);
@@ -643,49 +562,71 @@ class DaisyOnlineService
                     $metadata->setSource($value);
                     break;
                 case 'dc:type':
-                    $metadata->addType($value);
+                    if (is_array($value))
+                        foreach ($value as $subvalue) $metadata->addType($subvalue);
+                    else
+                        $metadata->addType($value);
                     break;
                 case 'dc:subject':
-                    $metadata->addSubject($value);
+                    if (is_array($value))
+                        foreach ($value as $subvalue) $metadata->addSubject($subvalue);
+                    else
+                        $metadata->addSubject($value);
                     break;
                 case 'dc:rights':
-                    $metadata->addRights($value);
+                    if (is_array($value))
+                        foreach ($value as $subvalue) $metadata->addRights($subvalue);
+                    else
+                        $metadata->addRights($value);
                     break;
                 case 'dc:relation':
-                    $metadata->addRelation($value);
+                    if (is_array($value))
+                        foreach ($value as $subvalue) $metadata->addRelation($subvalue);
+                    else
+                        $metadata->addRelation($value);
                     break;
                 case 'dc:language':
-                    $metadata->addLanguage($value);
+                    if (is_array($value))
+                        foreach ($value as $subvalue) $metadata->addLanguage($subvalue);
+                    else
+                        $metadata->addLanguage($value);
                     break;
                 case 'dc:description':
-                    $metadata->addDescription($value);
+                    if (is_array($value))
+                        foreach ($value as $subvalue) $metadata->addDescription($subvalue);
+                    else
+                        $metadata->addDescription($value);
                     break;
                 case 'dc:creator':
-                    $metadata->addCreator($value);
+                    if (is_array($value))
+                        foreach ($value as $subvalue) $metadata->addCreator($subvalue);
+                    else
+                        $metadata->addCreator($value);
                     break;
                 case 'dc:coverage':
-                    $metadata->addCoverage($value);
+                    if (is_array($value))
+                        foreach ($value as $subvalue) $metadata->addCoverage($subvalue);
+                    else
+                        $metadata->addCoverage($value);
                     break;
                 case 'dc:contributor':
-                    $metadata->addContributor($value);
+                    if (is_array($value))
+                        foreach ($value as $subvalue) $metadata->addContributor($subvalue);
+                    else
+                        $metadata->addContributor($value);
                     break;
                 default:
                     if ($key == 'pdtb2:specVersion')
                         $metadata->addMeta(new meta($key, $value));
                     break;
+                }
             }
         }
-
-        // fix to avoid validation error if mandatory metadata dc:title value is an empty string
-        if (is_null($metadata->getTitle()) || strlen($metadata->getTitle()) == 0)
-            $metadata->setTitle('unknown title');
-
-        // fix to avoid validation error if mandatory metadata dc:format value is an empty string
-        if (is_null($metadata->getFormat()) || strlen($metadata->getFormat()) == 0)
-            $metadata->setFormat('unknown format');
-
-        // get size
-        $metadata->setSize((int)ContentHelper::getContentResourcesSize($this->dbh, $contentId));
+        catch (AdapterException $e)
+        {
+            $this->logger->fatal($e->getMessage());
+            throw new SoapFault('Server', 'Internal Server Error', '', '', 'getContentMetadata_internalServerErrorFault');
+        }
 
         $contentMetadata->setMetadata($metadata);
 
@@ -698,6 +639,9 @@ class DaisyOnlineService
             $faultString = 'getContentMetadataResponse could not be built';
             throw new SoapFault('Server', $faultString,'', '', 'getContentMetadata_internalServerErrorFault');
         }
+
+        // store content identifier in sessionContentMetadataRequests
+        array_push($this->sessionContentMetadataRequests, $contentId);
 
         return $output;
     }
@@ -719,33 +663,61 @@ class DaisyOnlineService
         }
 
         // parameters
-        $contentId = ContentHelper::parseContentId($input->getContentID());
+        $contentId = $input->getContentID();
 
-        // check if content can be issued
-        $issuable = ContentHelper::contentIssuable($this->dbh, $this->sessionUserId, $contentId);
-        if ($issuable === false)
+        // check if the requested content exists and is accessible
+        try
         {
-            $msg = "User '$this->sessionUsername' not allowed to issue content with id '$contentId'";
-            $this->logger->warn($msg);
-            $faultString = 'User is not allowd to issue content';
-            throw new SoapFault('Client', $faultString, '', '', 'issueContent_invalidParameterFault');
+            if ($this->adapter->contentExists($contentId) === false)
+            {
+                $msg = "User '$this->sessionUsername' requested issuing of a nonexistent content '$contentId'";
+                $this->logger->warn($msg);
+                $faultString = "content '$contentId' does not exist";
+                throw new SoapFault('Client', $faultString,'', '', 'issueContent_invalidParameterFault');
+            }
+
+            if ($this->adapter->contentAccessible($contentId) === false)
+            {
+                $msg = "User '$this->sessionUsername' requested issuing of an inaccessible content '$contentId'";
+                $this->logger->warn($msg);
+                $faultString = "content '$contentId' not accessible";
+                throw new SoapFault('Client', $faultString,'', '', 'issueContent_invalidParameterFault');
+            }
+        }
+        catch (AdapterException $e)
+        {
+            $this->logger->fatal($e->getMessage());
+            throw new SoapFault('Server', 'Internal Server Error', '', '', 'issueContent_internalServerErrorFault');
         }
 
-        // if issued
-        if (ContentHelper::contentInList($this->dbh, $this->sessionUserId, $contentId, 'issued'))
-            return new issueContentResponse(true);
-        // if expired
-        if (ContentHelper::contentInList($this->dbh, $this->sessionUserId, $contentId, 'expired'))
-            return new issueContentResponse(false);
-        // if returned
-        if (ContentHelper::contentInList($this->dbh, $this->sessionUserId, $contentId, 'returned'))
-            return new issueContentResponse(false);
-
-        // issue content
-        if (!ContentHelper::issueContent($this->dbh, $this->sessionUserId, $contentId))
+        // check if a prior call to getContentMetadata has been made
+        if (in_array($contentId, $this->sessionContentMetadataRequests) === false)
         {
-            $msg = "issuing content with id '$contentId' failed";
-            $this->logger->warn($msg);
+            $this->logger->warn("No prior call to getContentMetadata for content '$contentId'");
+            $faultString = "Metadata for content has not been requested, call getContentMetadata for content '$contentId'";
+            throw new SoapFault('Client', $faultString, '', '', 'issueContent_invalidOperatonFault');
+        }
+
+        // check if content is issuable and issue content
+        try
+        {
+            if ($this->adapter->contentIssuable($contentId) === false)
+            {
+                $msg = "User '$this->sessionUsername' not allowed to issue content with id '$contentId'";
+                $this->logger->warn($msg);
+                $faultString = "content '$contentId' is not issuable";
+                throw new SoapFault('Client', $faultString, '', '', 'issueContent_invalidParameterFault');
+            }
+
+            if ($this->adapter->contentIssue($contentId) === false)
+            {
+                $this->logger->warn("Issuing content '$contentId' failed");
+                return new issueContentResponse(false);
+            }
+        }
+        catch (AdapterException $e)
+        {
+            $this->logger->fatal($e->getMessage());
             throw new SoapFault('Server', 'Internal Server Error', '', '', 'issueContent_internalServerErrorFault');
         }
 
@@ -769,40 +741,63 @@ class DaisyOnlineService
         }
 
         // parameters
-        $contentId = ContentHelper::parseContentId($input->getContentID());
+        $contentId = $input->getContentID();
+
+        // check if the requested content exists and is accessible
+        try
+        {
+            if ($this->adapter->contentExists($contentId) === false)
+            {
+                $msg = "User '$this->sessionUsername' requested issuing of a nonexistent content '$contentId'";
+                $this->logger->warn($msg);
+                $faultString = "content '$contentId' does not exist";
+                throw new SoapFault('Client', $faultString,'', '', 'getContentResources_invalidParameterFault');
+            }
+
+            if ($this->adapter->contentAccessible($contentId) === false)
+            {
+                $msg = "User '$this->sessionUsername' requested issuing of an inaccessible content '$contentId'";
+                $this->logger->warn($msg);
+                $faultString = "content '$contentId' not accessible";
+                throw new SoapFault('Client', $faultString,'', '', 'getContentResources_invalidParameterFault');
+            }
+        }
+        catch (AdapterException $e)
+        {
+            $this->logger->fatal($e->getMessage());
+            throw new SoapFault('Server', 'Internal Server Error', '', '', 'getContentResources_internalServerErrorFault');
+        }
 
         // build resources
         $resources = new resources();
 
-        // returnBy
-        $returnDate = ContentHelper::contentRequiresReturn($this->dbh, $this->sessionUserId, $contentId);
-        if ($returnDate !== false)
-            $resources->setReturnBy(str_replace(' ', 'T', $returnDate));
-
-        // resources
-        $contentResources = ContentHelper::getContentResources($this->dbh, $this->sessionUserId, $contentId);
-        if ($contentResources == false)
+        try
         {
-            $msg = "failed to retrieve content resources for content with id '$contentId'";
-            $this->logger->fatal($msg);
-            throw new SoapFault ('Server', 'Internal Server Error', '', '', 'getContentResources_internalServerErrorFault');
+            // set returnBy [optional]
+            $returnDate = $this->adapter->contentReturnDate($contentId);
+            if (is_string($returnDate)) $resources->setReturnBy($returnDate);
+
+            // set lastModifiedDate [optional]
+            $lastModifiedDate = $this->adapter->contentLastModifiedDate($contentId);
+            if (is_string($lastModifiedDate)) $resources->setLastModifiedDate($lastModifiedDate);
+
+            // build resource
+            $contentResources = $this->adapter->contentResources($contentId);
+            if (empty($contentResources))
+            {
+                $msg = "User '$this->sessionUsername' requested resources for non-issued content '$contentId'";
+                $this->logger->warn($msg);
+                $faultString = "content '$contentId' is not issued";
+                throw new SoapFault('Client', $faultString,'', '', 'getContentResources_invalidParameterFault');
+            }
+            foreach ($contentResources as $resource)
+                $resources->addResource($this->createResource($resource));
 
         }
-
-        if (sizeof($contentResources) == 0)
+        catch (AdapterException $e)
         {
-            $msg = "User '$this->sessionUsername' is not allow to get resources for content with id '$contentId'";
-            $this->logger->warn($msg);
-            throw new SoapFault ('Client', $msg, '', '', 'getContentResources_invalidParameterFault');
-        }
-
-        foreach ($contentResources as $resource)
-        {
-            $uri = $this->getServiceResourceUri($contentId, $resource['filename']);
-            $mimeType = $resource['mimetype'];
-            $size = (int)$resource['size'];
-            $localURI = $resource['filename'];
-            $resources->addResource(new resource($uri, $mimeType, $size, $localURI));
+            $this->logger->fatal($e->getMessage());
+            throw new SoapFault('Server', 'Internal Server Error', '', '', 'getContentResources_internalServerErrorFault');
         }
 
         $output = new getContentResourcesResponse($resources);
@@ -859,25 +854,54 @@ class DaisyOnlineService
         }
 
         // parameters
-        $contentId = ContentHelper::parseContentId($input->getContentID());
+        $contentId = $input->getContentID();
 
-        // check if content requires return
-        $return = ContentHelper::contentRequiresReturn($this->dbh, $this->sessionUserId, $contentId);
-        if ($return === false)
+        // check if the requested content exists and is accessible
+        try
         {
-            $msg = "User '$this->sessionUsername' tried to return content with id '$contentId' which does not required return";
-            $this->logger->warn($msg);
-            $faultString = 'The content does not need to be returned';
-            throw new SoapFault ('Client', $faultString, '', '', 'returnContent_invalidParameterFault');
+            if ($this->adapter->contentExists($contentId) === false)
+            {
+                $msg = "User '$this->sessionUsername' requested return of a nonexistent content '$contentId'";
+                $this->logger->warn($msg);
+                $faultString = "content '$contentId' does not exist";
+                throw new SoapFault('Client', $faultString,'', '', 'returnContent_invalidParameterFault');
+            }
+
+            if ($this->adapter->contentAccessible($contentId) === false)
+            {
+                $msg = "User '$this->sessionUsername' requested return of an inaccessible content '$contentId'";
+                $this->logger->warn($msg);
+                $faultString = "content '$contentId' not accessible";
+                throw new SoapFault('Client', $faultString,'', '', 'returnContent_invalidParameterFault');
+            }
+        }
+        catch (AdapterException $e)
+        {
+            $this->logger->fatal($e->getMessage());
+            throw new SoapFault('Server', 'Internal Server Error', '', '', 'returnContent_internalServerErrorFault');
         }
 
-        // return content
-        $returned = ContentHelper::returnContent($this->dbh, $this->sessionUserId, $contentId);
-        if ($returned === false)
+        // check if content is returnable and return content
+        try
         {
-            $msg = "returning content with id '$contentId' failed";
-            $this->logger->fatal($msg);
-            throw new SoapFault ('Server', 'Internal Server Error', '', '', 'returnContent_internalServerErrorFault');
+            if ($this->adapter->contentReturnable($contentId) === false)
+            {
+                $msg = "User '$this->sessionUsername' tried to return a non borrowable content '$contentId'";
+                $this->logger->warn($msg);
+                $faultString = "content '$contentId' does not require return";
+                throw new SoapFault ('Client', $faultString, '', '', 'returnContent_invalidParameterFault');
+            }
+
+            if ($this->adapter->contentReturn($contentId) === false)
+            {
+                $this->logger->warn("Returning content '$contentId' failed");
+                throw new SoapFault ('Server', 'Internal Server Error', '', '', 'returnContent_internalServerErrorFault');
+            }
+        }
+        catch (AdapterException $e)
+        {
+            $this->logger->fatal($e->getMessage());
+            throw new SoapFault('Server', 'Internal Server Error', '', '', 'returnContent_internalServerErrorFault');
         }
 
         return new returnContentResponse(true);
@@ -933,6 +957,155 @@ class DaisyOnlineService
     }
 
     /**
+     * Service helper
+     *
+     * Parses services settings and initializes private service attributes
+     *
+     * @param array $settings Service settings from service.ini
+     */
+    private function setupServiceAttributes($settings)
+    {
+        if (array_key_exists('serviceProvider', $settings))
+            $this->serviceAttributes['serviceProvider'] = $settings['serviceProvider'];
+        if (array_key_exists('service', $settings))
+            $this->serviceAttributes['service'] = $settings['service'];
+        $this->serviceAttributes['supportedContentSelectionMethods'] = array();
+        if (array_key_exists('supportedContentSelectionMethods', $settings))
+        {
+            if (in_array('OUT_OF_BAND', $settings['supportedContentSelectionMethods']))
+                array_push($this->serviceAttributes['supportedContentSelectionMethods'], 'OUT_OF_BAND');
+            if (in_array('BROWSE', $settings['supportedContentSelectionMethods']))
+                array_push($this->serviceAttributes['supportedContentSelectionMethods'], 'BROWSE');
+        }
+        if (sizeof($this->serviceAttributes['supportedContentSelectionMethods']) == 0)
+        {
+            $msg = 'No valid content selection method found in settings, using default OUT_OF_BAND';
+            $this->logger->error($msg);
+            array_push($this->serviceAttributes['supportedContentSelectionMethods'], 'OUT_OF_BAND');
+        }
+        $this->serviceAttributes['supportedOptionalOperations'] = array();
+        if (array_key_exists('supportedOptionalOperations', $settings))
+        {
+            if (in_array('SERVICE_ANNOUNCEMENTS', $settings['supportedOptionalOperations']))
+                array_push($this->serviceAttributes['supportedOptionalOperations'], 'SERVICE_ANNOUNCEMENTS');
+            if (in_array('SET_BOOKMARKS', $settings['supportedOptionalOperations']))
+                array_push($this->serviceAttributes['supportedOptionalOperations'], 'SET_BOOKMARKS');
+            if (in_array('GET_BOOKMARKS', $settings['supportedOptionalOperations']))
+                array_push($this->serviceAttributes['supportedOptionalOperations'], 'GET_BOOKMARKS');
+            if (in_array('DYNAMIC_MENUS', $settings['supportedOptionalOperations']))
+                array_push($this->serviceAttributes['supportedOptionalOperations'], 'DYNAMIC_MENUS');
+            if (in_array('PDTB2_KEY_PROVISION', $settings['supportedOptionalOperations']))
+                array_push($this->serviceAttributes['supportedOptionalOperations'], 'PDTB2_KEY_PROVISION');
+        }
+        $this->serviceAttributes['supportsServerSideBack'] = false;
+        if (array_key_exists('supportsServerSideBack', $settings))
+        {
+            if (in_array('DYNAMIC_MENUS', $this->serviceAttributes['supportedOptionalOperations']))
+                $this->serviceAttributes['supportsServerSideBack'] = true;
+            else
+            {
+                $msg = "Reserved parameter 'search' supported in settings but DYNAMIC_MENUS not supported";
+                $this->logger->warn($msg);
+            }
+        }
+        $this->serviceAttributes['supportsSearch'] = false;
+        if (array_key_exists('supportsSearch', $settings))
+        {
+            if (in_array('DYNAMIC_MENUS', $this->serviceAttributes['supportedOptionalOperations']))
+                $this->serviceAttributes['supportsSearch'] = true;
+            else
+            {
+                $msg = "Reserved parameter 'back' supported in settings but DYNAMIC_MENUS not supported";
+                $this->logger->warn($msg);
+            }
+        }
+        $this->serviceAttributes['supportedUplinkAudioCodecs'] = array();
+        if (array_key_exists('supportedUplinkAudioCodecs', $settings))
+        {
+            if (in_array('DYNAMIC_MENUS', $this->serviceAttributes['supportedOptionalOperations']))
+                $this->serviceAttributes['supportedUplinkAudioCodecs'] = $settings['supportedUplinkAudioCodecs'];
+            else
+            {
+                $msg = "Uplink audio codes specified in settings but DYNAMIC_MENUS not supported";
+                $this->logger->warn($msg);
+            }
+        }
+        $this->serviceAttributes['supportsAudioLabels'] = false;
+        if (array_key_exists('supportsAudioLabels', $settings))
+            $this->serviceAttributes['supportsAudioLabels'] = true;
+    }
+
+    /**
+     * Service helper
+     *
+     * Parses adapter settings and initializes adapter
+     *
+     * @param array $settings Adapter settings from service.ini
+     */
+    private function setupAdapter($settings)
+    {
+        if (!array_key_exists('name', $settings))
+        {
+            $this->logger->fatal('No adapter specified in settings file');
+            die('No adapter specified in settings file');
+        }
+        $adapterClass = $settings['name'];
+
+        if (array_key_exists('path', $settings))
+        {
+            $path = $settings['path'];
+            $this->includeAdapter($path, $adapterClass);
+        }
+
+        $path = realpath(dirname(__FILE__)) . '/adapter';
+        $this->includeAdapter($path, $adapterClass);
+
+        if (!class_exists($adapterClass))
+        {
+            $this->logger->fatal("Could not find adapter class '$adapterClass'");
+            die('Adapter class not found, please make sure adapter path is set');
+        }
+        $this->adapter = new $adapterClass;
+    }
+
+    /**
+     * Service helper
+     *
+     * Search path for a file which name is the value of parameter name and has the
+     * extension .class.php or .php. If file exists, append path to include paths and include
+     * the file.
+     *
+     * @param string $path Path in which to look for an adapter file
+     * @param string $name Name of the adapter to serach for
+     */
+    private function includeAdapter($path, $name)
+    {
+        if (!is_dir($path))
+        {
+            $this->logger-warn("Adapter path '$path' does not exists");
+            return;
+        }
+
+        $file = "$path/$name.class.php";
+        if (file_exists($file))
+        {
+            set_include_path(get_include_path() . PATH_SEPARATOR . $path);
+            require_once($file);
+            $this->adapterIncludeFile = $file;
+            return;
+        }
+
+        $file = "$path/$name.php";
+        if (file_exists($file))
+        {
+            set_include_path(get_include_path() . PATH_SEPARATOR . $path);
+            require_once($file);
+            $this->adapterIncludeFile = $file;
+            return;
+        }
+    }
+
+    /**
      * Session function sessionHandle, control requests to service operations
      * @param string $operation, name of the invoked operation
      * @return SoapFault when necessary
@@ -965,6 +1138,7 @@ class DaisyOnlineService
         // 4.2.1 logOff operation may be invoked anywhere within the initialization sequence
         if ($operation == 'logOff')
         {
+            $this->sessionDestroy();
             return;
         }
 
@@ -988,10 +1162,6 @@ class DaisyOnlineService
             throw new SoapFault ('Client', $faultString, '', '', $operation.'_noActiveSessionFault');
         }
 
-        // if session has been established
-        if ($this->sessionEstablished === true)
-            return;
-
         // if we are still in session initialization phase
         if (sizeof($this->sessionInitializationStack) > 0)
         {
@@ -1010,11 +1180,17 @@ class DaisyOnlineService
             return;
         }
 
-        $msg = 'No active session';
-        $this->logger->warn($msg);
-        $this->sessionDestroy();
-        $faultString = 'No session has been initialized, try initializing a session';
-        throw new SoapFault ('Client', $faultString, '', '', $operation.'_noActiveSessionFault');
+        // if session has been established
+        if ($this->sessionEstablished === true)
+        {
+            if ($this->adapter->startSession() === false)
+            {
+                $this->logger->warn("Backend session not active anymore");
+                $faultString = "Session has expired, try initialization as session again";
+                $this->sessionDestroy();
+                throw new SoapFault ('Client', $faultString, '', '', $operation.'_noActiveSessionFault');
+            }
+        }
     }
 
     /**
@@ -1022,35 +1198,111 @@ class DaisyOnlineService
      */
     private function sessionDestroy()
     {
+        // stop backend session
+        $this->adapter->stopSession();
+
+        $this->sessionContentMetadataRequests = array();
         $this->sessionUserLoggedOn = false;
         $this->sessionEstablished = false;
 
         // The following variables must reamin untouched as they are use in logging messages,
         // otherwise some logging messages will be incomplete
-        // sessionUserId
         // sessionUsername
         // sessionCurrentOperation
     }
 
-    /**
-     * Service helper getServiceMediaUri
-     * @param string $filename
-     * @return string
-     */
-    private function getServiceMediaUri($filename)
+    private function createLabel($labelArray)
     {
-        return $this->getServiceBaseUri()."media/$filename";
+        $text = null;
+        $audio = null;
+        $lang = null;
+        $dir = null;
+
+        // text [mandatory]
+        if (array_key_exists('text', $labelArray) === false)
+            $this->logger->error("Required field 'text' is missing in label");
+        else
+            $text = $labelArray['text'];
+
+        // audio [optional]
+        if (array_key_exists('audio', $labelArray) && is_array($labelArray['audio']))
+            $audio = $this->createAudio($labelArray['audio']);
+
+        // lang [mandatory]
+        if (array_key_exists('lang', $labelArray) === false)
+            $this->logger->error("Required field 'lang' is missing in label");
+        else
+            $lang = $labelArray['lang'];
+
+        if (array_key_exists('dir', $labelArray))
+            $dir = $labelArray['dir'];
+
+        $label = new label($text, $audio, $lang, $dir);
+        return $label;
     }
 
-    /**
-     * Service helper getServiceResourceUri
-     * @param int $contentId
-     * @param string $filename
-     * @return string
-     */
-    private function getServiceResourceUri($contentId, $filename)
+    private function createAudio($audioArray)
     {
-        return $this->getServiceBaseUri()."content/$contentId/$filename";
+        $uri = null;
+        $rangeBegin = null;
+        $rangeEnd = null;
+        $size = null;
+
+        // uri [mandatory]
+        if (array_key_exists('uri', $audioArray) === false)
+            $this->logger->error("Required field 'uri' is missing in audio");
+        else
+            $uri = $audioArray['uri'];
+
+        // rangeBegin [optional]
+        if (array_key_exists('rangeBegin', $audioArray))
+            $rangeBegin = $audioArray['rangeBegin'];
+
+        // rangeEnd [optional]
+        if (array_key_exists('rangeEnd', $audioArray))
+            $rangeEnd = $audioArray['rangeEnd'];
+
+        // size [optional]
+        if (array_key_exists('size', $audioArray))
+            $size = $audioArray['size'];
+
+        $audio = new audio($uri, $rangeBegin, $rangeEnd, $size);
+        return $audio;
+    }
+
+    private function createResource($resourceArray)
+    {
+        $uri = null;
+        $mimetype = null;
+        $size = null;
+        $localURI = null;
+
+        // uri [mandatory]
+        if (array_key_exists('uri', $resourceArray) === false)
+            $this->logger->error("Required field 'uri' is missing in resource");
+        else
+            $uri = $resourceArray['uri'];
+
+        // mimetype [mandatory]
+        if (array_key_exists('mimetype', $resourceArray) === false)
+            $this->logger->error("Required field 'mimetype' is missing in resource");
+        else
+            $mimetype = $resourceArray['mimetype'];
+
+        // size [mandatory]
+        if (array_key_exists('size', $resourceArray) === false)
+            $this->logger->error("Required field 'size' is missing in resource");
+        else
+            $size = (int)$resourceArray['size'];
+
+        // localURI [mandatory]
+        if (array_key_exists('localURI', $resourceArray) === false)
+            $this->logger->error("Required field 'localURI' is missing in resource");
+        else
+            $localURI = $resourceArray['localURI'];
+
+        $resource = new resource($uri, $mimetype, $size, $localURI);
+        return $resource;
     }
 
     /**
@@ -1075,7 +1327,7 @@ class DaisyOnlineService
     {
         $contentFormat = $this->readingSystemAttributes->getConfig()->getSupportedContentFormats()->getContentFormat();
         if (is_null($contentFormat)) return array();
-        return array_flip($contentFormat);
+        return $contentFormat;
     }
 
     /**

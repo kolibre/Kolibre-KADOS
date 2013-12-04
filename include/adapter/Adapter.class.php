@@ -237,12 +237,12 @@ abstract class Adapter
      * This method is optional and does not require implementation.
      * It is invoked by the service when operations getContentList or getContentResources is called.
      *
-     * @param string $contentID The identifier of the content
+     * @param string $contentId The identifier of the content
      * @return mixed Returns False if not supported, otherwise a date string with format 'YYYY-MM-DDThh:mm:ss'
      *
      * @throws AdapterException
      */
-    public function contentLastModifiedDate($contentID)
+    public function contentLastModifiedDate($contentId)
     {
         return false;
     }
@@ -253,12 +253,12 @@ abstract class Adapter
      * This method is required and must be implemented for a basic service.
      * It is invoked by the service when operations getContentMetadata, issueContent, getContentResources or returnContent is called.
      *
-     * @param string $contentID The identifier for the content
+     * @param string $contentId The identifier for the content
      * @return boolean Returns True if the content exists, otherwise False.
      *
      * @throws AdapterException
      */
-    abstract public function contentExists($contentID);
+    abstract public function contentExists($contentId);
 
     /**
      * Check if the specified content is accessible for the current user
@@ -266,12 +266,12 @@ abstract class Adapter
      * This method is required and must be implemented for a basic service.
      * It is invoked by the service when operations getContentMetadata, issueContent, getContentResources or returnContent is called.
      *
-     * @param string $contentID The identifier for the content
+     * @param string $contentId The identifier for the content
      * @return boolean Returns True if the content is accessible, otherwise False.
      *
      * @throws AdapterException
      */
-    abstract public function contentAccessible($contentID);
+    abstract public function contentAccessible($contentId);
 
     /**
      * Retrieve a sample for the specified content
@@ -279,12 +279,12 @@ abstract class Adapter
      * This method is optional and does not require implementation.
      * It is invoked by the service when getContentMetadata operation is called.
      *
-     * @param string $contentID The identifier for the content
+     * @param string $contentId The identifier for the content
      * @return mixed Returns False if not supported, otherwise a string containing the identifier for the sample.
      *
      * @throws AdapterException
      */
-    public function contentSample($contentID)
+    public function contentSample($contentId)
     {
         return false;
     }
@@ -295,12 +295,12 @@ abstract class Adapter
      * This method is optional and does not require implementation.
      * It is invoked by the service when getContentMetadata operation is called.
      *
-     * @param string $contentID The identifier for the content
+     * @param string $contentId The identifier for the content
      * @return mixed Returns False if not supported, otherwise a string with the category as value. Recommended values are BOOK, MAGAZINE, NEWSPAPER and OTHER.
      *
      * @throws AdapterException
      */
-    public function contentCategory($contentID)
+    public function contentCategory($contentId)
     {
         return false;
     }
@@ -311,12 +311,12 @@ abstract class Adapter
      * This method is optional and does not require implementation.
      * It is invoked by the service when operations getContentMetadata or getContentResources is called.
      *
-     * @param string $contentID The identifier for the content
+     * @param string $contentId The identifier for the content
      * @return mixed Returns False if content does not require return, otherwise a date string with format 'YYYY-MM-DDThh:mm:ss'
      *
      * @throws AdapterException
      */
-    abstract public function contentReturnDate($contentID);
+    abstract public function contentReturnDate($contentId);
 
     /**
      * Retrieve metadata for the specified content
@@ -324,7 +324,7 @@ abstract class Adapter
      * This method is required and must be implemented for a basic service.
      * It is invoked by the service when getContentMetadata operation is called.
      *
-     * @param string $contentID The identifier for the content
+     * @param string $contentId The identifier for the content
      * @return array Returns an associative key and value array.
      *
      * <p>Valid key names are all elements the Dublin Core namespace plus the reserved key 'pdtb2:specVersion' which indicates that the content is protected using PDTB2.</p>
@@ -347,7 +347,7 @@ abstract class Adapter
      *
      * @throws AdapterException
      */
-    abstract public function contentMetadata($contentID);
+    abstract public function contentMetadata($contentId);
 
     /**
      * Check if the specified content is issuable by the current user
@@ -355,12 +355,12 @@ abstract class Adapter
      * This method is required and must be implemented for a basic service.
      * It is invoked by the service when issueContent operation is called.
      *
-     * @param string $contentID The identifier for the content
+     * @param string $contentId The identifier for the content
      * @return boolean Returns True if content is issuable, otherwise False.
      *
      * @throws AdapterException
      */
-    abstract public function contentIssuable($contentID);
+    abstract public function contentIssuable($contentId);
 
     /**
      * Issue the specified content or check if the specified content is issued
@@ -368,12 +368,12 @@ abstract class Adapter
      * This method is required and must be implemented for a basic service.
      * It is invoked by the service when operations issueContent or getContentResources is called.
      *
-     * @param string $contentID The identifier for the content
+     * @param string $contentId The identifier for the content
      * @return boolean Returns True if the content is issued, otherwise False.
      *
      * @throws AdapterException
      */
-    abstract public function contentIssue($contentID);
+    abstract public function contentIssue($contentId);
 
     /**
      * Retrieve resources for the specified content
@@ -381,7 +381,7 @@ abstract class Adapter
      * This method is required and must be implemented for a basic service.
      * It is invoked by the service when getContentResources operation is called.
      *
-     * @param string $contentID The identifier for the content
+     * @param string $contentId The identifier for the content
      * @return array Returns an associative array.
      *
      * <p>The associative array must be a direct match of a resources object and must contain the required elements.
@@ -408,7 +408,7 @@ abstract class Adapter
      *
      * @throws AdapterException
      */
-    abstract public function contentResources($contentID);
+    abstract public function contentResources($contentId);
 
     /**
      * Check if the specified content is returnable by the current user
@@ -416,12 +416,12 @@ abstract class Adapter
      * This method is required and must be implemented for a basic service.
      * It is invoked by the service when returnContent operation is called.
      *
-     * @param string $contentID The identifier for the content
+     * @param string $contentId The identifier for the content
      * @return boolean Return True if content is returnable, otherwise False.
      *
      * @throws AdapterException
      */
-    abstract public function contentReturnable($contentID);
+    abstract public function contentReturnable($contentId);
 
     /**
      * Return the specified content or check if the specified content is returned
@@ -429,12 +429,12 @@ abstract class Adapter
      * This method is required and must be implemented for a basic service.
      * It is invoked by the service when returnContent operation is called.
      *
-     * @param string $contentID The identifier for the content
+     * @param string $contentId The identifier for the content
      * @return boolean Returns True if content is returned, otherwise False.
      *
      * @throws AdapterException
      */
-    abstract public function contentReturn($contentID);
+    abstract public function contentReturn($contentId);
 
     /**
      * Retrieve a list of announcements
@@ -458,7 +458,7 @@ abstract class Adapter
      * This method is optional and does not require implementation.
      * It is invoked by the service when getServiceAnnouncements operation is called.
      *
-     * @param string $announcementID The identifier for the announcement
+     * @param string $announcementId The identifier for the announcement
      * @return mixed Returns false is not supported, otherwise an associative kay and value array.
      *
      * <p>Valid key names are 'type' and 'priority'. Allowed values for key 'type' are: [WARNING, ERROR, INFORMATION, SYSTEM]. Allowed values for key 'priority' are: [1, 2, 3].</p>
@@ -473,7 +473,7 @@ abstract class Adapter
      *
      * @throws AdapterException
      */
-    public function announcementInfo($announcementID)
+    public function announcementInfo($announcementId)
     {
         return false;
     }
@@ -485,12 +485,12 @@ abstract class Adapter
      * It is invoked by the service when markAnnouncementsAsRead operation is called.
      * If the service supports SERVICE_ANNOUNCEMENTS, this method must be implemented.
      *
-     * @param string $announcementID The identifier for the announcement
+     * @param string $announcementId The identifier for the announcement
      * @return boolean Returns True if the announcement exists, otherwise False.
      *
      * @throws AdapterException
      */
-    public function announcementExists($announcementID)
+    public function announcementExists($announcementId)
     {
         return false;
     }
@@ -502,12 +502,12 @@ abstract class Adapter
      * It is invoked by the service when markAnnouncementsAsRead operation is called.
      * If the service supports SERVICE_ANNOUNCEMENTS, this method must be implemented.
      *
-     * @param string $announcementID The identifier for the announcement
+     * @param string $announcementId The identifier for the announcement
      * @return boolean Returns True is the announcement is read, otherwise False.
      *
      * @throws AdapterException
      */
-    public function announcementRead($announcementID)
+    public function announcementRead($announcementId)
     {
         return false;
     }
@@ -519,13 +519,13 @@ abstract class Adapter
      * It is invoked by the service when setBookmarks operation is called.
      * If the service supports SET_BOOKMARKS, this method must be implemented.
      *
-     * @param string $contentID The identifier for the content
+     * @param string $contentId The identifier for the content
      * @param string $bookmark A JSON encoded string of a bookmarkSet object
      * @return boolean Returns True if the bookmark is saved, otherwise False.
      *
      * @throws AdapterException
      */
-    public function setBookmarks($contentID, $bookmark)
+    public function setBookmarks($contentId, $bookmark)
     {
         return false;
     }
@@ -537,12 +537,12 @@ abstract class Adapter
      * It is invoked by the service when getBookmarks operation is called.
      * If the service supports GET_BOOKMARKS, this method must be implemented.
      *
-     * @param string $contentID The identifier for the content
+     * @param string $contentId The identifier for the content
      * @return mixed Returns false if bookmark not found, otherwise a JSON encoded string of a bookmarkSet object.
      *
      * @throws AdapterException
      */
-    public function getBookmarks($contentID)
+    public function getBookmarks($contentId)
     {
         return false;
     }
@@ -609,12 +609,12 @@ abstract class Adapter
      * (
      *     [0] => Array
      *     (
-     *         [questionID] => "question 1"
+     *         [questionId] => "question 1"
      *         [value] => "value is always a string"
      *     )
      *     [1] => Array
      *     (
-     *         [questionID] => "question 2"
+     *         [questionId] => "question 2"
      *         [base64] => "base64 encoded binary data"
      *     )
      * )
@@ -628,7 +628,7 @@ abstract class Adapter
      *     [0] => Array
      *     (
      *         [type] => "multipleChoiceQuestion"
-     *         [questionID] => "question 1"
+     *         [questionId] => "question 1"
      *         [choices] => Array
      *         (
      *             [0] => "choice 1"
@@ -639,17 +639,17 @@ abstract class Adapter
      *     [1] => Array
      *     (
      *        [type] => "inputQuestions"
-     *        [questionID] => "question 2"
+     *        [questionId] => "question 2"
      *     )
      *     [2] => Array
      *     (
      *        [type] => "inputQuestions"
-     *        [questionID] => "question 3"
+     *        [questionId] => "question 3"
      *     )
      *     [3] => Array
      *     (
      *         [type] => "multipleChoiceQuestion"
-     *         [questionID] => "question 4"
+     *         [questionId] => "question 4"
      *         [choices] => Array
      *         (
      *             [0] => "choice 1"

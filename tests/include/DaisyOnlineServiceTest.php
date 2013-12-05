@@ -150,6 +150,18 @@ class DaisyOnlineServiceTest extends PHPUnit_Framework_TestCase
         $this->assertFalse($output->serviceAttributes->supportsAudioLabels);
         $this->assertNull($output->serviceAttributes->supportedOptionalOperations->operation);
 
+        // adapter throws exception on label
+        $settings = array();
+        $settings['Service'] = array();
+        $settings['Service']['serviceProvider'] = 'label-exception';
+        $settings['Adapter']['name'] = 'TestAdapter';
+        $settings['Adapter']['path'] = realpath(dirname(__FILE__));
+        self::write_ini_file($settings, self::$inifile);
+        self::$instance = new DaisyOnlineService(self::$inifile);
+        self::$instance->disableInternalSessionHandling();
+        $input = new getServiceAttributes($input);
+        $this->assertTrue($this->callOperation('getServiceAttributes', $input, 'internalServerErrorFault'));
+
         // full settings
         $settings = array();
         $settings['Service'] = array();
@@ -174,7 +186,15 @@ class DaisyOnlineServiceTest extends PHPUnit_Framework_TestCase
         $input = new getServiceAttributes($input);
         $output = self::$instance->getServiceAttributes($input);
         $this->assertEquals($output->serviceAttributes->serviceProvider->id, 'org-kolibre');
+        $this->assertEquals($output->serviceAttributes->serviceProvider->label->text, 'text');
+        $this->assertEquals($output->serviceAttributes->serviceProvider->label->audio->uri, 'uri');
+        $this->assertEquals($output->serviceAttributes->serviceProvider->label->audio->rangeBegin, 0);
+        $this->assertEquals($output->serviceAttributes->serviceProvider->label->audio->rangeEnd, 1);
+        $this->assertEquals($output->serviceAttributes->serviceProvider->label->audio->size, 2);
+        $this->assertEquals($output->serviceAttributes->serviceProvider->label->lang, 'en');
+        $this->assertEquals($output->serviceAttributes->serviceProvider->label->dir, 'ltr');
         $this->assertEquals($output->serviceAttributes->service->id, 'org-kolibre-daisyonline');
+        $this->assertNull($output->serviceAttributes->service->label);
         $this->assertCount(2, $output->serviceAttributes->supportedContentSelectionMethods->method);
         $this->assertContains('OUT_OF_BAND', $output->serviceAttributes->supportedContentSelectionMethods->method);
         $this->assertContains('BROWSE', $output->serviceAttributes->supportedContentSelectionMethods->method);

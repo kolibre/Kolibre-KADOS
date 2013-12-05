@@ -188,24 +188,30 @@ class DaisyOnlineService
             if (isset($_SERVER['HTTPS'])) $protocol = 'https';
         }
 
-        $host = $_SERVER['SERVER_NAME'];
+        $host = 'localhost';
+        if (isset($_SERVER['SERVER_NAME'])) $host = $_SERVER['SERVER_NAME'];
 
         $port = '';
-        switch ($protocol)
+        if (isset($_SERVER['SERVER_PORT']))
         {
-            case 'http':
-                if (!($_SERVER['SERVER_PORT'] == 80 || $_SERVER['SERVER_PORT'] == 443))
-                    $port = $_SERVER['SERVER_PORT'];
-                break;
-            case 'https':
-                if ($_SERVER['SERVER_PORT'] != 443)
-                    $port = $_SERVER['SERVER_PORT'];
-                break;
+            switch ($protocol)
+            {
+                case 'http':
+                    if ($_SERVER['SERVER_PORT'] != 80)
+                        $port = ':' . $_SERVER['SERVER_PORT'];
+                    break;
+                case 'https':
+                    if ($_SERVER['SERVER_PORT'] != 443)
+                        $port = ':' . $_SERVER['SERVER_PORT'];
+                    break;
+            }
         }
 
-        $path = dirname($_SERVER['SCRIPT_NAME']);
+        $path = '';
+        if (isset($_SERVER['SCRIPT_NAME'])) $path = dirname($_SERVER['SCRIPT_NAME']);
+        if (strlen($path) > 0 && substr($path, -1) != '/') $path .= '/';
 
-        return $protocol.'://'.$host.':'.$port.$path;
+        return "$protocol://$host$port$path";
     }
 
     /**
@@ -271,15 +277,33 @@ class DaisyOnlineService
     {
         $this->sessionHandle(__FUNCTION__);
 
-        // set serviceProvider
-        $serviceProvider = null;
-        if (array_key_exists('serviceProvider', $this->serviceAttributes))
-            $serviceProvider = new serviceProvider(null, $this->serviceAttributes['serviceProvider']);
+        try
+        {
+            // set serviceProvider
+            $serviceProvider = null;
+            if (array_key_exists('serviceProvider', $this->serviceAttributes))
+            {
+                $serviceProvider = new serviceProvider(null, $this->serviceAttributes['serviceProvider']);
+                $label = $this->adapter->label($this->serviceAttributes['serviceProvider'], Adapter::LABEL_SERVICE);
+                if (is_array($label))
+                    $serviceProvider->setLabel($this->createLabel($label));
+            }
 
-        // set service
-        $service = null;
-        if (array_key_exists('service', $this->serviceAttributes))
-            $service = new service(null, $this->serviceAttributes['service']);
+            // set service
+            $service = null;
+            if (array_key_exists('service', $this->serviceAttributes))
+            {
+                $service = new service(null, $this->serviceAttributes['service']);
+                $label = $this->adapter->label($this->serviceAttributes['service'], Adapter::LABEL_SERVICE);
+                if (is_array($label))
+                    $service->setLabel($this->createLabel($label));
+            }
+        }
+        catch (AdapterException $e)
+        {
+            $this->logger->fatal($e->getMessage());
+            throw new SoapFault('Server', 'Internal Server Error', '', '', 'getServiceAttributes_internalServerErrorFault');
+        }
 
         // set supportedContentSelectionMethods
         $supportedContentSelectionMethods = new supportedContentSelectionMethods();

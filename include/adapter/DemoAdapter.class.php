@@ -132,18 +132,18 @@ class DemoAdapter extends Adapter
         $host = 'localhost';
         if (isset($_SERVER['SERVER_NAME'])) $host = $_SERVER['SERVER_NAME'];
 
-        $port = '80';
+        $port = '';
         if (isset($_SERVER['SERVER_PORT']))
         {
             switch ($protocol)
             {
                 case 'http':
-                    if (!($_SERVER['SERVER_PORT'] == 80 || $_SERVER['SERVER_PORT'] == 443))
-                        $port = $_SERVER['SERVER_PORT'];
+                    if ($_SERVER['SERVER_PORT'] != 80)
+                        $port = ':' . $_SERVER['SERVER_PORT'];
                     break;
                 case 'https':
                     if ($_SERVER['SERVER_PORT'] != 443)
-                        $port = $_SERVER['SERVER_PORT'];
+                        $port = ':' . $_SERVER['SERVER_PORT'];
                     break;
             }
         }
@@ -152,12 +152,14 @@ class DemoAdapter extends Adapter
         if (isset($_SERVER['SCRIPT_NAME'])) $path = dirname($_SERVER['SCRIPT_NAME']);
         if (strlen($path) > 0 && substr($path, -1) != '/') $path .= '/';
 
-        return "$protocol://$host:$port$path";
+        return "$protocol://$host$port$path";
     }
 
     public function extractId($identifier)
     {
-        if (strlen($identifier) < 5)
+        if (is_int($identifier)) return $identifier;
+
+        if (is_string($identifier) && strlen($identifier) < 5)
         {
             $this->logger->warn("Length of string '$identifier' smaller then 5");
             return -1;
@@ -167,8 +169,7 @@ class DemoAdapter extends Adapter
 
     public function contentAudioUri($contentId)
     {
-        if (is_string($contentId))
-            $contentId = $this->extractId($contentId);
+        $contentId = $this->extractId($contentId);
 
         $filename = "content_$contentId.ogg";
         return $this->serviceBaseUri()."media/$filename";
@@ -176,8 +177,7 @@ class DemoAdapter extends Adapter
 
     public function contentAudioSize($contentId)
     {
-        if (is_string($contentId))
-            $contentId = $this->extractId($contentId);
+        $contentId = $this->extractId($contentId);
 
         try
         {
@@ -203,8 +203,7 @@ class DemoAdapter extends Adapter
 
     public function contentTitle($contentId)
     {
-        if (is_string($contentId))
-            $contentId = $this->extractId($contentId);
+        $contentId = $this->extractId($contentId);
 
         try
         {
@@ -230,8 +229,7 @@ class DemoAdapter extends Adapter
 
     public function contentTitleLang($contentId)
     {
-        if (is_string($contentId))
-            $contentId = $this->extractId($contentId);
+        $contentId = $this->extractId($contentId);
 
         try
         {
@@ -379,8 +377,7 @@ class DemoAdapter extends Adapter
 
     public function contentFormatId($contentId)
     {
-        if (is_string($contentId))
-            $contentId = $this->extractId($contentId);
+        $contentId = $this->extractId($contentId);
 
         try
         {
@@ -456,8 +453,7 @@ class DemoAdapter extends Adapter
 
     public function contentExists($contentId)
     {
-        if (is_string($contentId))
-            $contentId = $this->extractId($contentId);
+        $contentId = $this->extractId($contentId);
 
         try
         {
@@ -478,8 +474,7 @@ class DemoAdapter extends Adapter
 
     public function contentAccessible($contentId)
     {
-        if (is_string($contentId))
-            $contentId = $this->extractId($contentId);
+        $contentId = $this->extractId($contentId);
 
         try
         {
@@ -500,8 +495,7 @@ class DemoAdapter extends Adapter
 
     public function contentCategory($contentId)
     {
-        if (is_string($contentId))
-            $contentId = $this->extractId($contentId);
+        $contentId = $this->extractId($contentId);
 
         try
         {
@@ -538,8 +532,7 @@ class DemoAdapter extends Adapter
 
     public function contentReturnDate($contentId)
     {
-        if (is_string($contentId))
-            $contentId = $this->extractId($contentId);
+        $contentId = $this->extractId($contentId);
 
         try
         {
@@ -599,8 +592,7 @@ class DemoAdapter extends Adapter
 
     public function contentMetadata($contentId)
     {
-        if (is_string($contentId))
-            $contentId = $this->extractId($contentId);
+        $contentId = $this->extractId($contentId);
 
         try
         {
@@ -642,8 +634,7 @@ class DemoAdapter extends Adapter
 
     public function contentInList($contentId, $list)
     {
-        if (is_string($contentId))
-            $contentId = $this->extractId($contentId);
+        $contentId = $this->extractId($contentId);
 
         try
         {
@@ -666,8 +657,7 @@ class DemoAdapter extends Adapter
 
     public function contentIssuable($contentId)
     {
-        if (is_string($contentId))
-            $contentId = $this->extractId($contentId);
+        $contentId = $this->extractId($contentId);
 
         if ($this->contentInList($contentId, 'new') || $this->contentInList($contentId, 'issued'))
             return true;
@@ -677,8 +667,7 @@ class DemoAdapter extends Adapter
 
     public function contentIssue($contentId)
     {
-        if (is_string($contentId))
-            $contentId = $this->extractId($contentId);
+        $contentId = $this->extractId($contentId);
 
         if ($this->contentInList($contentId, 'expired') || $this->contentInList($contentId, 'returned'))
             return false;
@@ -717,8 +706,7 @@ class DemoAdapter extends Adapter
 
     public function contentResources($contentId)
     {
-        if (is_string($contentId))
-            $contentId = $this->extractId($contentId);
+        $contentId = $this->extractId($contentId);
 
         if ($this->contentInList($contentId, 'issued') === false)
         {
@@ -762,8 +750,7 @@ class DemoAdapter extends Adapter
 
     public function contentReturnable($contentId)
     {
-        if (is_string($contentId))
-            $contentId = $this->extractId($contentId);
+        $contentId = $this->extractId($contentId);
 
         try
         {
@@ -790,8 +777,7 @@ class DemoAdapter extends Adapter
 
     public function contentReturn($contentId)
     {
-        if (is_string($contentId))
-            $contentId = $this->extractId($contentId);
+        $contentId = $this->extractId($contentId);
 
         if ($this->contentInList($contentId, 'returned'))
             return true;

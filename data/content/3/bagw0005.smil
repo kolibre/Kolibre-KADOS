@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="windows-1252"?>
+<!DOCTYPE smil PUBLIC "-//W3C//DTD SMIL 1.0//EN" "http://www.w3.org/TR/REC-smil/SMIL10.dtd">
+<smil>
+	<head>
+		<meta name="dc:format" content="Daisy 2.02"/>
+		<meta name="title" content="1.3 The «Galdhøpiggen»"/>
+		<meta name="dc:title" content="Climbing the Highest Mountain"/>
+		<meta name="ncc:totalElapsedTime" content="00:02:45"/>
+		<meta name="ncc:timeInThisSmil" content="00:00:11"/>
+		<meta name="ncc:generator" content="Skippability Tweaker 0.1.53"/>
+		<layout>
+			<region id="txtView"/>
+		</layout>
+		<meta name="dc:identifier" content="skipdemo-amsterdam"/>
+	</head>
+	<body>
+		<seq dur="10.908s">
+			<par endsync="last">
+				<text src="ncconlydemo.html#bagw_000e" id="bagw_000e"/>
+				<seq>
+					<audio src="bagw0018.mp3" clip-begin="npt=0.000s" clip-end="npt=3.251s" id="qwrt_0001"/>
+				</seq>
+			</par>
+			<par endsync="last">
+				<text src="ncconlydemo.html#bagw_000e" id="xbag_0009"/>
+				<seq>
+					<audio src="bagw0018.mp3" clip-begin="npt=3.251s" clip-end="npt=10.908s" id="qwrt_0002"/>
+				</seq>
+			</par>
+		</seq>
+	</body>
+</smil>

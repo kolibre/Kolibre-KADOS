@@ -268,7 +268,7 @@ class contentList extends AbstractType {
             foreach ($this->contentItem as $index => $contentItem) {
                 if ($contentItem->validate() === false) {
                     $this->error = __CLASS__ . '.' . $contentItem->getError();
-                    $this->error = str_replace('contentItem', "contentItem[$index]");
+                    $this->error = str_replace('contentItem', "contentItem[$index]", $this->error);
                     return false;
                 }
             }
@@ -312,7 +312,8 @@ class contentList extends AbstractType {
 
         // check value of firstItem and lastItem if they are present
         if (!is_null($this->firstItem) && !is_null($this->lastItem)) {
-            if ($this->firstItem > $this->lastItem) {
+            // lastItem must be greater than or equal to firstItem
+            if ($this->lastItem < $this->firstItem) {
                 $this->error = __CLASS__ . ".lastItem must be greater than or equal to " . __CLASS__ . ".firstItem";
                 return false;
             }

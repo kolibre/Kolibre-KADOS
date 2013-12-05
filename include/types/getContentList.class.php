@@ -134,12 +134,10 @@ class getContentList extends AbstractType {
         if ($this->isInteger($this->lastItem, 'lastItem', null, -1) === false)
             return false;
 
-        // firstItem must be smaller than or equal to lastItem
-        if ($this->firstItem >= 0 && $this->lastItem >=0) {
-            if ($this->firstItem > $this->lastItem) {
-                $this->error = __CLASS__ . ".firstItem must be smaller than or equal to " . __CLASS__ . ".lastItem";
-                return false;
-            }
+        // lastItem must be greater than or equal to firstItem, unless value is -1
+        if ($this->lastItem != -1 && ($this->lastItem < $this->firstItem)) {
+            $this->error = __CLASS__ . ".lastItem must be greater than or equal to " . __CLASS__ . ".firstItem";
+            return false;
         }
 
         return true;

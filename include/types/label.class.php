@@ -171,7 +171,7 @@ class label extends AbstractType {
         }
 
         // attribute lang is required
-        if ($this->isString($this->lang, 'lang') === false)
+        if ($this->isNoneEmptyString($this->lang, 'lang') === false)
             return false;
 
         // attribute dir is optional

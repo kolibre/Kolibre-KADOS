@@ -168,7 +168,7 @@ class questions extends AbstractType {
             foreach ($this->multipleChoiceQuestion as $index => $multipleChoiceQuestion) {
                 if ($multipleChoiceQuestion->validate() === false) {
                     $this->error = __CLASS__ . '.' . $multipleChoiceQuestion->getError();
-                    $this->error = str_replace('multipleChoiceQuestion', "multipleChoiceQuestion[$index]");
+                    $this->error = str_replace('multipleChoiceQuestion', "multipleChoiceQuestion[$index]", $this->error);
                     return false;
                 }
             }
@@ -181,7 +181,7 @@ class questions extends AbstractType {
             foreach ($this->inputQuestion as $index => $inputQuestion) {
                 if ($inputQuestion->validate() === false) {
                     $this->error = __CLASS__ . '.' . $inputQuestion->getError();
-                    $this->error = str_replace('inputQuestion', "inputQuestion[$index]");
+                    $this->error = str_replace('inputQuestion', "inputQuestion[$index]", $this->error);
                     return false;
                 }
             }

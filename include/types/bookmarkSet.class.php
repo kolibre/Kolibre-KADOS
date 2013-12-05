@@ -170,7 +170,7 @@ class bookmarkSet extends AbstractType {
             foreach ($this->bookmark as $index => $bookmark) {
                 if ($bookmark->validate() === false) {
                     $this->error = __CLASS__ . '.' . $bookmark->getError();
-                    $this->error = str_replace('bookmark', "bookmark[$index]");
+                    $this->error = str_replace('bookmark', "bookmark[$index]", $this->error);
                     return false;
                 }
             }
@@ -183,7 +183,7 @@ class bookmarkSet extends AbstractType {
             foreach ($this->hilite as $index => $hilite) {
                 if ($hilite->validate() === false) {
                     $this->error = __CLASS__ . '.' . $hilite->getError();
-                    $this->error = str_replace('hilite', "hilite[$index]");
+                    $this->error = str_replace('hilite', "hilite[$index]", $this->error);
                     return false;
                 }
             }

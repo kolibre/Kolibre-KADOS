@@ -118,7 +118,7 @@ class additionalTransferProtocols extends AbstractType {
         if ($this->isNoneEmptyArray($this->protocol, 'protocol') === false)
             return false;
         if ($this->isArrayOfNoneEmptyString($this->protocol, 'protocol') === false)
-            return true;
+            return false;
 
         return true;
     }

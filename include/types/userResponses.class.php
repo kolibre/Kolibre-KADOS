@@ -124,7 +124,7 @@ class userResponses extends AbstractType {
         foreach ($this->userResponse as $index => $userResponse) {
             if ($userResponse->validate() === false) {
                 $this->error = __CLASS__ . '.' . $userResponse->getError();
-                $this->error = str_replace('userResponse', "userResponse[$index]");
+                $this->error = str_replace('userResponse', "userResponse[$index]", $this->error);
                 return false;
             }
         }

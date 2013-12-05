@@ -750,7 +750,7 @@ class DemoAdapter extends Adapter
             $contentResource = array();
             $uri = $this->serviceBaseUri() . "content/$contentId/" . $resource['filename'];
             $contentResource['uri'] = $uri;
-            $contentResource['mimetype'] = $resource['mimetype'];
+            $contentResource['mimeType'] = $resource['mimetype'];
             $contentResource['size'] = $resource['bytes'];
             $contentResource['localURI'] = $resource['filename'];
             array_push($contentResources, $contentResource);

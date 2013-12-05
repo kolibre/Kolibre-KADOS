@@ -18,6 +18,9 @@
  * along with Kolibre-KADOS. If not, see <http://www.gnu.org/licenses/>.
  */
 
+$includePath = dirname(realpath(__FILE__)) . '/types';
+set_include_path(get_include_path() . PATH_SEPARATOR . $includePath);
+
 require_once('log4php/Logger.php');
 
 require_once('logOn.class.php');
@@ -77,6 +80,9 @@ class DaisyOnlineService
     // username for the active client/device in this session
     private $sessionUsername = null;
 
+    // boolean indicating if session handling is disabled, use with debugging and testing only
+    private $sessionHandleDisabled = false;
+
     // logger instance
     private $logger = null;
 
@@ -86,13 +92,14 @@ class DaisyOnlineService
     // adapter file to include in wakeup
     private $adapterIncludeFile = null;
 
-    public function __construct()
+    public function __construct($inifile = null)
     {
         // setup logger
         $this->logger = Logger::getLogger('kolibre.daisyonline.daisyonlineservice');
 
         // parse settings file
-        $inifile = realpath(dirname(__FILE__)) . '/../service.ini';
+        if (is_null($inifile))
+            $inifile = realpath(dirname(__FILE__)) . '/../service.ini';
         $settings = parse_ini_file($inifile, true);
 
         // setup service attributes
@@ -146,6 +153,17 @@ class DaisyOnlineService
         array_push($instance_variables_to_serialize, 'adapterIncludeFile');
         return $instance_variables_to_serialize;
     }
+
+    /**
+     * Disables the internal session handling.
+     *
+     * Warning! Do not invoke this function unless your are testing or debugging this class.
+     */
+    public function disableInternalSessionHandling()
+    {
+        $this->sessionHandleDisabled = true;
+    }
+
 
     /**
      * Log function logRequestAndResponse, log SOAP request and response, invoked from service.php
@@ -329,7 +347,7 @@ class DaisyOnlineService
         if ($this->adapter->startSession() === false)
         {
             $this->logger->warn("Backend session not active");
-            return setReadingSystemAttributesResponse(false);
+            return new setReadingSystemAttributesResponse(false);
         }
 
         // store reading system attributes
@@ -379,7 +397,10 @@ class DaisyOnlineService
         // fetch content for the requested list
         try
         {
-            $contentItems = $this->adapter->contentList($listId);
+            $contentFormat = $this->getClientSupportedContentFormats();
+            $protectionFormat = $this->getClientSupportedProtectionFormats();
+            $mimeType = $this->getClientSupportedMimeTypes();
+            $contentItems = $this->adapter->contentList($listId, $contentFormat, $protectionFormat, $mimeType);
         }
         catch (AdapterException $e)
         {
@@ -409,12 +430,9 @@ class DaisyOnlineService
 
         // if firstItem or lastItem is invalid we must return an empty list with totalItems attribute set to
         // total number of items in list, thus we assume list will be empty
-        $contentList->setFirstItem(0);
-        $contentList->setLastItem(0);
         $contentList->setTotalItems($totalItems);
 
         // generate content list
-        if ($lastItem == -1) $lastItem = $totalItems-1;
         if ($totalItems > 0)
         {
             if ($firstItem >= $totalItems || $lastItem >= $totalItems)
@@ -425,6 +443,7 @@ class DaisyOnlineService
             }
             else
             {
+                if ($lastItem == -1) $lastItem = $totalItems-1;
                 for ($i = $firstItem; $i <= $lastItem; $i++)
                 {
                     $contentId = $contentItems[$i];
@@ -477,7 +496,7 @@ class DaisyOnlineService
 
         if ($input->validate() === false)
         {
-            $msg = "request is not valid " . $output->getError();
+            $msg = "request is not valid " . $input->getError();
             $this->logger->warn($msg);
             throw new SoapFault('Client', $input->getError(), '', '', 'getContentMetadata_invalidParameterFault');
         }
@@ -517,7 +536,7 @@ class DaisyOnlineService
         {
             // set sample [optional]
             $sample = $this->adapter->contentSample($contentId);
-            if (is_string($sample)) $contentMetadata->setSample($sample);
+            if (is_string($sample)) $contentMetadata->setSample(new sample($sample));
 
             // set category [optional]
             $category = $this->adapter->contentCategory($contentId);
@@ -691,7 +710,7 @@ class DaisyOnlineService
         }
 
         // check if a prior call to getContentMetadata has been made
-        if (in_array($contentId, $this->sessionContentMetadataRequests) === false)
+        if (!$this->sessionHandleDisabled && in_array($contentId, $this->sessionContentMetadataRequests) === false)
         {
             $this->logger->warn("No prior call to getContentMetadata for content '$contentId'");
             $faultString = "Metadata for content has not been requested, call getContentMetadata for content '$contentId'";
@@ -748,7 +767,7 @@ class DaisyOnlineService
         {
             if ($this->adapter->contentExists($contentId) === false)
             {
-                $msg = "User '$this->sessionUsername' requested issuing of a nonexistent content '$contentId'";
+                $msg = "User '$this->sessionUsername' requested resources of a nonexistent content '$contentId'";
                 $this->logger->warn($msg);
                 $faultString = "content '$contentId' does not exist";
                 throw new SoapFault('Client', $faultString,'', '', 'getContentResources_invalidParameterFault');
@@ -756,7 +775,7 @@ class DaisyOnlineService
 
             if ($this->adapter->contentAccessible($contentId) === false)
             {
-                $msg = "User '$this->sessionUsername' requested issuing of an inaccessible content '$contentId'";
+                $msg = "User '$this->sessionUsername' requested resources of an inaccessible content '$contentId'";
                 $this->logger->warn($msg);
                 $faultString = "content '$contentId' not accessible";
                 throw new SoapFault('Client', $faultString,'', '', 'getContentResources_invalidParameterFault');
@@ -788,7 +807,7 @@ class DaisyOnlineService
                 $msg = "User '$this->sessionUsername' requested resources for non-issued content '$contentId'";
                 $this->logger->warn($msg);
                 $faultString = "content '$contentId' is not issued";
-                throw new SoapFault('Client', $faultString,'', '', 'getContentResources_invalidParameterFault');
+                throw new SoapFault('Client', $faultString,'', '', 'getContentResources_invalidOperationFault');
             }
             foreach ($contentResources as $resource)
                 $resources->addResource($this->createResource($resource));
@@ -1112,6 +1131,12 @@ class DaisyOnlineService
      */
     private function sessionHandle($operation)
     {
+        if ($this->sessionHandleDisabled)
+        {
+            $this->logger->warn('Session handling disabled');
+            return;
+        }
+
         $this->logger->info("Operation '$operation' invoked");
         // session_start() is handled in service.php by SOAP_PERSISTENCE_SESSION
 
@@ -1273,9 +1298,10 @@ class DaisyOnlineService
     private function createResource($resourceArray)
     {
         $uri = null;
-        $mimetype = null;
+        $mimeType = null;
         $size = null;
         $localURI = null;
+        $lastModifiedDate = null;
 
         // uri [mandatory]
         if (array_key_exists('uri', $resourceArray) === false)
@@ -1283,11 +1309,11 @@ class DaisyOnlineService
         else
             $uri = $resourceArray['uri'];
 
-        // mimetype [mandatory]
-        if (array_key_exists('mimetype', $resourceArray) === false)
-            $this->logger->error("Required field 'mimetype' is missing in resource");
+        // mimeType [mandatory]
+        if (array_key_exists('mimeType', $resourceArray) === false)
+            $this->logger->error("Required field 'mimeType' is missing in resource");
         else
-            $mimetype = $resourceArray['mimetype'];
+            $mimeType = $resourceArray['mimeType'];
 
         // size [mandatory]
         if (array_key_exists('size', $resourceArray) === false)
@@ -1301,7 +1327,11 @@ class DaisyOnlineService
         else
             $localURI = $resourceArray['localURI'];
 
-        $resource = new resource($uri, $mimetype, $size, $localURI);
+        // lastModifiedDate [optional]
+        if (array_key_exists('lastModifiedDate', $resourceArray))
+            $lastModifiedDate = $resourceArray['lastModifiedDate'];
+
+        $resource = new resource($uri, $mimeType, $size, $localURI, $lastModifiedDate);
         return $resource;
     }
 
@@ -1321,13 +1351,64 @@ class DaisyOnlineService
 
     /**
      * Client function getClientSupportedContentFormats
-     * @return array of strings
+     * @return null or array of strings
      */
     private function getClientSupportedContentFormats()
     {
-        $contentFormat = $this->readingSystemAttributes->getConfig()->getSupportedContentFormats()->getContentFormat();
-        if (is_null($contentFormat)) return array();
+        if (is_null($this->readingSystemAttributes))
+            return null;
+
+        if (is_a($this->readingSystemAttributes, 'readingSystemAttributes') === false)
+            return null;
+
+        $contentFormat = $this->readingSystemAttributes->config->supportedContentFormats->contentFormat;
+        if (is_null($contentFormat))
+            return null;
+
         return $contentFormat;
+    }
+
+    /**
+     * Client function getClientSupportedProtectionFormats
+     * @return null or array of strings
+     */
+    private function getClientSupportedProtectionFormats()
+    {
+        if (is_null($this->readingSystemAttributes))
+            return null;
+
+        if (is_a($this->readingSystemAttributes, 'readingSystemAttributes') === false)
+            return null;
+
+        $protectionFormat = $this->readingSystemAttributes->config->supportedContentProtectionFormats->protectionFormat;
+        if (is_null($protectionFormat))
+            return null;
+
+        return $protectionFormat;
+    }
+
+    /**
+     * Client function getClientSupportedMimeTypes
+     * @return null or array of strings
+     */
+    private function getClientSupportedMimeTypes()
+    {
+        if (is_null($this->readingSystemAttributes))
+            return null;
+
+        if (is_a($this->readingSystemAttributes, 'readingSystemAttributes') === false)
+            return null;
+
+        $mimeType = $this->readingSystemAttributes->config->supportedMimeTypes->mimeType;
+
+        if (is_null($mimeType))
+            return null;
+
+        $mimeTypes = array();
+        foreach ($mimeType as $mimetype)
+            array_push($mimeTypes, $mimetype->type);
+
+        return $mimeTypes;
     }
 
     /**

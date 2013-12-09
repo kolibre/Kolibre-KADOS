@@ -56,6 +56,8 @@ require_once('getKeyExchangeObjectResponse.class.php');
 
 class DaisyOnlineService
 {
+    const VERSION = '0.1';
+
     private $serviceAttributes = array();
     private $readingSystemAttributes = null;
 
@@ -158,6 +160,25 @@ class DaisyOnlineService
     }
 
     /**
+     * Returns the current version
+     */
+    public static function getVersion()
+    {
+        return self::VERSION;
+    }
+
+    /**
+     * Returns supportedOptionalOperations
+     */
+    public function getServiceSupportedOptionalOperations()
+    {
+        if (is_null($this->serviceAttributes) === false && array_key_exists('supportedOptionalOperations', $this->serviceAttributes))
+            return $this->serviceAttributes['supportedOptionalOperations'];
+
+        return array();
+    }
+
+    /**
      * Disables the internal session handling.
      *
      * Warning! Do not invoke this function unless your are testing or debugging this class.
@@ -192,7 +213,7 @@ class DaisyOnlineService
      * Service helper getServiceBaseUri
      * @return string
      */
-    public function getServiceBaseUri($allowencrypted = false)
+    public static function getServiceBaseUri($allowencrypted = false)
     {
         $protocol = 'http';
         if ($allowencrypted === true)

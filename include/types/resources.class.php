@@ -178,7 +178,7 @@ class resources extends AbstractType {
         foreach ($this->resource as $index => $resource) {
             if ($resource->validate() === false) {
                 $this->error = __CLASS__ . '.' . $resource->getError();
-                $this->error = str_replace('resource', "resource[$index]", $this->error);
+                $this->error = str_replace('resource.', "resource[$index].", $this->error);
                 return false;
             }
         }

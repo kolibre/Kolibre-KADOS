@@ -124,7 +124,7 @@ class choices extends AbstractType {
         foreach ($this->choice as $index => $choice) {
             if ($choice->validate() === false) {
                 $this->error = __CLASS__ . '.' . $choice->getError();
-                $this->error = str_replace('choice', "choice[$index]", $this->error);
+                $this->error = str_replace('choice.', "choice[$index].", $this->error);
                 return false;
             }
         }

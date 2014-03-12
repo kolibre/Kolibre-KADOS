@@ -23,6 +23,8 @@ Documentation
 Source code is documented using doxygen. Generate documentation by executing
 
     $ doxygen doxygen.cfg
+    
+How to deploy a demo service is described here https://github.com/kolibre/Kolibre-KADOS/wiki
 
 
 Platforms

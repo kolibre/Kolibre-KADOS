@@ -786,12 +786,14 @@ class DemoAdapter extends Adapter
         {
             try
             {
-                $query = 'UPDATE usercontent SET returned = 1, contentlist_id = :listId WHERE user_id = :userId AND content_id = :contentId';
+                $query = 'UPDATE usercontent SET returned = 1, contentlist_id = :listId, return_at = :datetime
+                    WHERE user_id = :userId AND content_id = :contentId';
                 $sth = $this->dbh->prepare($query);
                 $values = array();
-                $values[':listId'] = $this->contentListId('returned');
+                $values[':listId'] = $this->contentListId('new');
                 $values[':userId'] = $this->user;
                 $values[':contentId'] = $contentId;
+                $values[':datetime'] = NULL;
                 if ($sth->execute($values) === false)
                 {
                     $this->logger->error("Returning content with id '$contentId' for user with id '$this->user' failed");

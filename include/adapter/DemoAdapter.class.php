@@ -429,7 +429,7 @@ class DemoAdapter extends Adapter
         $contentList = array();
         foreach ($content as $item)
         {
-            $contentId = "con_" . $item['id'];
+            $contentId = "con_" . $item['content_id'];
 
             // filter content based on DAISY format
             if (is_null($contentFormats) === false && is_array($contentFormats))

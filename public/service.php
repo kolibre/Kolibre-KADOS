@@ -70,6 +70,12 @@ if ($_SERVER['REQUEST_METHOD'] != 'POST')
 .operations {
     padding-left: 10px;
 }
+.note {
+    border:2px solid;
+    border-radius:10px;
+    background-color:#dddddd;
+    padding: 0px 10px;
+}
 </style>
 <title>DAISYOnlineService</title>
 </head>
@@ -102,6 +108,20 @@ This service implements the DAISY Online Delivery protocol version 2 as specifie
         echo "<li>getKeyExchangeObject</li>\n";
 ?>
 </ul>
+<div class="note">
+<h4>Note</h4>
+<p>This is a demo service hosted by Kolibre and free to use for testing and demonstration purposes.</p>
+<p>The service is pre-configured with five user accounts each containing three sample content. See list below for usernames and passwords</p>
+<ul>
+<li>user1:password</li>
+<li>user2:password</li>
+<li>user3:password</li>
+<li>user4:password</li>
+<li>user5:password</li>
+</ul>
+<p>If a user tries to return a content, the service will respond with a successful response, but the content will appear in the list of new content when the list is requested.</p>
+<p>The service is also pre-configured to reset itself to its default state every day at 0:00 CET</p>
+<div>
 </body>
 </html>
 <?php

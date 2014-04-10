@@ -965,8 +965,8 @@
          </fault>
       </operation>
    </binding>
-   <service name="Pratsam_Daisy_Online_Service">
-       <port name="Pratsam_HTTP" binding="tns:DaisyOnlineService">
+   <service name="Kolibre_Daisy_Online_Service">
+       <port name="HTTP" binding="tns:DaisyOnlineService">
            <soap:address location="SERVICE_WSDL_URI_PLACEHOLDER"/>
        </port>
    </service>

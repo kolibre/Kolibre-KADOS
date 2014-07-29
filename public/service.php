@@ -73,7 +73,7 @@ if ($_SERVER['REQUEST_METHOD'] != 'POST')
 <title>DAISYOnlineService</title>
 </head>
 <body>
-<p class="heading">&nbsp;&nbsp;DAISYOnlineService&nbsp;&nbsp;v<? echo DaisyOnlineService::getVersion();?></p>
+<p class="heading">&nbsp;&nbsp;DAISYOnlineService&nbsp;&nbsp;v<?php echo DaisyOnlineService::getVersion();?></p>
 This service implements the DAISY Online Delivery protocol as specified in the Technical Recommendation approved in May 29, 2010.
 <h3>Supported operations</h3>
 <p class="operations">Required operations</p>
@@ -90,7 +90,7 @@ This service implements the DAISY Online Delivery protocol as specified in the T
 <p class="operations">Optional operations</p>
 <ul>
 <li>returnContent</li>
-<?
+<?php
     $DaisyOnlineService = new DaisyOnlineService();
     $operations = $DaisyOnlineService->getServiceSupportedOptionalOperations();
     if (in_array('SERVICE_ANNOUNCEMENTS', $operations))
@@ -107,7 +107,7 @@ This service implements the DAISY Online Delivery protocol as specified in the T
 </ul>
 </body>
 </html>
-<?
+<?php
     die();
 }
 

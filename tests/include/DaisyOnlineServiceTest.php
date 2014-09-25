@@ -166,7 +166,7 @@ class DaisyOnlineServiceTest extends PHPUnit_Framework_TestCase
         $settings = array();
         $settings['Service'] = array();
         $settings['Service']['serviceProvider'] = 'org-kolibre';
-        $settings['Service']['service'] = 'org-kolibre-daisyonline';
+        $settings['Service']['service'] = 'org-kolibre-kados';
         $settings['Service']['supportedContentSelectionMethods'] = array('OUT_OF_BAND', 'BROWSE');
         $settings['Service']['supportsServerSideBack'] = 1;
         $settings['Service']['supportsSearch'] = 1;
@@ -193,7 +193,7 @@ class DaisyOnlineServiceTest extends PHPUnit_Framework_TestCase
         $this->assertEquals($output->serviceAttributes->serviceProvider->label->audio->size, 2);
         $this->assertEquals($output->serviceAttributes->serviceProvider->label->lang, 'en');
         $this->assertEquals($output->serviceAttributes->serviceProvider->label->dir, 'ltr');
-        $this->assertEquals($output->serviceAttributes->service->id, 'org-kolibre-daisyonline');
+        $this->assertEquals($output->serviceAttributes->service->id, 'org-kolibre-kados');
         $this->assertNull($output->serviceAttributes->service->label);
         $this->assertCount(2, $output->serviceAttributes->supportedContentSelectionMethods->method);
         $this->assertContains('OUT_OF_BAND', $output->serviceAttributes->supportedContentSelectionMethods->method);

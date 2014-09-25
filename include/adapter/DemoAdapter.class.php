@@ -260,6 +260,17 @@ class DemoAdapter extends Adapter
     {
         switch ($type)
         {
+        case Adapter::LABEL_SERVICE:
+            if ($id != 'org-kolibre-kados') return false;
+            $label = array();
+            $label['text'] = 'Kados demo service';
+            $label['lang'] = 'en';
+            $audio = array();
+            $audio['uri'] = $this->serviceBaseUri() . 'media/service.ogg';
+            $audiofile = realpath(dirname(__FILE__)) . '/../../data/media/service.ogg';
+            $audio['size'] = filesize($audiofile);
+            $label['audio'] = $audio;
+            return $label;
         case Adapter::LABEL_CONTENTITEM:
             $label = array();
             $label['text'] = $this->contentTitle($id);

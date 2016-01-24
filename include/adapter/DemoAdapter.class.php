@@ -18,7 +18,10 @@
  * along with Kolibre-KADOS. If not, see <http://www.gnu.org/licenses/>.
  */
 
-require_once('log4php/Logger.php');
+$filePath = dirname(realpath(__FILE__));
+set_include_path(get_include_path() . PATH_SEPARATOR . $filePath . '/../../');
+
+require_once('vendor/autoload.php');
 require_once('Adapter.class.php');
 
 class DemoAdapter extends Adapter

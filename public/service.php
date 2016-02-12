@@ -19,11 +19,12 @@
  */
 
 // set include paths
+set_include_path(get_include_path() . PATH_SEPARATOR . '..');
 set_include_path(get_include_path() . PATH_SEPARATOR . '../include');
 set_include_path(get_include_path() . PATH_SEPARATOR . '../include/types');
 
 // Setup logging
-require_once('log4php/Logger.php');
+require_once('vendor/autoload.php');
 Logger::configure('../log4php.xml');
 $serviceLogger = Logger::getLogger('kolibre.daisyonline.service');
 

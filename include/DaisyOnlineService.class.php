@@ -18,10 +18,11 @@
  * along with Kolibre-KADOS. If not, see <http://www.gnu.org/licenses/>.
  */
 
-$includePath = dirname(realpath(__FILE__)) . '/types';
-set_include_path(get_include_path() . PATH_SEPARATOR . $includePath);
+$filePath = dirname(realpath(__FILE__));
+set_include_path(get_include_path() . PATH_SEPARATOR . $filePath . '/..');
+set_include_path(get_include_path() . PATH_SEPARATOR . $filePath . '/types');
 
-require_once('log4php/Logger.php');
+require_once('vendor/autoload.php');
 
 require_once('logOn.class.php');
 require_once('logOnResponse.class.php');

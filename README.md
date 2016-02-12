@@ -14,6 +14,9 @@ embership and contact information can be found at http://www.kolibre.org/
 
 What is Kolibre-KADOS?
 ---------------------------------
+
+[![Build Status](https://travis-ci.org/kolibre/Kolibre-KADOS.svg?branch=master)](https://travis-ci.org/kolibre/Kolibre-KADOS)
+
 Kolibre-KADOS is a PHP module for deploying a Daisy Online service onto an existing
 user management and content delivery backend. It is fully compatible with the
 DAISY Online Delivery Protocol v1 and provides and adapter API for backend communication.

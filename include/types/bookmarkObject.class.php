@@ -100,7 +100,7 @@ class bookmarkObject extends AbstractType {
      */
     function validate() {
                   
-        //bookmarkSet must be string of type bookmarkSet and correct
+        //bookmarkSet must be of type bookmarkSet and correct
         if (!is_null($this->bookmarkSet)) {
             if ($this->isInstanceOf($this->bookmarkSet, 'bookmarkSet') === false){
                 return false;
@@ -117,8 +117,10 @@ class bookmarkObject extends AbstractType {
                 return false;
             }
         } 
-        if (preg_match('/\d{4}\-\d{2}\-\d{2}T\d{2}:\d{2}:\d{2}(\+\d{2}:\d{2}|Z)/', $this->lastModifiedDate) != 1) 
-            return false;    
+        // lastModifiedDate must include timezone if set
+        if (preg_match('/\d{4}\-\d{2}\-\d{2}T\d{2}:\d{2}:\d{2}(\+\d{2}:\d{2}|Z)/', $this->lastModifiedDate) != 1){
+            return false;
+        }    
         
             
 

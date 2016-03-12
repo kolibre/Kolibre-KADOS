@@ -117,6 +117,94 @@ abstract class Adapter
      * Enum for retrieving a question label
      */
     const LABEL_CHOICE = 7;
+    /**
+     * Enum for retrieving a category label
+     */
+    const LABEL_CATEGORY = 8;
+
+    /**
+     * Enum that content can ONLY be streamed.
+     */
+    const ACCESS_STREAM_ONLY = 'STREAM_ONLY';
+    /**
+     * Enum that content can ONLY be downloaded.
+     */
+    const ACCESS_DOWNLOAD_ONLY = 'DOWNLOAD_ONLY';
+    /**
+     * Enum that content can be streamed or downloaded.
+     */
+    const ACCESS_STREAM_AND_DOWNLOAD = 'STREAM_AND_DOWNLOAD';
+    /**
+     * Enum that content can be streamed or downloaded as Restricted Content.
+     */
+    const ACCESS_STREAM_AND_RESTRICTED_DOWNLOAD = 'STREAM_AND_RESTRICTED_DOWNLOAD';
+    /**
+     * Enum that content can ONLY be downloaded as Restricted Content.
+     */
+    const ACCESS_RESTRICTED_DOWNLOAD_ONLY = 'RESTRICTED_DOWNLOAD_ONLY';
+    /**
+     * Enum that content can ONLY be downloaded. Automatic Download is allowed.
+     */
+    const ACCESS_DOWNLOAD_ONLY_AUTOMATIC_ALLOWED = 'DOWNLOAD_ONLY_AUTOMATIC_ALLOWED';
+    /**
+     * Enum that content can be streamed or downloaded. Automatic Download is allowed.
+     */
+    const ACCESS_STREAM_AND_DOWNLOAD_AUTOMATIC_ALLOWED = 'STREAM_AND_DOWNLOAD_AUTOMATIC_ALLOWED';
+    /**
+     * Enum that content can be streamed or downloaded as Restricted Content. Automatic Download is allowed.
+     */
+    const ACCESS_STREAM_AND_RESTRICTED_DOWNLOAD_AUTOMATIC_ALLOWED = 'STREAM_AND_RESTRICTED_DOWNLOAD_AUTOMATIC_ALLOWED';
+    /**
+     * Enum that content can ONLY be downloaded as Restricted Content. Automatic Download is allowed.
+     */
+    const ACCESS_RESTRICTED_DOWNLOAD_ONLY_AUTOMATIC_ALLOWED = 'RESTRICTED_DOWNLOAD_ONLY_AUTOMATIC_ALLOWED';
+
+    /**
+     * Enum for only retrieving lastmark object
+     */
+    const BMGET_LASTMARK = 1;
+    /**
+     * Enum for only retrieving hilite objects
+     */
+    const BMGET_HILITE = 2;
+    /**
+     * Enum for only retrieving bookmark objects
+     */
+    const BMGET_BOOKMARK = 3;
+    /**
+     * Enum for retrieving all (lastmark, hilite and bookmarks) objects
+     */
+    const BMGET_ALL = 4;
+
+    /**
+     * Enum to replace bookmarks
+     */
+    const BMSET_REPLACE = 1;
+    /**
+     * Enum to add bookmarks
+     */
+    const BMSET_ADD = 2;
+    /**
+     * Enum to remove bookmarks
+     */
+    const BMSET_REMOVE = 3;
+
+    /**
+     * Enum to begin content download/stream
+     */
+    const STATE_START = 1;
+    /**
+     * Enum to pasue content download/stream
+     */
+    const STATE_PAUSE = 2;
+    /**
+     * Enum to resume content download/stream
+     */
+    const STATE_RESUME = 3;
+    /**
+     * Enum to finish content download/stream
+     */
+    const STATE_FINISH = 4;
 
 
     /**
@@ -232,17 +320,71 @@ abstract class Adapter
     abstract public function contentList($list, $contentFormats = null, $protectionFormats = null, $mimeTypes = null);
 
     /**
-     * Retrive last modified data for a content
+     * Retrieve last modified date for a content
      *
-     * This method is optional and does not require implementation.
-     * It is invoked by the service when operations getContentList or getContentResources is called.
+     * This method is required and must be implemented for a basic service.
+     * It is invoked by the service when operations getContentList and getContentResources is called.
      *
      * @param string $contentId The identifier of the content
-     * @return mixed Returns False if not supported, otherwise a date string with format 'YYYY-MM-DDThh:mm:ss'
+     * @return mixed Returns False if not supported, otherwise a date string including time zone with format 'YYYY-MM-DDThh:mm:ss+hh:mm' or 'YYYY-MM-DDThh:mmZ'
      *
      * @throws AdapterException
      */
-    public function contentLastModifiedDate($contentId)
+    abstract public function contentLastModifiedDate($contentId);
+
+    /**
+     * Retrieve first and last access date for a content
+     *
+     * This method is optional and does not require implementation.
+     * It is invoked by the service when operation getContentList is called.
+     *
+     * @param string $contentId The identifier of the content
+     * @return mixed Returns False if no dates exists, otherwise returns an associative array.
+     *
+     * <p>The associative array must contain the keys 'first' and 'last' and the value must be a date string including time zone.
+     * Example of an array>/p>
+     * <pre>
+     * Array
+     * (
+     *     [first] => "2016-03-05T13:43:26+02:00"
+     *     [last] => "2016-03-05T13:43:26+02:00"
+     * )
+     * </pre>
+     *
+     * @throws AdapterException
+     */
+    public function contentAccessDate($contentId)
+    {
+        return array("first" => "", "last" => "");
+    }
+
+    /**
+     * Retrieve the allowed method for accessing a content
+     *
+     * This method is required and must be imlemented for a basic service.
+     * It is invoked by the service when operations getContentList is called.
+     *
+     * @param string $contentId THe identifier of the content
+     * @return string Returns the allowed access method. Must be oneo of the defined ACCESS_ values.
+     *
+     * @throws AdapterException
+     */
+    abstract public function contentAccessMethod($contentId);
+
+    /**
+     * Set the current access state for content
+     *
+     * This method is optional and does not require implementation.
+     * It is invoked by the service when setProgressState operation is called.
+     * If the service supports setting progress state (PROCESS_STATE), this method must be implemented.
+     *
+     * @param string $contentId The identifier of the content
+     * @param int $state The current state. Must be one of the defined STATE_ values.
+     * @return bool
+     *
+     * @throws AdapterException
+     */
+    public function contentAccessState($contentId, $state)
     {
         return false;
     }
@@ -293,9 +435,9 @@ abstract class Adapter
      * Retrieve a category for the specified content
      *
      * This method is optional and does not require implementation.
-     * It is invoked by the service when getContentMetadata operation is called.
+     * It is invoked by the service when getContentList operation is called.
      *
-     * @param string $contentId The identifier for the content
+     * @param string $contentId The identifier of the content
      * @return mixed Returns False if not supported, otherwise a string with the category as value. Recommended values are BOOK, MAGAZINE, NEWSPAPER and OTHER.
      *
      * @throws AdapterException
@@ -306,13 +448,29 @@ abstract class Adapter
     }
 
     /**
+     * Retrieve a sub category for the specified content
+     *
+     * This method is optional and does not require implementation.
+     * It is invoked by the service when getContentList operation is called.
+     *
+     * @param string $contentId The identifier of the content
+     * @return mixed Returns False if not supported, otherwise a string with the category as value. Recommended values are BOOK, MAGAZINE, NEWSPAPER and OTHER.
+     *
+     * @throws AdapterException
+     */
+    public function contentSubCategory($contentId)
+    {
+        return false;
+    }
+
+    /**
      * Retrieve a return date for the specified content
      *
      * This method is optional and does not require implementation.
-     * It is invoked by the service when operations getContentMetadata or getContentResources is called.
+     * It is invoked by the service when operations getContentListor is called.
      *
      * @param string $contentId The identifier for the content
-     * @return mixed Returns False if content does not require return, otherwise a date string with format 'YYYY-MM-DDThh:mm:ss'
+     * @return mixed Returns False if content does not require return, otherwise a date string including time zone with format 'YYYY-MM-DDThh:mm:ss+hh:mm' or 'YYYY-MM-DDThh:mm:ssZhh:mm:ssZ'
      *
      * @throws AdapterException
      */
@@ -382,10 +540,12 @@ abstract class Adapter
      * It is invoked by the service when getContentResources operation is called.
      *
      * @param string $contentId The identifier for the content
+     * @param string $accessMethod The method used by the reading system used to retrieve the resources. Must be one of the following defined values ACCESS_STREAM_ONLY, ACCESS_DOWNLOAD_ONLY or ACCESS_DOWNLOAD_ONLY_AUTOMATIC_ALLOWED.
      * @return array Returns an associative array.
      *
      * <p>The associative array must be a direct match of a resources object and must contain the required elements.
-     * Example of an array with two resources</p>
+     * Specify a key 'package' with value 'true' to indicate that the resource is a package.
+     * Example of an array with three resources and one package</p>
      * <pre>
      * Array
      * (
@@ -395,6 +555,7 @@ abstract class Adapter
      *             [mimeType] => "text/html"
      *             [size] => 1233
      *             [localURI] => "ncc.html"
+     *             [lastModifiedDate] => "2016-01-01T00:00:00Z"
      *         )
      *     [1] => Array
      *         (
@@ -402,13 +563,23 @@ abstract class Adapter
      *             [mimeType] => "text/plain"
      *             [size] => 12
      *             [localURI] => "master.smil"
+     *             [lastModifiedDate] => "2016-01-01T00:00:00Z"
+     *         )
+     *     [2] => Array
+     *         (
+     *             [uri] => "http://localhost/package.zip"
+     *             [mimeType] => "application/zip"
+     *             [size] => 321
+     *             [localURI] => "package.zip"
+     *             [lastModifiedDate] => "2016-01-01T00:00:00Z"
+     *             [package] => true
      *         )
      * )
      * </pre>
      *
      * @throws AdapterException
      */
-    abstract public function contentResources($contentId);
+    abstract public function contentResources($contentId, $accessMethod = null);
 
     /**
      * Check if the specified content is returnable by the current user
@@ -521,11 +692,13 @@ abstract class Adapter
      *
      * @param string $contentId The identifier for the content
      * @param string $bookmark A JSON encoded string of a bookmarkSet object
+     * @param int $action Specifies whether to replace, add or remove bookmarks. Must be one of the defined BMSET_ values.
+     * @param string $lastModifiedDate A date string including time zone when the bookmark was last modified.
      * @return boolean Returns True if the bookmark is saved, otherwise False.
      *
      * @throws AdapterException
      */
-    public function setBookmarks($contentId, $bookmark)
+    public function setBookmarks($contentId, $bookmark, $action = null, $lastModifiedDate = null)
     {
         return false;
     }
@@ -534,15 +707,27 @@ abstract class Adapter
      * Retrieve bookmark for the specified content
      *
      * This method is optional and does not require implementation.
-     * It is invoked by the service when getBookmarks operation is called.
+     * It is invoked by the service when getBookmarks or getContentList operation is called.
      * If the service supports GET_BOOKMARKS, this method must be implemented.
      *
      * @param string $contentId The identifier for the content
-     * @return mixed Returns false if bookmark not found, otherwise a JSON encoded string of a bookmarkSet object.
+     * @param int $action Specifies which bookmarks to retreive. Must be one of the defined BMGET_ values.
+     * @return mixed Returns False if bookmark not found, otherwise an associative array.
+     *
+     * <p>Valid key names are 'lastModifiedDate' and 'bookmarkSet'. The value for key 'lastModifiedDate' must be a date string containing time zone. The value for key 'bookmarkSet' must be a JSON encoded string of bookmarkSet object.</p>
+     *
+     * <p>Example of an array.</p>
+     * <pre>
+     * Array
+     * (
+     *     [lastModifiedDate => "2016-01-01T00:00:00Z"
+     *     [bookmarkSet] => '{"title":"content title", "uid":"uniqe id", "lastmark":{"ncxRef":"ncxRef", "URI":"uri","timeOffset": "10"}}'
+     * )
+     * </pre>
      *
      * @throws AdapterException
      */
-    public function getBookmarks($contentId)
+    public function getBookmarks($contentId, $action = null)
     {
         return false;
     }
@@ -668,6 +853,37 @@ abstract class Adapter
     }
 
     /**
+     * Retrieve a dynamic menu action related to a content
+     *
+     * This method is optional and does not require implementation.
+     * It is invoked by the service when getContentList operation is called.
+     *
+     * @param string $contentId The identifier of a content.
+     * @return array Returns an empty array if a content has no action. Otherwise an associative array is returned that represents a multipleChoiceQuestion.
+     *
+     * <p>Example of an associative array.</p>
+     * <pre>
+     * Array
+     * (
+     *      [type] => "multipleChoiceQuestion"
+     *      [questionId] => "question 1"
+     *      [choices] => Array
+     *      (
+     *          [0] => "choice 1"
+     *          [1] => "choice 2"
+     *          [2] => "choice 3"
+     *      )
+     * )
+     * </pre>
+     *
+     * @throws AdapterException
+     */
+    public function menuContentQuestion($contentId)
+    {
+        return array();
+    }
+
+    /**
      * Retrieve public key for the requested key
      *
      * The service encrypts this key with one the client's public keys, thus only the client is able to decrypt the key.
@@ -720,6 +936,66 @@ abstract class Adapter
     public function issuerInfo()
     {
         return array();
+    }
+
+    /**
+     * Retrieve user credentials
+     *
+     * This method is optional and does not require implementation.
+     * It is invoked by the service when getUserCredentials operation is called.
+     * If the service supports automatic reading system configuration (CREDENTIALS), this method must be implemented.
+     *
+     * @param string $manufacturer The manufacturer reported by the reading system
+     * @param string $model The model reported by the reading system
+     * @param string $serialNumber The serial number reported by the reading system
+     * @param string $version The version number reported by the reading system
+     * @return mixed Returns False when credentials not found. Otherwise an associative array.
+     *
+     * <p>The password must be encrypted</p>
+     * <p>Example of an array</p>
+     * Array
+     * (
+     *     [username] => "username"
+     *     [password] => "encrypted password"
+     * )
+     *
+     * @throws AdapterException
+     */
+    public function userCredentials($manufacturer, $model, $serialNumber, $version)
+    {
+        return false;
+    }
+
+    /**
+     * Retrieve Terms of Service
+     *
+     * This method is optional and does not require implementation.
+     * It is invoked by the service when getTermsOfService operation in called.
+     * If the service supports terms of service (TERMS_OF_SERVICE), this method must be implemented.
+     *
+     * @return mixed Returns False if opertion not supported, True is terms already accepted. Otherwise an associative array representing a label object.
+     *
+     * @throws AdapterException
+     */
+    public function termsOfService()
+    {
+        return false;
+    }
+
+    /**
+     * Accept Terms of Service
+     *
+     * This method is optional and does not require implementation.
+     * It is invoked by the service when getTermsOfService operation in called.
+     * If the service supports terms of service (TERMS_OF_SERVICE), this method must be implemented.
+     *
+     * @return bool Returns True if terms accepted. Otherwise False.
+     *
+     * @throws AdapterException
+     */
+    public function termsOfServiceAccept()
+    {
+        return false;
     }
 }
 

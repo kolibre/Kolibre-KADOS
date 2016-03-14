@@ -118,7 +118,6 @@ class package extends AbstractType {
      * setter for mimeType
      */
     function setMimeType($_mimeType) {
-        echo "in setter";
         $this->mimeType = $_mimeType;
     }
 
@@ -178,49 +177,42 @@ class package extends AbstractType {
      */
     function validate() {
 
-        // resourceRef can not be null
-        if (is_null($this->resourceRef))
-            return false;
         // resourceRef must be of type resourceRef and correct
-        if (!is_null($this->resourceRef)) {
-            if ($this->isInstanceOf($this->resourceRef, 'resourceRef') === false){
-                return false;
+        
+        if ($this->isInstanceOf($this->resourceRef, 'resourceRef') === false)
+            return false;
+            
+        if ($this->resourceRef->validate() === false) {
+            $this->error = __CLASS__ . '.' . $this->resourceRef->getError();
+            return false;
             }
-            if ($this->resourceRef->validate() === false) {
-                $this->error = __CLASS__ . '.' . $this->resourceRef->getError();
-                return false;
-            }
-        }
+        
 
         // uri must occur exactly once
-        if ($this->isNoneEmptyString($this->uri, 'uri') === false){
+        if ($this->isNoneEmptyString($this->uri, 'uri') === false)
             return false;
-        }
+        
         // mimeType must occur exactly once
-        if ($this->isNoneEmptyString($this->mimeType, 'mimeType') === false){
+        if ($this->isNoneEmptyString($this->mimeType, 'mimeType') === false)
             return false;
-        }
+        
         // size can not be NULL
         if(is_null($this->size))
             return false;
 
         // size must be specified and positive integer
-        if (!is_null($this->size)) {
-            if ($this->isPositiveInteger($this->size, 'size') === false){
-                return false;
-            }
-        }
+        if ($this->isPositiveInteger($this->size, 'size') === false)
+            return false;
+            
         //lastModifiedDate must occur exactly once
-        if (!is_null($this->lastModifiedDate)){
-            if($this->isString($this->lastModifiedDate, 'lastModifiedDate') === false){
-                return false;
-            }
-        }
+        if($this->isString($this->lastModifiedDate, 'lastModifiedDate') === false)
+            return false;
+        
+   
         // lastModifiedDate must include timezone if set
-        if (preg_match('/\d{4}\-\d{2}\-\d{2}T\d{2}:\d{2}:\d{2}(Z|\+\d{2}:\d{2})/', $this->lastModifiedDate) != 1) {
-            echo " last one ";
+        if (preg_match('/\d{4}\-\d{2}\-\d{2}T\d{2}:\d{2}:\d{2}(Z|\+\d{2}:\d{2})/', $this->lastModifiedDate) != 1) 
             return false;    
-        }
+        
         
         return true;
     }

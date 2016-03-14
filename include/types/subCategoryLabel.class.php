@@ -18,8 +18,6 @@
  * along with Kolibre-KADOS. If not, see <http://www.gnu.org/licenses/>.
  */
 
-require_once('AbstractType.class.php');
-require_once('label.class.php');
 require_once('categoryLabel.class.php');
 
 class subCategoryLabel extends categoryLabel {

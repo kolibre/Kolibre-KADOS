@@ -39,7 +39,6 @@ class bookmarkObjectTest extends PHPUnit_Framework_TestCase
         
         $bookmarkObject = new bookmarkObject('test', '2016-03-11T14:23:23+00:00');
         $this->assertFalse($bookmarkObject->validate());
-        //$this->assertContains('bookmarkObject.bookmarkSet', $bookmarkObject->getError());
 
         $bookmarkAudio = new bookmarkAudio('src','clipBegin','ClipEnd');
         $title = new title('title',$bookmarkAudio);
@@ -52,7 +51,7 @@ class bookmarkObjectTest extends PHPUnit_Framework_TestCase
         
         $bookmarkObject = new bookmarkObject($bookmarkSet, '2016-03-11T14:23:23+00:00');
         $this->assertTrue($bookmarkObject->validate());
-        //$this->assertContains('bookmarkObject.bookmarkSet', $bookmarkObject->getError());
+
     }
 
 
@@ -72,19 +71,19 @@ class bookmarkObjectTest extends PHPUnit_Framework_TestCase
         $bookmarkObject = new bookmarkObject($bookmarkSet);
         $bookmarkObject->lastModifiedDate = 1;
         $this->assertFalse($bookmarkObject->validate());
-        //$this->assertContains('bookmarkObject.bookmarkSet', $bookmarkObject->getError());
+
 
         $bookmarkObject = new bookmarkObject($bookmarkSet, 'nfd');
         $this->assertFalse($bookmarkObject->validate());
-        //$this->assertContains('bookmarkObject.bookmarkSet', $bookmarkObject->getError());
+
 
         $bookmarkObject = new bookmarkObject($bookmarkSet, '2016-03-11T14:23:23Z');
         $this->assertTrue($bookmarkObject->validate());
-        //$this->assertContains('bookmarkObject.bookmarkSet', $bookmarkObject->getError());
+
 
         $bookmarkObject = new bookmarkObject($bookmarkSet, '2016-03-11T14:23:23+00:00');
         $this->assertTrue($bookmarkObject->validate());
-        //$this->assertContains('bookmarkObject.bookmarkSet', $bookmarkObject->getError());
+
     }
     
 }

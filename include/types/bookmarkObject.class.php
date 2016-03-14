@@ -42,7 +42,7 @@ class bookmarkObject extends AbstractType {
      * constructor for class bookmarkObject
      */
     function __construct($_bookmarkSet = NULL,$_lastModifiedDate = NULL) {
-        if (is_string($_bookmarkSet)) $this->setBookmarkSet($_bookmarkSet);
+        if(is_a($_bookmarkSet, 'bookmarkSet')) $this->setBookmarkSet($_bookmarkSet);
         if (is_string($_lastModifiedDate)) $this->setLastModifiedDate($_lastModifiedDate);
         
     }
@@ -101,19 +101,18 @@ class bookmarkObject extends AbstractType {
     function validate() {
                   
         //bookmarkSet must be of type bookmarkSet and correct
-        if (!is_null($this->bookmarkSet)) {
-            if ($this->isInstanceOf($this->bookmarkSet, 'bookmarkSet') === false){
-                return false;
-            }
-            if ($this->bookmarkSet->validate() === false) {
-                $this->error = __CLASS__ . '.' . $this->bookmarkSet->getError();
-                return false;
-            }
+        if ($this->isInstanceOf($this->bookmarkSet, 'bookmarkSet') === false){
+            return false;
         }
+        if ($this->bookmarkSet->validate() === false) {
+            $this->error = __CLASS__ . '.' . $this->bookmarkSet->getError();
+            return false;
+        }
+        
 
         //lastModifiedDate must occur exactly once
         if (!is_null($this->lastModifiedDate)){
-            if($this->isString($this->lastModifiedDate, 'lastModifiedDate') === false){
+            if($this->isNoneEmptyString($this->lastModifiedDate, 'lastModifiedDate') === false){
                 return false;
             }
         } 

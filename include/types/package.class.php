@@ -186,7 +186,6 @@ class package extends AbstractType {
             $this->error = __CLASS__ . '.' . $this->resourceRef->getError();
             return false;
             }
-        
 
         // uri must occur exactly once
         if ($this->isNoneEmptyString($this->uri, 'uri') === false)
@@ -204,14 +203,11 @@ class package extends AbstractType {
         if ($this->isPositiveInteger($this->size, 'size') === false)
             return false;
             
-        //lastModifiedDate must occur exactly once
-        if($this->isString($this->lastModifiedDate, 'lastModifiedDate') === false)
-            return false;
-        
-   
+           
         // lastModifiedDate must include timezone if set
-        if (preg_match('/\d{4}\-\d{2}\-\d{2}T\d{2}:\d{2}:\d{2}(Z|\+\d{2}:\d{2})/', $this->lastModifiedDate) != 1) 
-            return false;    
+        if ($this->isDateTimeString($this->lastModifiedDate, 'lastModifiedDate') === false) {
+            return false;
+        }    
         
         
         return true;

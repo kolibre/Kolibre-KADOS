@@ -108,18 +108,11 @@ class bookmarkObject extends AbstractType {
             $this->error = __CLASS__ . '.' . $this->bookmarkSet->getError();
             return false;
         }
-        
-
+     
         //lastModifiedDate must occur exactly once
-        if (!is_null($this->lastModifiedDate)){
-            if($this->isNoneEmptyString($this->lastModifiedDate, 'lastModifiedDate') === false){
-                return false;
-            }
-        } 
-        // lastModifiedDate must include timezone if set
-        if (preg_match('/\d{4}\-\d{2}\-\d{2}T\d{2}:\d{2}:\d{2}(\+\d{2}:\d{2}|Z)/', $this->lastModifiedDate) != 1){
+        if ($this->isDateTimeString($this->lastModifiedDate, 'lastModifiedDate') === false) {
             return false;
-        }    
+        } 
         
             
 

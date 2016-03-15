@@ -19,6 +19,12 @@
  */
 
 $classmap = array(
+		"credentials" => "credentials",
+		"categoryLabel" => "categoryLabel",
+		"subCategoryLabel" => "subCategoryLabel",
+		"package" => "package",
+		"bookmarkObject" => "bookmarkObject",
+		"resourceRef" => "resourceRef",
 		"logOn" => "logOn",
 		"logOnResponse" => "logOnResponse",
 		"logOff" => "logOff",

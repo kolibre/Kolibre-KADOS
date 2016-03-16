@@ -28,8 +28,10 @@ class configTest extends PHPUnit_Framework_TestCase
     protected $config;
 
     public function setUp()
-    {
+    {   
+        $accessConfig = "STREAM_ONLY";
         $supportsMultipleSelections = false;
+        $supportsAdvancedDynamicMenus = false;
         $preferredUILanguage = 'preferredUILanguage';
         $bandwidth = null;
         $supportedContentFormats = new supportedContentFormats();
@@ -40,7 +42,9 @@ class configTest extends PHPUnit_Framework_TestCase
         $requiresAudioLabels = false;
         $additionalTransferProtocols = null;
         $this->config = new config(
+            $accessConfig,
             $supportsMultipleSelections,
+            $supportsAdvancedDynamicMenus,
             $preferredUILanguage,
             $bandwidth,
             $supportedContentFormats,
@@ -50,6 +54,21 @@ class configTest extends PHPUnit_Framework_TestCase
             $supportedInputTypes,
             $requiresAudioLabels,
             $additionalTransferProtocols);
+    }
+
+/**
+     * @group config
+     * @group validate
+     */
+    public function testAccessConfig()
+    {
+        $instance = $this->config;
+        $this->assertTrue($instance->validate());
+        $instance->accessConfig = '';
+        $this->assertFalse($instance->validate());
+        $this->assertContains('config.accessConfig', $instance->getError());
+        $instance->accessConfig = "DOWNLOAD_ONLY";
+        $this->assertTrue($instance->validate());
     }
 
     /**
@@ -64,6 +83,21 @@ class configTest extends PHPUnit_Framework_TestCase
         $this->assertFalse($instance->validate());
         $this->assertContains('config.supportsMultipleSelections', $instance->getError());
         $instance->supportsMultipleSelections = false;
+        $this->assertTrue($instance->validate());
+    }
+
+    /**
+     * @group config
+     * @group validate
+     */
+    public function testSupportsAdvancedDynamicMenus()
+    {
+        $instance = $this->config;
+        $this->assertTrue($instance->validate());
+        $instance->supportsAdvancedDynamicMenus = 'supportsAdvancedDynamicMenus';
+        $this->assertFalse($instance->validate());
+        $this->assertContains('config.supportsAdvancedDynamicMenus', $instance->getError());
+        $instance->supportsAdvancedDynamicMenus = false;
         $this->assertTrue($instance->validate());
     }
 

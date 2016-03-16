@@ -30,9 +30,19 @@ require_once('additionalTransferProtocols.class.php');
 class config extends AbstractType {
 
     /**
+     * @var string
+     */
+    public $accessConfig;
+
+    /**
      * @var boolean
      */
     public $supportsMultipleSelections;
+
+    /**
+     * @var boolean
+     */
+    public $supportsAdvancedDynamicMenus;
 
     /**
      * @var language
@@ -85,8 +95,10 @@ class config extends AbstractType {
     /**
      * constructor for class config
      */
-    function __construct($_supportsMultipleSelections = NULL, $_preferredUILanguage = NULL, $_bandwidth = NULL, $_supportedContentFormats = NULL, $_supportedContentProtectionFormats = NULL, $_keyRing = NULL, $_supportedMimeTypes = NULL, $_supportedInputTypes = NULL, $_requiresAudioLabels = NULL, $_additionalTransferProtocols = NULL) {
-        if (is_bool($_supportsMultipleSelections)) $this->setSupportsMultipleSelections($_supportsMultipleSelections);
+    function __construct($_accessConfig = NULL, $_supportsMultipleSelections = NULL, $_supportsAdvancedDynamicMenus, $_preferredUILanguage = NULL, $_bandwidth = NULL, $_supportedContentFormats = NULL, $_supportedContentProtectionFormats = NULL, $_keyRing = NULL, $_supportedMimeTypes = NULL, $_supportedInputTypes = NULL, $_requiresAudioLabels = NULL, $_additionalTransferProtocols = NULL) {
+        if (is_string($_accessConfig)) $this->setAccessConfig($_accessConfig);
+        if (is_bool($_supportsMultipleSelections)) $this->setSupportsMultipleSelections($_supportsMultipleSelections);                
+        if (is_bool($_supportsAdvancedDynamicMenus)) $this->setSupportsAdvancedDynamicMenus($_supportsAdvancedDynamicMenus);
         if (is_string($_preferredUILanguage)) $this->setPreferredUILanguage($_preferredUILanguage);
         if (is_int($_bandwidth)) $this->setBandwidth($_bandwidth);
         if (is_a($_supportedContentFormats, "supportedContentFormats")) $this->setSupportedContentFormats($_supportedContentFormats);
@@ -100,6 +112,28 @@ class config extends AbstractType {
 
 
     /******************** class get set methods ********************/
+
+
+    /**
+     * getter for accessConfig
+     */
+    function getAccessConfig() {
+        return $this->accessConfig;
+    }
+
+    /**
+     * setter for accessConfig
+     */
+    function setAccessConfig($_accessConfig) {
+        $this->accessConfig = $_accessConfig;
+    }
+
+    /**
+     * resetter for accessConfig
+     */
+    function resetAccessConfig() {
+        $this->accessConfig = NULL;
+    }
 
     /**
      * getter for supportsMultipleSelections
@@ -121,6 +155,28 @@ class config extends AbstractType {
     function resetSupportsMultipleSelections() {
         $this->supportsMultipleSelections = NULL;
     }
+
+    /**
+     * getter for supportsAdvancedDynamicMenus
+     */
+    function getSupportsAdvancedDynamicMenus() {
+        return $this->supportsAdvancedDynamicMenus;
+    }
+
+    /**
+     * setter for supportsAdvancedDynamicMenus
+     */
+    function setSupportsAdvancedDynamicMenus($_supportsAdvancedDynamicMenus) {
+        $this->supportsAdvancedDynamicMenus = $_supportsAdvancedDynamicMenus;
+    }
+
+    /**
+     * resetter for supportAdvancedDynamicMenus
+     */
+    function resetSupportsAdvancedDynamicMenus() {
+        $this->supportsAdvancedDynamicMenus = NULL;
+    }
+
 
     /**
      * getter for preferredUILanguage
@@ -318,8 +374,20 @@ class config extends AbstractType {
      * validator for class config
      */
     function validate() {
+        // accessConfig is required
+        if ($this->isNoneEmptyString($this->accessConfig, 'accessConfig') === false){
+            $allowedValues =  array("STREAM_ONLY", "DOWNLOAD_ONLY", "STREAM_AND_DOWNLOAD", "STREAM_AND_RESTRICTED_DOWNLOAD", "RESTRICTED_DOWNLOAD_ONLY");
+            if (in_array($this->accessConfig, $allowedValues) === false){
+                return false;
+            }
+        } 
+
         // supportsMultipleSelections must occur exactly once
         if ($this->isBoolean($this->supportsMultipleSelections, 'supportsMultipleSelections') === false)
+            return false;
+
+        // supportsMultipleSelections must occur exactly once
+        if ($this->isBoolean($this->supportsAdvancedDynamicMenus, 'supportsAdvancedDynamicMenus') === false)
             return false;
 
         // preferredUILanguage must occur exactly once

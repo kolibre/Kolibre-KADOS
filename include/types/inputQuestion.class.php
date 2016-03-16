@@ -40,16 +40,21 @@ class inputQuestion extends AbstractType {
      */
     public $id;
 
+    /**
+     * @var string
+     */
+    public $defaultValue
 
     /******************** public functions ********************/
 
     /**
      * constructor for class inputQuestion
      */
-    function __construct($_inputTypes = NULL, $_label = NULL, $_id = NULL) {
+    function __construct($_inputTypes = NULL, $_label = NULL, $_id = NULL, $_defaultValue) {
         if (is_a($_inputTypes, "inputTypes")) $this->setInputTypes($_inputTypes);
         if (is_a($_label, "label")) $this->setLabel($_label);
         if (is_string($_id)) $this->setId($_id);
+        if (is_string($_defaultValue)) $this->setDefaultValue($_defaultValue);
     }
 
 
@@ -118,6 +123,27 @@ class inputQuestion extends AbstractType {
         $this->id = NULL;
     }
 
+    /**
+     * getter for defaultValue
+     */
+    function getDefaultValue() {
+        return $this->defaultValue;
+    }
+
+    /**
+     * setter for defaultValue
+     */
+    function setDefaultValue($_defaultValue) {
+        $this->defaultValue = $_defaultValue;
+    }
+
+    /**
+     * resetter for defaultValue
+     */
+    function resetDefaultValue() {
+        $this->defaultValue = NULL;
+    }
+
 
     /******************** validator methods ********************/
 
@@ -144,7 +170,11 @@ class inputQuestion extends AbstractType {
         // attribute id is required
         if ($this->isNoneEmptyString($this->id, 'id') === false)
             return false;
-
+        
+        //defaultValue is optinal
+        if(!is_null($this->defaultValue) === false)
+            if ($this->isNoneEmptyString($this->defaultValue, 'defaultValue') === false)
+                return false;
         return true;
     }
 }

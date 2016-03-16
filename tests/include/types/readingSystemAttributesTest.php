@@ -30,7 +30,9 @@ class readingSystemAttributesTest extends PHPUnit_Framework_TestCase
 
     public function setUp()
     {
+        $accessConfig = "STREAM_ONLY";
         $supportsMultipleSelections = false;
+        $supportsAdvancedDynamicMenus = false;
         $preferredUILanguage = 'preferredUILanguage';
         $bandwidth = null;
         $supportedContentFormats = new supportedContentFormats();
@@ -41,7 +43,9 @@ class readingSystemAttributesTest extends PHPUnit_Framework_TestCase
         $requiresAudioLabels = false;
         $additionalTransferProtocols = null;
         $this->config = new config(
+            $accessConfig,
             $supportsMultipleSelections,
+            $supportsAdvancedDynamicMenus,
             $preferredUILanguage,
             $bandwidth,
             $supportedContentFormats,

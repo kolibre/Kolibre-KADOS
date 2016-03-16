@@ -29,19 +29,15 @@ require_once('supportedOptionalOperations.class.php');
 class serviceAttributes extends AbstractType {
 
     /**
-     * @var (object)serviceProvider
+     * @var optional (object)serviceProvider
      */
     public $serviceProvider;
 
     /**
-     * @var (object)service
+     * @var optional (object)service
      */
     public $service;
 
-    /**
-     * @var (object)supportedContentSelectionMethods
-     */
-    public $supportedContentSelectionMethods;
 
     /**
      * @var boolean
@@ -68,21 +64,37 @@ class serviceAttributes extends AbstractType {
      */
     public $supportedOptionalOperations;
 
+    /**
+     * @var string accessConfig
+     */
+    public $accessConfig;
+
+    /**
+     * @var int announcementsPullFrequency
+     */
+    public $announcementsPullFrequency;
+
+    /**
+     * @var bool progressStateOperationAllowed
+     */
+    public $progressStateOperationAllowed;
 
     /******************** public functions ********************/
 
     /**
      * constructor for class serviceAttributes
      */
-    function __construct($_serviceProvider = NULL, $_service = NULL, $_supportedContentSelectionMethods = NULL, $_supportsServerSideBack = NULL, $_supportsSearch = NULL, $_supportedUplinkAudioCodecs = NULL, $_supportsAudioLabels = NULL, $_supportedOptionalOperations = NULL) {
+    function __construct($_serviceProvider = NULL, $_service = NULL, $_supportsServerSideBack = NULL, $_supportsSearch = NULL, $_supportedUplinkAudioCodecs = NULL, $_supportsAudioLabels = NULL, $_supportedOptionalOperations = NULL, $_accessConfig = NULL, $_announcementsPullFrequency = NULL, $_progressStateOperationAllowed = NULL) {
         if (is_a($_serviceProvider, "serviceProvider")) $this->setServiceProvider($_serviceProvider);
         if (is_a($_service, "service")) $this->setService($_service);
-        if (is_a($_supportedContentSelectionMethods, "supportedContentSelectionMethods")) $this->setSupportedContentSelectionMethods($_supportedContentSelectionMethods);
         if (is_bool($_supportsServerSideBack)) $this->setSupportsServerSideBack($_supportsServerSideBack);
         if (is_bool($_supportsSearch)) $this->setSupportsSearch($_supportsSearch);
         if (is_a($_supportedUplinkAudioCodecs, "supportedUplinkAudioCodecs")) $this->setSupportedUplinkAudioCodecs($_supportedUplinkAudioCodecs);
         if (is_bool($_supportsAudioLabels)) $this->setSupportsAudioLabels($_supportsAudioLabels);
         if (is_a($_supportedOptionalOperations, "supportedOptionalOperations")) $this->setSupportedOptionalOperations($_supportedOptionalOperations);
+        if (is_string($_accessConfig)) $this->setAccessConfig($_accessConfig);
+        if (is_int($_announcementsPullFrequency)) $this->setAnnouncementsPullFrequency($_announcementsPullFrequency);
+        if(is_bool($_progressStateOperationAllowed)) $this->setProgressStateOperationAllowed($_progressStateOperationAllowed);
     }
 
 
@@ -129,27 +141,6 @@ class serviceAttributes extends AbstractType {
      */
     function resetService() {
         $this->service = NULL;
-    }
-
-    /**
-     * getter for supportedContentSelectionMethods
-     */
-    function getSupportedContentSelectionMethods() {
-        return $this->supportedContentSelectionMethods;
-    }
-
-    /**
-     * setter for supportedContentSelectionMethods
-     */
-    function setSupportedContentSelectionMethods($_supportedContentSelectionMethods) {
-        $this->supportedContentSelectionMethods = $_supportedContentSelectionMethods;
-    }
-
-    /**
-     * resetter for supportedContentSelectionMethods
-     */
-    function resetSupportedContentSelectionMethods() {
-        $this->supportedContentSelectionMethods = NULL;
     }
 
     /**
@@ -257,6 +248,71 @@ class serviceAttributes extends AbstractType {
         $this->supportedOptionalOperations = NULL;
     }
 
+    /**
+     * getter for accessConfig
+     */
+    function getAccessConfig() {
+        return $this->accessConfig;
+    }
+
+    /**
+     * setter for accessConfig
+     */
+    function setAccessConfig($_accessConfig) {
+        $this->accessConfig = $_accessConfig;
+    }
+
+    /**
+     * resetter for accessConfig
+     */
+    function resetAccessConfig() {
+        $this->accessConfig = NULL;
+    }
+
+    /**
+     * getter for announcementsPullFrequency
+     */
+    function getAnnouncementsPullFrequency() {
+        return $this->announcementsPullFrequency;
+    }
+
+    /**
+     * setter for announcementsPullFrequency
+     */
+    function setAnnouncementsPullFrequency($_announcementsPullFrequency) {
+        $this->announcementsPullFrequency = $_announcementsPullFrequency;
+    }
+
+    /**
+     * resetter for announcementsPullFrequency
+     */
+    function resetAnnouncementsPullFrequency() {
+        $this->announcementsPullFrequency = NULL;
+    }
+    
+
+
+    /**
+     * getter for accessConfig
+     */
+    function getProgressStateOperationAllowed() {
+        return $this->progressStateOperationAllowed;
+    }
+
+    /**
+     * setter for progressStateOperationAllowed
+     */
+    function setProgressStateOperationAllowed($_progressStateOperationAllowed) {
+        $this->progressStateOperationAllowed = $_progressStateOperationAllowed;
+    }
+
+    /**
+     * resetter for progressStateOperationAllowed
+     */
+    function resetProgressStateOperationAllowed() {
+        $this->progressStateOperationAllowed = NULL;
+    }
+
 
     /******************** validator methods ********************/
 
@@ -282,14 +338,6 @@ class serviceAttributes extends AbstractType {
                 $this->error = __CLASS__ . '.' . $this->service->getError();
                 return false;
             }
-        }
-
-        // supportedContentSelectionMethods must occur exactly once
-        if ($this->isInstanceOf($this->supportedContentSelectionMethods, 'supportedContentSelectionMethods') === false)
-            return false;
-        if ($this->supportedContentSelectionMethods->validate() === false) {
-            $this->error = __CLASS__ . '.' . $this->supportedContentSelectionMethods->getError();
-            return false;
         }
 
         // supportsServerSideBack must occur exactly once
@@ -319,6 +367,20 @@ class serviceAttributes extends AbstractType {
             $this->error = __CLASS__ . '.' . $this->supportedOptionalOperations->getError();
             return false;
         }
+        // accessConfig must occur exactly once
+        if ($this->isNoneEmptyString($this->accessConfig, 'accessConfig') === false)
+            return false;
+        $allowedValues =  array("STREAM_ONLY", "DOWNLOAD_ONLY", "STREAM_AND_DOWNLOAD", "STREAM_AND_RESTRICTED_DOWNLOAD", "RESTRICTED_DOWNLOAD_ONLY");
+        if (in_array($this->accessConfig, $allowedValues) === false)
+            return false;
+                    
+        // announcementsPullFrequency must be positive integer
+        if ($this->isPositiveInteger($this->announcementsPullFrequency, 'announcementsPullFrequency') === false)
+                return false;
+
+        // progressStateOperationAllowed must occur exactly once
+        if ($this->isBoolean($this->progressStateOperationAllowed, 'progressStateOperationAllowed') === false)
+            return false;
 
         return true;
     }

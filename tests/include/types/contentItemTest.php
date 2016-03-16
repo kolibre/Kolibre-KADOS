@@ -202,7 +202,11 @@ class contentItemTest extends PHPUnit_Framework_TestCase
 
         $instance->accessPermission = $this->invalid_accessPermission;
         $this->assertFalse($instance->validate());
+
+        $instance->accessPermission = 'sdsd';
+        $this->assertFalse($instance->validate());
     }
+    
 
     public function testLastmark()
     {

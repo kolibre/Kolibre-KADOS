@@ -531,11 +531,14 @@ class contentItem extends AbstractType {
         }
 
         // accessPermissions is required
-        if ($this->isNoneEmptyString($this->accessPermission, 'accessPermission') === false){
-            $allowedValues =  array("STREAM_ONLY", "DOWNLOAD_ONLY", "STREAM_AND_DOWNLOAD", "STREAM_AND_RESTRICTED_DOWNLOAD", "RESTRICTED_DOWNLOAD_ONLY", "DOWNLOAD_ONLY_AUTOMATIC_ALLOWED", "STREAM_AND_DOWNLOAD_AUTOMATIC_ALLOWED", "STREAM_AND_RESTRICTED_DOWNLOAD_AUTOMATIC_ALLOWED", "RESTRICTED_DOWNLOAD_ONLY_AUTOMATIC_ALLOWED");
-            if (in_array($this->accessPermission, $allowedValues) === false)
-                return false;
-        }
+        if ($this->isNoneEmptyString($this->accessPermission, 'accessPermission') === false)
+            return false;
+        if (in_array($this->accessPermission, array("STREAM_ONLY","DOWNLOAD_ONLY","STREAM_AND_DOWNLOAD","STREAM_AND_RESTRICTED_DOWNLOAD", 
+            "RESTRICTED_DOWNLOAD_ONLY","DOWNLOAD_ONLY_AUTOMATIC_ALLOWED",
+            "STREAM_AND_DOWNLOAD_AUTOMATIC_ALLOWED","STREAM_AND_RESTRICTED_DOWNLOAD_AUTOMATIC_ALLOWED", 
+            "RESTRICTED_DOWNLOAD_ONLY_AUTOMATIC_ALLOWED")) === false)
+            return false;
+        
 
         // lastmark is optional
         if (!is_null($this->lastmark)) {
@@ -574,7 +577,7 @@ class contentItem extends AbstractType {
 
         // attribute lastModifiedDate is required
         if (!is_null($this->lastModifiedDate)) 
-            if ($this->isNoneEmptyString($this->lastModifiedDate, 'lastModifiedDate') === false)
+            if ($this->isDateTimeString($this->lastModifiedDate, 'lastModifiedDate') === false)
                 return false;
 
         // attribute category is optional

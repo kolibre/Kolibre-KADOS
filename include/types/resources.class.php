@@ -30,9 +30,9 @@ class resources extends AbstractType {
     public $resource;
 
     /**
-     * @var dateTime
+     * @var array[1, unbounded] of (object)package
      */
-    public $returnBy;
+    public $package;
 
     /**
      * @var dateTime
@@ -45,9 +45,9 @@ class resources extends AbstractType {
     /**
      * constructor for class resources
      */
-    function __construct($_resource = NULL, $_returnBy = NULL, $_lastModifiedDate = NULL) {
+    function __construct($_resource = NULL, $_package = NULL, $_lastModifiedDate = NULL) {
         if (is_array($_resource)) $this->setResource($_resource);
-        if (is_string($_returnBy)) $this->setReturnBy($_returnBy);
+        if (is_array($_package)) $this->setPackage($_package);
         if (is_string($_lastModifiedDate)) $this->setLastModifiedDate($_lastModifiedDate);
     }
 
@@ -78,22 +78,22 @@ class resources extends AbstractType {
     /**
      * getter for returnBy
      */
-    function getReturnBy() {
-        return $this->returnBy;
+    function getPackage() {
+        return $this->package;
     }
 
     /**
-     * setter for returnBy
+     * setter for package
      */
-    function setReturnBy($_returnBy) {
-        $this->returnBy = $_returnBy;
+    function setPackage($_package) {
+        $this->package = $_package;
     }
 
     /**
-     * resetter for returnBy
+     * resetter for package
      */
-    function resetReturnBy() {
-        $this->returnBy = NULL;
+    function resetPackage() {
+        $this->package = NULL;
     }
 
     /**
@@ -118,7 +118,7 @@ class resources extends AbstractType {
     }
 
 
-    /****************************** get set methods for arrays **********************************/
+    /****************************** get set methods for resource arrays **********************************/
 
     /**
      * get the ith element of resource
@@ -163,6 +163,50 @@ class resources extends AbstractType {
             unset($this->resource[$i]);
     }
 
+/****************************** get set methods for package arrays **********************************/
+      /**
+     * get the ith element of package
+     */
+    function getPackageAt($i) {
+        if ($this->sizeofPackage() > $i)
+            return $this->package[$i];
+        else return NULL;
+    }
+
+    /**
+     * set the ith elemenent of package
+     */
+    function setPackageAt($i, $_package) {
+        $this->package[$i] = $_package;
+    }
+
+    /**
+     * add to package
+     */
+    function addPackage($_package) {
+        if (is_array($this->package))
+            array_push($this->package, $_package);
+        else {
+            $this->package = array();
+            $this->addPackage($_package);
+        }
+    }
+
+    /**
+     * get the size of the package array
+     */
+    function sizeofPackage() {
+        return sizeof($this->package);
+    }
+
+    /**
+     * remove the ith element of package
+     */
+    function removePackageAt($i) {
+        if ($this->sizeofPackage() > $i)
+            unset($this->package[$i]);
+    }
+
 
     /******************** validator methods ********************/
 
@@ -183,17 +227,24 @@ class resources extends AbstractType {
             }
         }
 
-        // attribute returnBy is optional
-        if (!is_null($this->returnBy)) {
-            if ($this->isNoneEmptyString($this->returnBy, 'returnBy') === false)
+        // package must occur zero or more times
+        if (!is_null($this->package)){
+            if ($this->isArrayOfInstanceOf($this->package, 'package') === false)
                 return false;
-        }
-
-        // attribute lastModifiedDate is optional
-        if (!is_null($this->lastModifiedDate)) {
-            if ($this->isNoneEmptyString($this->lastModifiedDate, 'lastModifiedDate') === false)
+            if ($this->isNoneEmptyArray($this->package, 'package') === false)
                 return false;
+            foreach ($this->package as $index => $package) {
+                if ($package->validate() === false) {
+                    $this->error = __CLASS__ . '.' . $package->getError();
+                    $this->error = str_replace('package.', "resource[$index].", $this->error);
+                    return false;
+                }
+            }
         }
+        // attribute lastModifiedDate must occur exactly once
+        if ($this->isDateTimeString($this->lastModifiedDate, 'lastModifiedDate') === false) {
+            return false;
+        } 
 
         return true;
     }

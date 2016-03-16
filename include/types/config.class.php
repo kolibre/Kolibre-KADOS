@@ -375,12 +375,13 @@ class config extends AbstractType {
      */
     function validate() {
         // accessConfig is required
-        if ($this->isNoneEmptyString($this->accessConfig, 'accessConfig') === false){
-            $allowedValues =  array("STREAM_ONLY", "DOWNLOAD_ONLY", "STREAM_AND_DOWNLOAD", "STREAM_AND_RESTRICTED_DOWNLOAD", "RESTRICTED_DOWNLOAD_ONLY");
-            if (in_array($this->accessConfig, $allowedValues) === false){
-                return false;
-            }
-        } 
+        if ($this->isNoneEmptyString($this->accessConfig, 'accessConfig') === false)
+            return false;
+        $allowedValues =  array("STREAM_ONLY", "DOWNLOAD_ONLY", "STREAM_AND_DOWNLOAD", "STREAM_AND_RESTRICTED_DOWNLOAD", "RESTRICTED_DOWNLOAD_ONLY");
+        if (in_array($this->accessConfig, $allowedValues) === false)
+            return false;
+            
+        
 
         // supportsMultipleSelections must occur exactly once
         if ($this->isBoolean($this->supportsMultipleSelections, 'supportsMultipleSelections') === false)

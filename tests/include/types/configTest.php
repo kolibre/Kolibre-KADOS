@@ -66,7 +66,8 @@ class configTest extends PHPUnit_Framework_TestCase
         $this->assertTrue($instance->validate());
         $instance->accessConfig = '';
         $this->assertFalse($instance->validate());
-        $this->assertContains('config.accessConfig', $instance->getError());
+        $instance->accessConfig = 'configAccess';
+        $this->assertFalse($instance->validate());
         $instance->accessConfig = "DOWNLOAD_ONLY";
         $this->assertTrue($instance->validate());
     }

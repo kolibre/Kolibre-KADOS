@@ -43,14 +43,14 @@ class inputQuestion extends AbstractType {
     /**
      * @var string
      */
-    public $defaultValue
+    public $defaultValue;
 
     /******************** public functions ********************/
 
     /**
      * constructor for class inputQuestion
      */
-    function __construct($_inputTypes = NULL, $_label = NULL, $_id = NULL, $_defaultValue) {
+    function __construct($_inputTypes = NULL, $_label = NULL, $_id = NULL, $_defaultValue = NULL) {
         if (is_a($_inputTypes, "inputTypes")) $this->setInputTypes($_inputTypes);
         if (is_a($_label, "label")) $this->setLabel($_label);
         if (is_string($_id)) $this->setId($_id);

@@ -22,7 +22,6 @@ require_once('AbstractType.class.php');
 
 require_once('serviceProvider.class.php');
 require_once('service.class.php');
-require_once('supportedContentSelectionMethods.class.php');
 require_once('supportedUplinkAudioCodecs.class.php');
 require_once('supportedOptionalOperations.class.php');
 

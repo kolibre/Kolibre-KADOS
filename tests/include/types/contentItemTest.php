@@ -157,8 +157,13 @@ class contentItemTest extends PHPUnit_Framework_TestCase
 
         $instance->label = $this->invalid_label;
         $this->assertFalse($instance->validate());
+        $this->assertContains('contentItem.label', $instance->getError());
     }
 
+    /**
+     * @group contentItem
+     * @group validate
+     */
     public function testSample()
     {
         $instance = $this->contentItem; 
@@ -166,8 +171,13 @@ class contentItemTest extends PHPUnit_Framework_TestCase
 
         $instance->sample = $this->invalid_sample;
         $this->assertFalse($instance->validate());
+        $this->assertContains('contentItem.sample', $instance->getError());
     }
 
+    /**
+     * @group contentItem
+     * @group validate
+     */
     public function testMetadata()
     {
         $instance = $this->contentItem; 
@@ -175,8 +185,13 @@ class contentItemTest extends PHPUnit_Framework_TestCase
 
         $instance->metadata = $this->invalid_metadata;
         $this->assertFalse($instance->validate());
+        $this->assertContains('contentItem.metadata', $instance->getError());
     }
 
+    /**
+     * @group contentItem
+     * @group validate
+     */
     public function testCategotyLabel()
     {
         $instance = $this->contentItem; 
@@ -184,8 +199,13 @@ class contentItemTest extends PHPUnit_Framework_TestCase
 
         $instance->categoryLabel = $this->invalid_categoryLabel;
         $this->assertFalse($instance->validate());
+        $this->assertContains('contentItem.categoryLabel', $instance->getError());
     }
 
+    /**
+     * @group contentItem
+     * @group validate
+     */
     public function testSubCategotyLabel()
     {
         $instance = $this->contentItem; 
@@ -193,8 +213,13 @@ class contentItemTest extends PHPUnit_Framework_TestCase
 
         $instance->subCategoryLabel = $this->invalid_subCategoryLabel;
         $this->assertFalse($instance->validate());
+        $this->assertContains('contentItem.subCategoryLabel', $instance->getError());
     }
 
+    /**
+     * @group contentItem
+     * @group validate
+     */
     public function testAccessPermission()
     {
         $instance = $this->contentItem; 
@@ -202,12 +227,18 @@ class contentItemTest extends PHPUnit_Framework_TestCase
 
         $instance->accessPermission = $this->invalid_accessPermission;
         $this->assertFalse($instance->validate());
+        $this->assertContains('contentItem.accessPermission', $instance->getError());
 
         $instance->accessPermission = 'sdsd';
         $this->assertFalse($instance->validate());
+        $this->assertContains('contentItem.accessPermission', $instance->getError());
     }
     
 
+    /**
+     * @group contentItem
+     * @group validate
+     */
     public function testLastmark()
     {
         $instance = $this->contentItem; 
@@ -215,8 +246,13 @@ class contentItemTest extends PHPUnit_Framework_TestCase
 
         $instance->lastmark = $this->invalid_lastmark;
         $this->assertFalse($instance->validate());
+        $this->assertContains('contentItem.lastmark', $instance->getError());
     }
 
+    /**
+     * @group contentItem
+     * @group validate
+     */
     public function testMultipleChoiceQuestion()
     {
         $instance = $this->contentItem; 
@@ -224,8 +260,13 @@ class contentItemTest extends PHPUnit_Framework_TestCase
 
         $instance->multipleChoiceQuestion = $this->invalid_multipleChoiceQuestion;
         $this->assertTrue($instance->validate());
+
     }
 
+    /**
+     * @group contentItem
+     * @group validate
+     */
     public function testId()
     {
         $instance = $this->contentItem; 
@@ -233,8 +274,13 @@ class contentItemTest extends PHPUnit_Framework_TestCase
 
         $instance->id = $this->invalid_Id;
         $this->assertFalse($instance->validate());
+        $this->assertContains('contentItem.id', $instance->getError());
     }
 
+    /**
+     * @group contentItem
+     * @group validate
+     */
     public function testFirstAccessedDate()
     {
         $instance = $this->contentItem; 
@@ -242,8 +288,13 @@ class contentItemTest extends PHPUnit_Framework_TestCase
 
         $instance->firstAccessedDate = $this->invalid_FirstAccessDate;
         $this->assertFalse($instance->validate());
+        $this->assertContains('contentItem.firstAccessedDate', $instance->getError());
     }
 
+    /**
+     * @group contentItem
+     * @group validate
+     */
     public function testLastAccessedDate()
     {
         $instance = $this->contentItem; 
@@ -251,8 +302,13 @@ class contentItemTest extends PHPUnit_Framework_TestCase
 
         $instance->lastAccessedDate = $this->invalid_LastAccessDate;
         $this->assertFalse($instance->validate());
+        $this->assertContains('contentItem.lastAccessedDate', $instance->getError());
     }
 
+    /**
+     * @group contentItem
+     * @group validate
+     */
     public function testLastModifiedDate()
     {
         $instance = $this->contentItem; 
@@ -260,8 +316,14 @@ class contentItemTest extends PHPUnit_Framework_TestCase
 
         $instance->lastModifiedDate = $this->invalid_LastModifiedDate;
         $this->assertFalse($instance->validate());
+        $this->assertContains('contentItem.lastModifiedDate', $instance->getError());
+
     }
 
+    /**
+     * @group contentItem
+     * @group validate
+     */
     public function testCategory()
     {
         $instance = $this->contentItem; 
@@ -269,8 +331,14 @@ class contentItemTest extends PHPUnit_Framework_TestCase
 
         $instance->category = $this->invalid_Category;
         $this->assertFalse($instance->validate());
+        $this->assertContains('contentItem.category', $instance->getError());
+
     }
 
+    /**
+     * @group contentItem
+     * @group validate
+     */
     public function testSubCategory()
     {
         $instance = $this->contentItem; 
@@ -278,8 +346,14 @@ class contentItemTest extends PHPUnit_Framework_TestCase
 
         $instance->subCategory = $this->invalid_SubCategory;
         $this->assertFalse($instance->validate());
+        $this->assertContains('contentItem.subCategory', $instance->getError());
+
     }
 
+    /**
+     * @group contentItem
+     * @group validate
+     */
     public function testReturnBy()
     {
         $instance = $this->contentItem; 
@@ -287,15 +361,23 @@ class contentItemTest extends PHPUnit_Framework_TestCase
 
         $instance->returnBy = $this->invalid_ReturnBy;
         $this->assertFalse($instance->validate());
+        $this->assertContains('contentItem.returnBy', $instance->getError());
+
     }
 
+    /**
+     * @group contentItem
+     * @group validate
+     */
+    
     public function testHasBookmark()
     {
         $instance = $this->contentItem; 
         $this->assertTrue($instance->validate());
 
-        $instance->returnBy = $this->invalid_HasBookmarks;
+        $instance->hasBookmark = $this->invalid_HasBookmarks;
         $this->assertTrue($instance->validate());
+
     }
     
 }

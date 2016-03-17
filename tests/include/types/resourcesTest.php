@@ -32,7 +32,7 @@ class resourcesTest extends PHPUnit_Framework_TestCase
      */
     public function testResource()
     {
-        $instance = new resources();
+        $instance = new resources(NULL, NULL,'2016-03-11T14:23:23+00:00');
         $this->assertFalse($instance->validate());
         $this->assertContains('resources.resource', $instance->getError());
         $instance->resource = 'resource';
@@ -46,7 +46,6 @@ class resourcesTest extends PHPUnit_Framework_TestCase
         $this->assertContains('resources.resource', $instance->getError());
         $resource = array(new resource('uri', null, 1, 'localURI','2016-03-11T14:23:23+00:00'));
         $instance->resource = $resource;
-        $instance->lastModifiedDate = '2016-03-11T14:23:23+00:00';
         $this->assertFalse($instance->validate());
         $this->assertContains('resources.resource', $instance->getError());
         $resource = array(new resource('uri', 'mimeType', 1, 'localURI','2016-03-11T14:23:23+00:00'));
@@ -69,13 +68,18 @@ class resourcesTest extends PHPUnit_Framework_TestCase
         $this->assertTrue($instance->validate());
         $instance->package = 'package';
         $this->assertFalse($instance->validate());
+        $this->assertContains('resources.package', $instance->getError());
         $instance->package = array();
         $this->assertFalse($instance->validate());
+        $this->assertContains('resources.package', $instance->getError());
         $instance->package = array('package');
         $this->assertFalse($instance->validate());
+        $this->assertContains('resources.package', $instance->getError());
         $package = array(new package(NULL, 'uri', 'mimetype', 1234, '2016-03-11T14:23:23Z'));
         $instance->package = $package;
         $this->assertFalse($instance->validate());
+        // invalid resource since resourceRef is null and not resourceRef object
+        $this->assertContains('resources.resource', $instance->getError());
         $resourceRef = new resourceRef('localURI');
         $package_array = array(new package($resourceRef, 'uri', 'mimetype', 1234, '2016-03-11T14:23:23Z'));
         $instance->package = $package_array;
@@ -96,6 +100,7 @@ class resourcesTest extends PHPUnit_Framework_TestCase
         $this->assertContains('resources.lastModifiedDate', $instance->getError());
         $instance->lastModifiedDate = '';
         $this->assertFalse($instance->validate());
+        $this->assertContains('resources.lastModifiedDate', $instance->getError());
         $instance->lastModifiedDate = 'lastModifiedDate';
         $this->assertFalse($instance->validate());
         $this->assertContains('resources.lastModifiedDate', $instance->getError());

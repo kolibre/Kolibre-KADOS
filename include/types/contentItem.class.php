@@ -533,7 +533,7 @@ class contentItem extends AbstractType {
         // accessPermissions is required
         if ($this->isNoneEmptyString($this->accessPermission, 'accessPermission') === false)
             return false;
-        if (in_array($this->accessPermission, array("STREAM_ONLY","DOWNLOAD_ONLY","STREAM_AND_DOWNLOAD","STREAM_AND_RESTRICTED_DOWNLOAD", 
+        if ($this->isString($this->accessPermission, 'accessPermission', array("STREAM_ONLY","DOWNLOAD_ONLY","STREAM_AND_DOWNLOAD","STREAM_AND_RESTRICTED_DOWNLOAD", 
             "RESTRICTED_DOWNLOAD_ONLY","DOWNLOAD_ONLY_AUTOMATIC_ALLOWED",
             "STREAM_AND_DOWNLOAD_AUTOMATIC_ALLOWED","STREAM_AND_RESTRICTED_DOWNLOAD_AUTOMATIC_ALLOWED", 
             "RESTRICTED_DOWNLOAD_ONLY_AUTOMATIC_ALLOWED")) === false)

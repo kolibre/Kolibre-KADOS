@@ -30,7 +30,7 @@ class resources extends AbstractType {
     public $resource;
 
     /**
-     * @var array[1, unbounded] of (object)package
+     * @var array[0, unbounded] of (object)package
      */
     public $package;
 
@@ -168,7 +168,7 @@ class resources extends AbstractType {
      * get the ith element of package
      */
     function getPackageAt($i) {
-        if ($this->sizeofPackage() > $i)
+        if ($this->sizeOfPackage() > $i)
             return $this->package[$i];
         else return NULL;
     }

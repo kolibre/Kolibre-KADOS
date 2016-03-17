@@ -31,7 +31,6 @@ class serviceAttributesTest extends PHPUnit_Framework_TestCase
     {
         $serviceProvider = null;
         $service = null;
-        //$supportedContentSelectionMethods = new supportedContentSelectionMethods(array('OUT_OF_BAND'));
         $supportsServerSideBack = false;
         $supportsSearch = false;
         $supportedUplinkAudioCodecs = new supportedUplinkAudioCodecs();
@@ -169,8 +168,10 @@ class serviceAttributesTest extends PHPUnit_Framework_TestCase
         $this->assertTrue($instance->validate());
         $instance->accessConfig = '';
         $this->assertFalse($instance->validate());
-        $instance->accessConfig = 'djhdsjkhdsjhkdfjkhdfjkhdfjkh';
+        $this->assertContains('serviceAttributes.accessConfig', $instance->getError());
+        $instance->accessConfig = 'accessConfig';
         $this->assertFalse($instance->validate());
+        $this->assertContains('serviceAttributes.accessConfig', $instance->getError());
         $instance->accessConfig = 'STREAM_AND_DOWNLOAD';
         $this->assertTrue($instance->validate());
     }
@@ -185,8 +186,10 @@ class serviceAttributesTest extends PHPUnit_Framework_TestCase
         $this->assertTrue($instance->validate());
         $instance->announcementsPullFrequency = '';
         $this->assertFalse($instance->validate());
+        $this->assertContains('serviceAttributes.announcementsPullFrequency', $instance->getError());
         $instance->announcementsPullFrequency = -3;
         $this->assertFalse($instance->validate());
+        $this->assertContains('serviceAttributes.announcementsPullFrequency', $instance->getError());
         $instance->announcementsPullFrequency = 2;
         $this->assertTrue($instance->validate());
     }
@@ -200,8 +203,10 @@ class serviceAttributesTest extends PHPUnit_Framework_TestCase
         $this->assertTrue($instance->validate());
         $instance->progressStateOperationAllowed = '';
         $this->assertFalse($instance->validate());
+        $this->assertContains('serviceAttributes.progressStateOperationAllowed', $instance->getError());
         $instance->progressStateOperationAllowed = 2;
         $this->assertFalse($instance->validate());
+        $this->assertContains('serviceAttributes.progressStateOperationAllowed', $instance->getError());
         $instance->progressStateOperationAllowed = false;
         $this->assertTrue($instance->validate());
     }

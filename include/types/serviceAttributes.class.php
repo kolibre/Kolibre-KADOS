@@ -371,7 +371,7 @@ class serviceAttributes extends AbstractType {
         if ($this->isNoneEmptyString($this->accessConfig, 'accessConfig') === false)
             return false;
         $allowedValues =  array("STREAM_ONLY", "DOWNLOAD_ONLY", "STREAM_AND_DOWNLOAD", "STREAM_AND_RESTRICTED_DOWNLOAD", "RESTRICTED_DOWNLOAD_ONLY");
-        if (in_array($this->accessConfig, $allowedValues) === false)
+        if ($this->isString($this->accessConfig, 'accessConfig', $allowedValues) === false)
             return false;
                     
         // announcementsPullFrequency must be positive integer

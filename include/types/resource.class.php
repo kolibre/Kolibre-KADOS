@@ -48,7 +48,7 @@ class resource extends AbstractType {
     public $lastModifiedDate;
 
     /**
-     * @var dateTime
+     * @var string
      */
     public $serverSideHash;
 

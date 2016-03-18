@@ -31,7 +31,7 @@ class resourceTest extends PHPUnit_Framework_TestCase
      */
     public function testUri()
     {
-        $instance = new resource(null, 'mimeType', 1, 'localURI');
+        $instance = new resource(null, 'mimeType', 1, 'localURI','2016-03-11T14:23:23+00:00');
         $this->assertFalse($instance->validate());
         $this->assertContains('resource.uri', $instance->getError());
         $instance->uri = 1;
@@ -50,7 +50,7 @@ class resourceTest extends PHPUnit_Framework_TestCase
      */
     public function testMimeType()
     {
-        $instance = new resource('uri', null, 1, 'localURI');
+        $instance = new resource('uri', null, 1, 'localURI','2016-03-11T14:23:23+00:00');
         $this->assertFalse($instance->validate());
         $this->assertContains('resource.mimeType', $instance->getError());
         $instance->mimeType = 1;
@@ -69,7 +69,7 @@ class resourceTest extends PHPUnit_Framework_TestCase
      */
     public function testSize()
     {
-        $instance = new resource('uri', 'mimeType', null, 'localURI');
+        $instance = new resource('uri', 'mimeType', null, 'localURI','2016-03-11T14:23:23+00:00');
         $this->assertFalse($instance->validate());
         $this->assertContains('resource.size', $instance->getError());
         $instance->size = 'size';
@@ -88,7 +88,7 @@ class resourceTest extends PHPUnit_Framework_TestCase
      */
     public function testLocalURI()
     {
-        $instance = new resource('uri', 'mimeType', 1, null);
+        $instance = new resource('uri', 'mimeType', 1, null,'2016-03-11T14:23:23+00:00');
         $this->assertFalse($instance->validate());
         $this->assertContains('resource.localURI', $instance->getError());
         $instance->localURI = 1;
@@ -107,14 +107,31 @@ class resourceTest extends PHPUnit_Framework_TestCase
      */
     public function testLastModifiedDate()
     {
-        $instance = new resource('uri', 'mimeType', 1, 'localURI');
+        $instance = new resource('uri', 'mimeType', 1, 'localURI', '2016-03-11T14:23:23');
         $instance->lastModifiedDate = 1;
         $this->assertFalse($instance->validate());
         $this->assertContains('resource.lastModifiedDate', $instance->getError());
         $instance->lastModifiedDate = '';
         $this->assertFalse($instance->validate());
         $this->assertContains('resource.lastModifiedDate', $instance->getError());
-        $instance->lastModifiedDate = 'lastModifiedDate';
+        $instance->lastModifiedDate = '2016-03-11T14:23:23+00:00';
+        $this->assertTrue($instance->validate());
+    }
+
+    /**
+     * @group resource
+     * @group validate
+     */
+    public function testServerSideHash()
+    {
+        $instance = new resource('uri', 'mimeType', 1, 'localURI', '2016-03-11T14:23:23+00:00');
+        $instance->serverSideHash = 1;
+        $this->assertFalse($instance->validate());
+        $this->assertContains('resource.serverSideHash', $instance->getError());
+        $instance->serverSideHash = '';
+        $this->assertFalse($instance->validate());
+        $this->assertContains('resource.serverSideHash', $instance->getError());
+        $instance->serverSideHash = 'serverSideHash';
         $this->assertTrue($instance->validate());
     }
 }

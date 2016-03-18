@@ -850,10 +850,6 @@ class DaisyOnlineService
 
         try
         {
-            // set returnBy [optional]
-            $returnDate = $this->adapter->contentReturnDate($contentId);
-            if (is_string($returnDate)) $resources->setReturnBy($returnDate);
-
             // set lastModifiedDate [optional]
             $lastModifiedDate = $this->adapter->contentLastModifiedDate($contentId);
             if (is_string($lastModifiedDate)) $resources->setLastModifiedDate($lastModifiedDate);

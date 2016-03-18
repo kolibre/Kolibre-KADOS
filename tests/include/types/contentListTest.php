@@ -25,6 +25,49 @@ require_once('contentList.class.php');
 
 class contentListTest extends PHPUnit_Framework_TestCase
 {
+        /**
+     * @before
+     */
+     public function setUp()
+     {
+        $label = new label('text',null,'lang',null);
+        $sample = null;
+        $metadata = new metadata();
+        $metadata->title = 'title';
+        $metadata->identifier = 'identifier';
+        $metadata->format = 'format';
+        $metadata->size = 1;
+        $categoryLabel = null;
+        $subCategoryLabel = null;
+        $accessPermission = "STREAM_ONLY";
+        $lastmark = null;
+        $multipleChoiceQuestion = null;
+        $id = 'id';
+        $firstAccessedDate = null;
+        $lastAccessedDate = null;
+        $lastModifiedDate = '2016-03-11T14:23:23+00:00';
+        $category = null;
+        $subCategory = null;
+        $returnBy = null;
+        $hasBookmarks = false;
+        $this->contentItem = new contentItem(
+            $label,
+            $sample,
+            $metadata,
+            $categoryLabel,
+            $subCategoryLabel,
+            $accessPermission,
+            $lastmark,
+            $multipleChoiceQuestion,
+            $id,
+            $firstAccessedDate,
+            $lastAccessedDate,
+            $lastModifiedDate,
+            $category,
+            $subCategory,
+            $returnBy,
+            $hasBookmarks);
+     }
     /**
      * @group contentList
      * @group validate
@@ -54,7 +97,7 @@ class contentListTest extends PHPUnit_Framework_TestCase
         $this->assertContains('contentList.contentItem', $instance->getError());
         $instance->contentItem = array();
         $this->assertTrue($instance->validate());
-        $instance->contentItem = array(new contentItem(new label('text', null, 'lang'), 'id'));
+        $instance->contentItem = array($this->contentItem);
         $this->assertTrue($instance->validate());
     }
 

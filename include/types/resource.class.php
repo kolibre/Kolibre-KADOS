@@ -47,18 +47,24 @@ class resource extends AbstractType {
      */
     public $lastModifiedDate;
 
+    /**
+     * @var string
+     */
+    public $serverSideHash;
+
 
     /******************** public functions ********************/
 
     /**
      * constructor for class resource
      */
-    function __construct($_uri = NULL, $_mimeType = NULL, $_size = NULL, $_localURI = NULL, $_lastModifiedDate = NULL) {
+    function __construct($_uri = NULL, $_mimeType = NULL, $_size = NULL, $_localURI = NULL, $_lastModifiedDate = NULL, $_serverSideHash = NULL) {
         if (is_string($_uri)) $this->setUri($_uri);
         if (is_string($_mimeType)) $this->setMimeType($_mimeType);
         if (is_int($_size)) $this->setSize($_size);
         if (is_string($_localURI)) $this->setLocalURI($_localURI);
         if (is_string($_lastModifiedDate)) $this->setLastModifiedDate($_lastModifiedDate);
+        if (is_string($_serverSideHash)) $this->setServerSideHash($_serverSideHash);
     }
 
 
@@ -169,6 +175,26 @@ class resource extends AbstractType {
         $this->lastModifiedDate = NULL;
     }
 
+    /**
+     * getter for serverSideHash
+     */
+    function getServerSideHash() {
+        return $this->serverSideHash;
+    }
+
+    /**
+     * setter for serverSideHash
+     */
+    function setServerSideHash($_serverSideHash) {
+        $this->serverSideHash = $_serverSideHash;
+    }
+
+    /**
+     * resetter for serverSideHash
+     */
+    function resetServerSideHash() {
+        $this->serverSideHash = NULL;
+    }
 
     /******************** validator methods ********************/
 
@@ -192,9 +218,14 @@ class resource extends AbstractType {
         if ($this->isNoneEmptyString($this->localURI, 'localURI') === false)
             return false;
 
-        // attribute lastModifiedDate is optional
-        if (!is_null($this->lastModifiedDate)) {
-            if ($this->isNoneEmptyString($this->lastModifiedDate, 'lastModifiedDate') === false)
+        //lastModifiedDate must occur exactly once
+        if ($this->isDateTimeString($this->lastModifiedDate, 'lastModifiedDate') === false) {
+            return false;
+        } 
+  
+        // attribute serverSideHash is optional
+        if (!is_null($this->serverSideHash)) {
+            if ($this->isNoneEmptyString($this->serverSideHash, 'serverSideHash') === false)
                 return false;
         }
 

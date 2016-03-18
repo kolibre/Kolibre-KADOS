@@ -37,8 +37,8 @@ class getContentResourcesResponseTest extends PHPUnit_Framework_TestCase
         $instance->resources = 'resources';
         $this->assertFalse($instance->validate());
         $this->assertContains('getContentResourcesResponse.resources', $instance->getError());
-        $resource = array(new resource('uri', 'mimeType', 1, 'localURI'));
-        $instance->resources = new resources($resource);
+        $resource = array(new resource('uri', 'mimeType', 1, 'localURI', '2016-03-11T14:23:23+00:00'));
+        $instance->resources = new resources($resource, null, '2016-03-11T14:23:23+00:00');
         $this->assertTrue($instance->validate());
     }
 }

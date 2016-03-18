@@ -31,21 +31,25 @@ class getServiceAttributesResponseTest extends PHPUnit_Framework_TestCase
     {
         $serviceProvider = null;
         $service = null;
-        $supportedContentSelectionMethods = new supportedContentSelectionMethods(array('OUT_OF_BAND'));
         $supportsServerSideBack = false;
         $supportsSearch = false;
         $supportedUplinkAudioCodecs = new supportedUplinkAudioCodecs();
         $supportsAudioLabels = false;
         $supportedOptionalOperations = new supportedOptionalOperations();
+        $accessConfig = "STREAM_AND_DOWNLOAD";
+        $announcementsPullFrequency = 1;
+        $progressStateOperationAllowed = false;
         $this->serviceAttributes = new serviceAttributes(
             $serviceProvider,
             $service,
-            $supportedContentSelectionMethods,
             $supportsServerSideBack,
             $supportsSearch,
             $supportedUplinkAudioCodecs,
             $supportsAudioLabels,
-            $supportedOptionalOperations);
+            $supportedOptionalOperations,
+            $accessConfig,
+            $announcementsPullFrequency,
+            $progressStateOperationAllowed);
     }
 
     /**

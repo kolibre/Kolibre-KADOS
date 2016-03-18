@@ -46,11 +46,12 @@ class announcement extends AbstractType {
     public $type;
 
     /**
-     * @var int
+     * @var string
      *     NOTE: priority should follow the following restrictions
-     *     Your value should be
-     *     Greater than or equal to 1
-     *     Less than or equal to 3
+     *     Your value for rendering the announcement to the User should be
+     *          HIGH (Immediately abort all current activities)
+     *          MEDIUM (Wait until the current activity (e.g. streaming a file) is finished)
+     *          LOW (Next time the Reading System is idle)
      */
     public $priority;
 
@@ -64,7 +65,7 @@ class announcement extends AbstractType {
         if (is_a($_label, "label")) $this->setLabel($_label);
         if (is_string($_id)) $this->setId($_id);
         if (is_string($_type)) $this->setType($_type);
-        if (is_int($_priority)) $this->setPriority($_priority);
+        if (is_string($_priority)) $this->setPriority($_priority);
     }
 
 
@@ -175,17 +176,15 @@ class announcement extends AbstractType {
 
         // attribute type is optional
         if (!is_null($this->type)) {
-            $allowedValues =  array("WARNING", "ERROR", "INFORMATION", "SYSTEM");
+            $allowedValues =  array("INFORMATION", "SYSTEM");
             if ($this->isString($this->type, 'type', $allowedValues) === false)
                 return false;
         }
 
-        // attribute priority is optional
-        if (!is_null($this->priority)) {
-            if ($this->isInteger($this->priority, 'priority', 3, 1) === false)
-                return false;
-        }
-
+        // attribute priority is required  
+        if ($this->isString($this->priority, 'priority', array("HIGH","MEDIUM","LOW")) === false)
+            return false;
+        
         return true;
     }
 }

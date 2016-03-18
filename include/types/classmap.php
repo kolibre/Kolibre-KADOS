@@ -60,7 +60,6 @@ $classmap = array(
 		"label" => "label",
 		"audio" => "audio",
 		"service" => "service",
-		"supportedContentSelectionMethods" => "supportedContentSelectionMethods",
 		"supportedUplinkAudioCodecs" => "supportedUplinkAudioCodecs",
 		"supportedOptionalOperations" => "supportedOptionalOperations",
 		"getContentList" => "getContentList",

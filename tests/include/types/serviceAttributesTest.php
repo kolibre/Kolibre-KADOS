@@ -31,21 +31,26 @@ class serviceAttributesTest extends PHPUnit_Framework_TestCase
     {
         $serviceProvider = null;
         $service = null;
-        $supportedContentSelectionMethods = new supportedContentSelectionMethods(array('OUT_OF_BAND'));
         $supportsServerSideBack = false;
         $supportsSearch = false;
         $supportedUplinkAudioCodecs = new supportedUplinkAudioCodecs();
         $supportsAudioLabels = false;
         $supportedOptionalOperations = new supportedOptionalOperations();
+        $accessConfig = "STREAM_AND_DOWNLOAD";
+        $announcementsPullFrequency = 1;
+        $progressStateOperationAllowed = false;
         $this->serviceAttributes = new serviceAttributes(
             $serviceProvider,
             $service,
-            $supportedContentSelectionMethods,
             $supportsServerSideBack,
             $supportsSearch,
             $supportedUplinkAudioCodecs,
             $supportsAudioLabels,
-            $supportedOptionalOperations);
+            $supportedOptionalOperations,
+            $accessConfig,
+            $announcementsPullFrequency,
+            $progressStateOperationAllowed);
+        $this->assertTrue($this->serviceAttributes->validate());
     }
 
     /**
@@ -75,21 +80,6 @@ class serviceAttributesTest extends PHPUnit_Framework_TestCase
         $this->assertFalse($instance->validate());
         $this->assertContains('serviceAttributes.service', $instance->getError());
         $instance->service = new service(null, 'id');
-        $this->assertTrue($instance->validate());
-    }
-
-    /**
-     * @group serviceAttributes
-     * @group validate
-     */
-    public function testSupportedContentSelectionsMethods()
-    {
-        $instance = $this->serviceAttributes;
-        $this->assertTrue($instance->validate());
-        $instance->supportedContentSelectionMethods = 'supportedContentSelectionMethods';
-        $this->assertFalse($instance->validate());
-        $this->assertContains('serviceAttributes.supportedContentSelectionMethods', $instance->getError());
-        $instance->supportedContentSelectionMethods = new supportedContentSelectionMethods(array('OUT_OF_BAND'));
         $this->assertTrue($instance->validate());
     }
 
@@ -165,6 +155,59 @@ class serviceAttributesTest extends PHPUnit_Framework_TestCase
         $this->assertFalse($instance->validate());
         $this->assertContains('serviceAttributes.supportedOptionalOperations', $instance->getError());
         $instance->supportedOptionalOperations = new supportedOptionalOperations();
+        $this->assertTrue($instance->validate());
+    }
+
+    /**
+     * @group serviceAttributes
+     * @group validate
+     */
+    public function testAccessConfig()
+    {
+        $instance = $this->serviceAttributes;
+        $this->assertTrue($instance->validate());
+        $instance->accessConfig = '';
+        $this->assertFalse($instance->validate());
+        $this->assertContains('serviceAttributes.accessConfig', $instance->getError());
+        $instance->accessConfig = 'accessConfig';
+        $this->assertFalse($instance->validate());
+        $this->assertContains('serviceAttributes.accessConfig', $instance->getError());
+        $instance->accessConfig = 'STREAM_AND_DOWNLOAD';
+        $this->assertTrue($instance->validate());
+    }
+
+    /**
+     * @group serviceAttributes
+     * @group validate
+     */
+    public function testAnnouncementsPullFrequency()
+    {
+        $instance = $this->serviceAttributes;
+        $this->assertTrue($instance->validate());
+        $instance->announcementsPullFrequency = '';
+        $this->assertFalse($instance->validate());
+        $this->assertContains('serviceAttributes.announcementsPullFrequency', $instance->getError());
+        $instance->announcementsPullFrequency = -3;
+        $this->assertFalse($instance->validate());
+        $this->assertContains('serviceAttributes.announcementsPullFrequency', $instance->getError());
+        $instance->announcementsPullFrequency = 2;
+        $this->assertTrue($instance->validate());
+    }
+    /**
+     * @group serviceAttributes
+     * @group validate
+     */
+    public function testProgressStateOperationAllowed()
+    {
+        $instance = $this->serviceAttributes;
+        $this->assertTrue($instance->validate());
+        $instance->progressStateOperationAllowed = '';
+        $this->assertFalse($instance->validate());
+        $this->assertContains('serviceAttributes.progressStateOperationAllowed', $instance->getError());
+        $instance->progressStateOperationAllowed = 2;
+        $this->assertFalse($instance->validate());
+        $this->assertContains('serviceAttributes.progressStateOperationAllowed', $instance->getError());
+        $instance->progressStateOperationAllowed = false;
         $this->assertTrue($instance->validate());
     }
 }

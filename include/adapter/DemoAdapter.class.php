@@ -454,6 +454,18 @@ class DemoAdapter extends Adapter
         return $contentList;
     }
 
+    public function contentLastModifiedDate($contentId)
+    {
+        // TODO: implement demo cases
+        return false;
+    }
+
+    public function contentAccessMethod($contentId)
+    {
+        // TODO: implement demo cases
+        return ACCESS_STREAM_AND_DOWNLOAD_AUTOMATIC_ALLOWED;
+    }
+
     public function contentExists($contentId)
     {
         $contentId = $this->extractId($contentId);
@@ -707,7 +719,7 @@ class DemoAdapter extends Adapter
         return false;
     }
 
-    public function contentResources($contentId)
+    public function contentResources($contentId, $accessMethod = null)
     {
         $contentId = $this->extractId($contentId);
 

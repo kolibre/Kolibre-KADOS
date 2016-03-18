@@ -84,6 +84,18 @@ class SystemTestAdapter extends Adapter
         return $contentList;
     }
 
+    public function contentLastModifiedDate($contentId)
+    {
+        // TODO: implement test cases
+        return false;
+    }
+
+    public function contentAccessMethod($contentId)
+    {
+        // TODO: implement test cases
+        return ACCESS_STREAM_AND_DOWNLOAD_AUTOMATIC_ALLOWED;
+    }
+
     public function contentExists($contentId)
     {
         return true;
@@ -137,7 +149,7 @@ class SystemTestAdapter extends Adapter
         return true;
     }
 
-    public function contentResources($contentId)
+    public function contentResources($contentId, $accessMethod = null)
     {
         $resources = array();
         $resource = array();

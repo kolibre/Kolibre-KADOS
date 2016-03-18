@@ -128,6 +128,12 @@ class TestAdapter extends Adapter
         return '1970-01-01T00:00:00';
     }
 
+    public function contentAccessMethod($contentId)
+    {
+        // TODO: implement test cases
+        return ACCESS_STREAM_AND_DOWNLOAD_AUTOMATIC_ALLOWED;
+    }
+
     public function contentExists($contentId)
     {
         if ($contentId == 'exception-content-exists')
@@ -227,7 +233,7 @@ class TestAdapter extends Adapter
         return true;
     }
 
-    public function contentResources($contentId)
+    public function contentResources($contentId, $accessMethod = null)
     {
         if ($contentId == 'exception-content-resources')
             throw new AdapterException('Error in adapter');

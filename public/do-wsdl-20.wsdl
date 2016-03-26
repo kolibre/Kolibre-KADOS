@@ -1,0 +1,610 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<wsdl:definitions name="DAISYOnlineService" 
+  xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
+	xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"
+	xmlns:tns="http://www.daisy.org/ns/daisy-online/" 
+  xmlns:db="http://docbook.org/ns/docbook"
+	targetNamespace="http://www.daisy.org/ns/daisy-online/"
+	xmlns:do="http://www.daisy.org/ns/daisy-online/"
+  xmlns:dc="http://purl.org/dc/elements/1.1/"
+  xmlns:xs="http://www.w3.org/2001/XMLSchema">
+	<wsdl:types>
+    <xs:schema targetNamespace="http://www.daisy.org/ns/daisy-online/" 
+                elementFormDefault="qualified" attributeFormDefault="unqualified"
+                xmlns:xs="http://www.w3.org/2001/XMLSchema" 
+                xmlns:bm="http://www.daisy.org/z3986/2005/bookmark/"
+                xmlns:pdtb2="http://www.daisy.org/DRM/2005/KeyExchange"
+                xmlns:db="http://docbook.org/ns/docbook"
+                xmlns:dc="http://purl.org/dc/elements/1.1/"
+                xmlns:tns="http://www.daisy.org/ns/daisy-online/">
+      <xs:annotation>
+        <xs:documentation xml:lang="en">
+          This W3C XML Schema document and the entities referenced from within it are a
+          normative part of the DAISY Online Protocol Specification 
+          (http://www.daisy.org/projects/daisy-online-delivery/). Version: 2.0.1
+        </xs:documentation>
+      </xs:annotation>
+      <xs:include schemaLocation="do-types-20.xsd"/>
+      <xs:import namespace="http://www.daisy.org/z3986/2005/bookmark/" schemaLocation="bookmark-2005-1.xsd"/>
+      <xs:import namespace="http://www.daisy.org/DRM/2005/KeyExchange" schemaLocation="KeyExchange-2005-1.xsd"/>
+      <xs:import namespace="http://purl.org/dc/elements/1.1/" schemaLocation="dc.xsd"/>
+			<xs:element name="logOn">
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="username" type="xs:string" minOccurs="1" maxOccurs="1"/>
+						<xs:element name="password" type="xs:string" minOccurs="1" maxOccurs="1"/>
+						<xs:element ref="tns:readingSystemAttributes" minOccurs="1" maxOccurs="1"/>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="logOnResponse">
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element ref="tns:serviceAttributes" minOccurs="1" maxOccurs="1"/>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="logOff">
+				<xs:complexType>
+					<xs:sequence>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="logOffResponse">
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="logOffResult" type="xs:boolean" minOccurs="1" maxOccurs="1"/>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="getContentResources">
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="contentID" type="xs:string" minOccurs="1" maxOccurs="1"/>
+						<xs:element name="accessType" minOccurs="1" maxOccurs="1">
+							<xs:simpleType>
+								<xs:restriction base="xs:string">
+									<xs:enumeration value="STREAM"/>
+									<xs:enumeration value="DOWNLOAD"/>
+									<xs:enumeration value="AUTOMATIC_DOWNLOAD"/>
+								</xs:restriction>
+							</xs:simpleType>
+						</xs:element>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="getContentResourcesResponse">
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element ref="tns:resources" minOccurs="1" maxOccurs="1"/>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="getContentList">
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="id" type="xs:string" minOccurs="1" maxOccurs="1"/>
+						<xs:element name="firstItem" type="xs:int" minOccurs="1" maxOccurs="1"/>
+						<xs:element name="lastItem" type="xs:int" minOccurs="1" maxOccurs="1"/>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="getContentListResponse">
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element ref="tns:contentList" minOccurs="1" maxOccurs="1"/>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="returnContent">
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="contentID" type="xs:string" minOccurs="1" maxOccurs="1"/>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="returnContentResponse">
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="returnContentResult" type="xs:boolean" minOccurs="1" maxOccurs="1"/>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="getServiceAnnouncements">
+				<xs:complexType>
+					<xs:sequence>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="getServiceAnnouncementsResponse">
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element ref="tns:announcements" minOccurs="1" maxOccurs="1"/>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="markAnnouncementsAsRead">
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element ref="tns:read" minOccurs="1" maxOccurs="1"/>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="markAnnouncementsAsReadResponse">
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="markAnnouncementsAsReadResult" type="xs:boolean" minOccurs="1" maxOccurs="1"/>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="updateBookmarks">
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="contentID" type="xs:string" minOccurs="1" maxOccurs="1"/>
+						<xs:element name="action" minOccurs="1" maxOccurs="1">
+							<xs:simpleType>
+								<xs:restriction base="xs:string">
+									<xs:enumeration value="REPLACE_ALL"/>
+									<xs:enumeration value="ADD"/>
+									<xs:enumeration value="REMOVE"/>
+								</xs:restriction>
+							</xs:simpleType>
+						</xs:element>
+						<xs:element ref="tns:bookmarkObject" minOccurs="1" maxOccurs="1"/>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="updateBookmarksResponse">
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="updateBookmarksResult" type="xs:boolean" minOccurs="1" maxOccurs="1"/>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="getBookmarks">
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="contentID" type="xs:string" minOccurs="1" maxOccurs="1"/>
+						<xs:element name="action" minOccurs="1" maxOccurs="1">
+							<xs:simpleType>
+								<xs:restriction base="xs:string">
+									<xs:enumeration value="LASTMARK"/>
+									<xs:enumeration value="HILITE"/>
+									<xs:enumeration value="BOOKMARK"/>
+									<xs:enumeration value="ALL"/>
+								</xs:restriction>
+							</xs:simpleType>
+						</xs:element>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="getBookmarksResponse">
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element ref="tns:bookmarkObject" minOccurs="1" maxOccurs="1"/>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="addContentToBookshelf">
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="contentID" type="xs:string" minOccurs="1" maxOccurs="1"/>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="addContentToBookshelfResponse">
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="addContentToBookshelfResult" type="xs:boolean" minOccurs="1" maxOccurs="1"/>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="getQuestions">
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element ref="tns:userResponses" minOccurs="1" maxOccurs="1"/>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="getQuestionsResponse">
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element ref="tns:questions" minOccurs="1" maxOccurs="1"/>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="getUserCredentials">
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element ref="tns:readingSystemAttributes" minOccurs="1" maxOccurs="1"/>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="getUserCredentialsResponse">
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element ref="tns:credentials" minOccurs="1" maxOccurs="1"/>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="getKeyExchangeObject">
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="requestedKeyName" type="xs:string" minOccurs="1" maxOccurs="1"/>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="getKeyExchangeObjectResponse">
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element ref="pdtb2:KeyExchange" minOccurs="1" maxOccurs="1"/>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="getTermsOfService">
+				<xs:complexType>
+					<xs:sequence>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="getTermsOfServiceResponse">
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element ref="tns:label" minOccurs="1" maxOccurs="1"/>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="acceptTermsOfService">
+				<xs:complexType>
+					<xs:sequence>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="acceptTermsOfServiceResponse">
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="acceptTermsOfServiceResult" type="xs:boolean" minOccurs="1" maxOccurs="1"/>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="setProgressState">
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="contentID" type="xs:string" minOccurs="1" maxOccurs="1"/>
+						<xs:element name="state" minOccurs="1" maxOccurs="1">
+							<xs:simpleType>
+								<xs:restriction base="xs:string">
+									<xs:enumeration value="START"/>
+									<xs:enumeration value="PAUSE"/>
+									<xs:enumeration value="RESUME"/>
+									<xs:enumeration value="FINISH"/>
+								</xs:restriction>
+							</xs:simpleType>
+						</xs:element>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="setProgressStateResponse">
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="setProgressStateResult" type="xs:boolean" minOccurs="1" maxOccurs="1"/>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+    </xs:schema>
+  </wsdl:types>
+	<wsdl:message name="logOnRequest">
+		<wsdl:part name="parameters" element="tns:logOn"/>
+	</wsdl:message>
+	<wsdl:message name="logOnResponse">
+		<wsdl:part name="parameters" element="tns:logOnResponse"/>
+	</wsdl:message>
+	<wsdl:message name="logOffRequest">
+		<wsdl:part name="parameters" element="tns:logOff"/>
+	</wsdl:message>
+	<wsdl:message name="logOffResponse">
+		<wsdl:part name="parameters" element="tns:logOffResponse"/>
+	</wsdl:message>
+	<wsdl:message name="getServiceAnnouncementsRequest">
+		<wsdl:part name="parameters" element="tns:getServiceAnnouncements"/>
+	</wsdl:message>
+	<wsdl:message name="getServiceAnnouncementsResponse">
+		<wsdl:part name="parameters" element="tns:getServiceAnnouncementsResponse"/>
+	</wsdl:message>
+	<wsdl:message name="getContentResourcesRequest">
+		<wsdl:part name="parameters" element="tns:getContentResources"/>
+	</wsdl:message>
+	<wsdl:message name="getContentResourcesResponse">
+		<wsdl:part name="parameters" element="tns:getContentResourcesResponse"/>
+	</wsdl:message>
+	<wsdl:message name="getContentListRequest">
+		<wsdl:part name="parameters" element="tns:getContentList"/>
+	</wsdl:message>
+	<wsdl:message name="getContentListResponse">
+		<wsdl:part name="parameters" element="tns:getContentListResponse"/>
+	</wsdl:message>
+	<wsdl:message name="returnContentRequest">
+		<wsdl:part name="parameters" element="tns:returnContent"/>
+	</wsdl:message>
+	<wsdl:message name="returnContentResponse">
+		<wsdl:part name="parameters" element="tns:returnContentResponse"/>
+	</wsdl:message>
+	<wsdl:message name="markAnnouncementsAsReadRequest">
+		<wsdl:part name="parameters" element="tns:markAnnouncementsAsRead"/>
+	</wsdl:message>
+	<wsdl:message name="markAnnouncementsAsReadResponse">
+		<wsdl:part name="parameters" element="tns:markAnnouncementsAsReadResponse"/>
+	</wsdl:message>
+	<wsdl:message name="updateBookmarksRequest">
+		<wsdl:part name="parameters" element="tns:updateBookmarks"/>
+	</wsdl:message>
+	<wsdl:message name="updateBookmarksResponse">
+		<wsdl:part name="parameters" element="tns:updateBookmarksResponse"/>
+	</wsdl:message>
+	<wsdl:message name="getBookmarksRequest">
+		<wsdl:part name="parameters" element="tns:getBookmarks"/>
+	</wsdl:message>
+	<wsdl:message name="getBookmarksResponse">
+		<wsdl:part name="parameters" element="tns:getBookmarksResponse"/>
+	</wsdl:message>
+	<wsdl:message name="addContentToBookshelfRequest">
+		<wsdl:part name="parameters" element="tns:addContentToBookshelf"/>
+	</wsdl:message>
+	<wsdl:message name="addContentToBookshelfResponse">
+		<wsdl:part name="parameters" element="tns:addContentToBookshelfResponse"/>
+	</wsdl:message>
+	<wsdl:message name="getQuestionsRequest">
+		<wsdl:part name="parameters" element="tns:getQuestions"/>
+	</wsdl:message>
+	<wsdl:message name="getQuestionsResponse">
+		<wsdl:part name="parameters" element="tns:getQuestionsResponse"/>
+	</wsdl:message>
+	<wsdl:message name="getUserCredentialsRequest">
+		<wsdl:part name="parameters" element="tns:getUserCredentials"/>
+	</wsdl:message>
+	<wsdl:message name="getUserCredentialsResponse">
+		<wsdl:part name="parameters" element="tns:getUserCredentialsResponse"/>
+	</wsdl:message>
+	<wsdl:message name="getKeyExchangeObjectRequest">
+		<wsdl:part name="parameters" element="tns:getKeyExchangeObject"/>
+	</wsdl:message>
+	<wsdl:message name="getKeyExchangeObjectResponse">
+		<wsdl:part name="parameters" element="tns:getKeyExchangeObjectResponse"/>
+	</wsdl:message>
+	<wsdl:message name="getTermsOfServiceRequest">
+		<wsdl:part name="parameters" element="tns:getTermsOfService"/>
+	</wsdl:message>
+	<wsdl:message name="getTermsOfServiceResponse">
+		<wsdl:part name="parameters" element="tns:getTermsOfServiceResponse"/>
+	</wsdl:message>
+	<wsdl:message name="acceptTermsOfServiceRequest">
+		<wsdl:part name="parameters" element="tns:acceptTermsOfService"/>
+	</wsdl:message>
+	<wsdl:message name="acceptTermsOfServiceResponse">
+		<wsdl:part name="parameters" element="tns:acceptTermsOfServiceResponse"/>
+	</wsdl:message>
+	<wsdl:message name="setProgressStateRequest">
+		<wsdl:part name="parameters" element="tns:setProgressState"/>
+	</wsdl:message>
+	<wsdl:message name="setProgressStateResponse">
+		<wsdl:part name="parameters" element="tns:setProgressStateResponse"/>
+	</wsdl:message>
+	<wsdl:portType name="DAISYOnlineService">
+		<wsdl:operation name="logOn" parameterOrder="parameters">
+			<wsdl:input message="tns:logOnRequest"/>
+			<wsdl:output message="tns:logOnResponse"/>
+		</wsdl:operation>
+		<wsdl:operation name="logOff" parameterOrder="parameters">
+			<wsdl:input message="tns:logOffRequest"/>
+			<wsdl:output message="tns:logOffResponse"/>
+		</wsdl:operation>
+		<wsdl:operation name="getServiceAnnouncements">
+			<wsdl:input message="tns:getServiceAnnouncementsRequest"/>
+			<wsdl:output message="tns:getServiceAnnouncementsResponse"/>
+		</wsdl:operation>
+		<wsdl:operation name="getContentResources">
+			<wsdl:input message="tns:getContentResourcesRequest"/>
+			<wsdl:output message="tns:getContentResourcesResponse"/>
+		</wsdl:operation>
+		<wsdl:operation name="getContentList">
+			<wsdl:input message="tns:getContentListRequest"/>
+			<wsdl:output message="tns:getContentListResponse"/>
+		</wsdl:operation>
+		<wsdl:operation name="returnContent">
+			<wsdl:input message="tns:returnContentRequest"/>
+			<wsdl:output message="tns:returnContentResponse"/>
+		</wsdl:operation>
+		<wsdl:operation name="markAnnouncementsAsRead">
+			<wsdl:input message="tns:markAnnouncementsAsReadRequest"/>
+			<wsdl:output message="tns:markAnnouncementsAsReadResponse"/>
+		</wsdl:operation>
+		<wsdl:operation name="updateBookmarks">
+			<wsdl:input message="tns:updateBookmarksRequest"/>
+			<wsdl:output message="tns:updateBookmarksResponse"/>
+		</wsdl:operation>
+		<wsdl:operation name="getBookmarks">
+			<wsdl:input message="tns:getBookmarksRequest"/>
+			<wsdl:output message="tns:getBookmarksResponse"/>
+		</wsdl:operation>
+		<wsdl:operation name="addContentToBookshelf">
+			<wsdl:input message="tns:addContentToBookshelfRequest"/>
+			<wsdl:output message="tns:addContentToBookshelfResponse"/>
+		</wsdl:operation>
+		<wsdl:operation name="getQuestions">
+			<wsdl:input message="tns:getQuestionsRequest"/>
+			<wsdl:output message="tns:getQuestionsResponse"/>
+		</wsdl:operation>
+		<wsdl:operation name="getUserCredentials">
+			<wsdl:input message="tns:getUserCredentialsRequest"/>
+			<wsdl:output message="tns:getUserCredentialsResponse"/>
+		</wsdl:operation>
+		<wsdl:operation name="getKeyExchangeObject">
+			<wsdl:input message="tns:getKeyExchangeObjectRequest"/>
+			<wsdl:output message="tns:getKeyExchangeObjectResponse"/>
+		</wsdl:operation>
+		<wsdl:operation name="getTermsOfService">
+			<wsdl:input message="tns:getTermsOfServiceRequest"/>
+			<wsdl:output message="tns:getTermsOfServiceResponse"/>
+		</wsdl:operation>
+		<wsdl:operation name="acceptTermsOfService">
+			<wsdl:input message="tns:acceptTermsOfServiceRequest"/>
+			<wsdl:output message="tns:acceptTermsOfServiceResponse"/>
+		</wsdl:operation>
+		<wsdl:operation name="setProgressState">
+			<wsdl:input message="tns:setProgressStateRequest"/>
+			<wsdl:output message="tns:setProgressStateResponse"/>
+		</wsdl:operation>
+	</wsdl:portType>
+	<wsdl:binding name="DAISYOnline_SOAP_Binding" type="tns:DAISYOnlineService">
+		<soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
+		<wsdl:operation name="logOn">
+			<soap:operation soapAction="urn:http://www.daisy.org/ns/daisy-online/logOn" style="document"/>
+			<wsdl:input>
+				<soap:body use="literal"/>
+			</wsdl:input>
+			<wsdl:output>
+				<soap:body use="literal"/>
+			</wsdl:output>
+		</wsdl:operation>
+		<wsdl:operation name="logOff">
+			<soap:operation soapAction="urn:http://www.daisy.org/ns/daisy-online/logOff" style="document"/>
+			<wsdl:input>
+				<soap:body use="literal"/>
+			</wsdl:input>
+			<wsdl:output>
+				<soap:body use="literal"/>
+			</wsdl:output>
+		</wsdl:operation>
+		<wsdl:operation name="getServiceAnnouncements">
+			<soap:operation soapAction="urn:http://www.daisy.org/ns/daisy-online/getServiceAnnouncements" style="document"/>
+			<wsdl:input>
+				<soap:body use="literal"/>
+			</wsdl:input>
+			<wsdl:output>
+				<soap:body use="literal"/>
+			</wsdl:output>
+		</wsdl:operation>
+		<wsdl:operation name="getContentResources">
+			<soap:operation soapAction="urn:http://www.daisy.org/ns/daisy-online/getContentResources" style="document"/>
+			<wsdl:input>
+				<soap:body use="literal"/>
+			</wsdl:input>
+			<wsdl:output>
+				<soap:body use="literal"/>
+			</wsdl:output>
+		</wsdl:operation>
+		<wsdl:operation name="getContentList">
+			<soap:operation soapAction="urn:http://www.daisy.org/ns/daisy-online/getContentList" style="document"/>
+			<wsdl:input>
+				<soap:body use="literal"/>
+			</wsdl:input>
+			<wsdl:output>
+				<soap:body use="literal"/>
+			</wsdl:output>
+		</wsdl:operation>
+		<wsdl:operation name="returnContent">
+			<soap:operation soapAction="urn:http://www.daisy.org/ns/daisy-online/returnContent" style="document"/>
+			<wsdl:input>
+				<soap:body use="literal"/>
+			</wsdl:input>
+			<wsdl:output>
+				<soap:body use="literal"/>
+			</wsdl:output>
+		</wsdl:operation>
+		<wsdl:operation name="markAnnouncementsAsRead">
+			<soap:operation soapAction="urn:http://www.daisy.org/ns/daisy-online/markAnnouncementsAsRead" style="document"/>
+			<wsdl:input>
+				<soap:body use="literal"/>
+			</wsdl:input>
+			<wsdl:output>
+				<soap:body use="literal"/>
+			</wsdl:output>
+		</wsdl:operation>
+		<wsdl:operation name="updateBookmarks">
+			<soap:operation soapAction="urn:http://www.daisy.org/ns/daisy-online/updateBookmarks" style="document"/>
+			<wsdl:input>
+				<soap:body use="literal"/>
+			</wsdl:input>
+			<wsdl:output>
+				<soap:body use="literal"/>
+			</wsdl:output>
+		</wsdl:operation>
+		<wsdl:operation name="getBookmarks">
+			<soap:operation soapAction="urn:http://www.daisy.org/ns/daisy-online/getBookmarks" style="document"/>
+			<wsdl:input>
+				<soap:body use="literal"/>
+			</wsdl:input>
+			<wsdl:output>
+				<soap:body use="literal"/>
+			</wsdl:output>
+		</wsdl:operation>
+		<wsdl:operation name="addContentToBookshelf">
+			<soap:operation soapAction="urn:http://www.daisy.org/ns/daisy-online/addContentToBookshelf" style="document"/>
+			<wsdl:input>
+				<soap:body use="literal"/>
+			</wsdl:input>
+			<wsdl:output>
+				<soap:body use="literal"/>
+			</wsdl:output>
+		</wsdl:operation>
+		<wsdl:operation name="getQuestions">
+			<soap:operation soapAction="urn:http://www.daisy.org/ns/daisy-online/getQuestions" style="document"/>
+			<wsdl:input>
+				<soap:body use="literal"/>
+			</wsdl:input>
+			<wsdl:output>
+				<soap:body use="literal"/>
+			</wsdl:output>
+		</wsdl:operation>
+		<wsdl:operation name="getUserCredentials">
+			<soap:operation soapAction="urn:http://www.daisy.org/ns/daisy-online/getUserCredentials" style="document"/>
+			<wsdl:input>
+				<soap:body use="literal"/>
+			</wsdl:input>
+			<wsdl:output>
+				<soap:body use="literal"/>
+			</wsdl:output>
+		</wsdl:operation>
+		<wsdl:operation name="getKeyExchangeObject">
+			<soap:operation soapAction="urn:http://www.daisy.org/ns/daisy-online/getKeyExchangeObject" style="document"/>
+			<wsdl:input>
+				<soap:body use="literal"/>
+			</wsdl:input>
+			<wsdl:output>
+				<soap:body use="literal"/>
+			</wsdl:output>
+		</wsdl:operation>
+		<wsdl:operation name="getTermsOfService">
+			<soap:operation soapAction="urn:http://www.daisy.org/ns/daisy-online/getTermsOfService" style="document"/>
+			<wsdl:input>
+				<soap:body use="literal"/>
+			</wsdl:input>
+			<wsdl:output>
+				<soap:body use="literal"/>
+			</wsdl:output>
+		</wsdl:operation>
+		<wsdl:operation name="acceptTermsOfService">
+			<soap:operation soapAction="urn:http://www.daisy.org/ns/daisy-online/acceptTermsOfService" style="document"/>
+			<wsdl:input>
+				<soap:body use="literal"/>
+			</wsdl:input>
+			<wsdl:output>
+				<soap:body use="literal"/>
+			</wsdl:output>
+		</wsdl:operation>
+		<wsdl:operation name="setProgressState">
+			<soap:operation soapAction="urn:http://www.daisy.org/ns/daisy-online/setProgressState" style="document"/>
+			<wsdl:input>
+				<soap:body use="literal"/>
+			</wsdl:input>
+			<wsdl:output>
+				<soap:body use="literal"/>
+			</wsdl:output>
+		</wsdl:operation>
+	</wsdl:binding>
+	<wsdl:service name="DAISYOnline">
+		<wsdl:port name="DAISYOnlineService" binding="tns:DAISYOnline_SOAP_Binding">
+			<soap:address location="http://daisyonline2.dev.i-accessonline.visionaustralia.org"/>
+		</wsdl:port>
+	</wsdl:service>
+</wsdl:definitions>

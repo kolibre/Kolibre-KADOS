@@ -604,7 +604,7 @@
 	</wsdl:binding>
 	<wsdl:service name="DAISYOnline">
 		<wsdl:port name="DAISYOnlineService" binding="tns:DAISYOnline_SOAP_Binding">
-			<soap:address location="http://daisyonline2.dev.i-accessonline.visionaustralia.org"/>
+			<soap:address location="SERVICE_WSDL_URI_PLACEHOLDER"/>
 		</wsdl:port>
 	</wsdl:service>
 </wsdl:definitions>

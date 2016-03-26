@@ -107,6 +107,7 @@
       <xs:sequence>
         <xs:element ref="bm:bookmarkSet" minOccurs="1" maxOccurs="1"/>
       </xs:sequence>
+      <xs:attribute name="lastModifiedDate" type="xs:dateTime" use="optional"/>
     </xs:complexType>
   </xs:element>
   <xs:element name="credentials">

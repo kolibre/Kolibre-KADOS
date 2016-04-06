@@ -523,6 +523,7 @@ class DaisyOnlineService
 
         // parameters
         $contentId = $input->getContentID();
+        $accessType = $input->getAccessType();
 
         // check if the requested content exists and is accessible
         try
@@ -561,7 +562,7 @@ class DaisyOnlineService
             // build resource
             $contentResources = $this->adapter->contentResources($contentId);
             if (empty($contentResources))
-            {
+            {   
                 $msg = "User '$this->sessionUsername' requested resources for non-issued content '$contentId'";
                 $this->logger->warn($msg);
                 $faultString = "content '$contentId' is not issued";

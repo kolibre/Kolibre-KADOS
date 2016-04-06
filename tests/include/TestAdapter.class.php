@@ -125,7 +125,7 @@ class TestAdapter extends Adapter
         if ($contentId == 'exception-content-lastmodifieddate')
             throw new AdapterException('Error in adapter');
 
-        return '1970-01-01T00:00:00';
+        return '1970-01-01T00:00:00+00:00';
     }
 
     public function contentAccessMethod($contentId)
@@ -252,7 +252,7 @@ class TestAdapter extends Adapter
             $resource['mimeType'] = 'mimeType';
             $resource['size'] = 1;
             $resource['localURI'] = 'localURI';
-            $resource['lastModifiedDate'] = '1970-01-01T00:00:00';
+            $resource['lastModifiedDate'] = '1970-01-01T00:00:00+00:00';
             array_push($resources, $resource);
             array_push($resources, $resource);
             array_push($resources, $resource);

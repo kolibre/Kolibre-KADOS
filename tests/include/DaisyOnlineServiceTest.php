@@ -156,8 +156,8 @@ class DaisyOnlineServiceTest extends PHPUnit_Framework_TestCase
         // adapter returns true on authenticate
         $input = new logOn('valid', 'valid', $readingSystemAttributes);
         $output = self::$instance->logOn($input);
-        $serviceAttributesClass = new serviceAttributes();
-        $this->assertInstanceOf($serviceAttributesClass,$output->serviceAttributes);
+        $this->assertInstanceOf('serviceAttributes',$output->serviceAttributes);
+
     }
 
     /**
@@ -266,6 +266,7 @@ class DaisyOnlineServiceTest extends PHPUnit_Framework_TestCase
     /**
      * @group daisyonlineservice
      * @group operation
+     * @group getContentResources
      */
     public function testGetContentResouces()
     {
@@ -274,46 +275,42 @@ class DaisyOnlineServiceTest extends PHPUnit_Framework_TestCase
         $this->assertTrue($this->callOperation('getContentResources', $input, 'invalidParameterFault'));
 
         // adapter throws exception on contentExists
-        $input = new getContentResources('exception-content-exists');
+        $input = new getContentResources('exception-content-exists',"STREAM");
         $this->assertTrue($this->callOperation('getContentResources', $input, 'internalServerErrorFault'));
 
         // adapter returns false on contentExists
-        $input = new getContentResources('invalid-content-exists');
+        $input = new getContentResources('invalid-content-exists',"STREAM");
         $this->assertTrue($this->callOperation('getContentResources', $input, 'invalidParameterFault'));
 
         // adapter throws exception on contentAccessible
-        $input = new getContentResources('exception-content-accessible');
+        $input = new getContentResources('exception-content-accessible',"STREAM");
         $this->assertTrue($this->callOperation('getContentResources', $input, 'internalServerErrorFault'));
 
         // adapter returns false on contentAccessible
-        $input = new getContentResources('invalid-content-accessible');
+        $input = new getContentResources('invalid-content-accessible',"STREAM");
         $this->assertTrue($this->callOperation('getContentResources', $input, 'invalidParameterFault'));
 
-        // adapter throws exception on contentReturnDate
-        $input = new getContentResources('exception-content-returndate');
-        $this->assertTrue($this->callOperation('getContentResources', $input, 'internalServerErrorFault'));
-
         // adapter throws exception on contentLastModifiedDate
-        $input = new getContentResources('exception-content-lastmodifieddate');
+        $input = new getContentResources('exception-content-lastmodifieddate',"STREAM");
         $this->assertTrue($this->callOperation('getContentResources', $input, 'internalServerErrorFault'));
 
         // adapter throws exception on contentResources
-        $input = new getContentResources('exception-content-resources');
+        $input = new getContentResources('exception-content-resources',"STREAM");
         $this->assertTrue($this->callOperation('getContentResources', $input, 'internalServerErrorFault'));
 
         // adapter returns empty resources
-        $input = new getContentResources('empty-content-resources');
+        $input = new getContentResources('empty-content-resources',"STREAM");
         $this->assertTrue($this->callOperation('getContentResources', $input, 'invalidOperationFault'));
 
         // required elements missing from resources
-        $input = new getContentResources('invalid-content-resources');
+        $input = new getContentResources('invalid-content-resources',"STREAM");
         $this->assertTrue($this->callOperation('getContentResources', $input, 'internalServerErrorFault'));
 
         // resources contains required elements
-        $input = new getContentResources('valid-content-resources');
+        $input = new getContentResources('valid-content-resources',"STREAM");
         $output = self::$instance->getContentResources($input);
-        $this->assertEquals($output->resources->returnBy, '1970-01-01T00:00:00');
-        $this->assertEquals($output->resources->lastModifiedDate, '1970-01-01T00:00:00');
+        //$this->assertEquals($output->resources->returnBy, '1970-01-01T00:00:00');
+        $this->assertEquals($output->resources->lastModifiedDate, '1970-01-01T00:00:00+00:00');
         $this->assertCount(3, $output->resources->resource);
         foreach ($output->resources->resource as $resource)
         {
@@ -321,7 +318,7 @@ class DaisyOnlineServiceTest extends PHPUnit_Framework_TestCase
             $this->assertEquals($resource->mimeType, 'mimeType');
             $this->assertEquals($resource->size, 1);
             $this->assertEquals($resource->localURI, 'localURI');
-            $this->assertEquals($resource->lastModifiedDate, '1970-01-01T00:00:00');
+            $this->assertEquals($resource->lastModifiedDate, '1970-01-01T00:00:00+00:00');
         }
     }
 

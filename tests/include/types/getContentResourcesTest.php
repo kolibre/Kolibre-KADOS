@@ -31,7 +31,7 @@ class getContentResourcesTest extends PHPUnit_Framework_TestCase
      */
     public function testContentID()
     {
-        $instance = new getContentResources();
+        $instance = new getContentResources(NULL, "STREAM");
         $this->assertFalse($instance->validate());
         $this->assertContains('getContentResources.contentID', $instance->getError());
         $instance->contentID = 1;
@@ -41,6 +41,25 @@ class getContentResourcesTest extends PHPUnit_Framework_TestCase
         $this->assertFalse($instance->validate());
         $this->assertContains('getContentResources.contentID', $instance->getError());
         $instance->contentID = 'contentID';
+        $this->assertTrue($instance->validate());
+    }
+
+    /**
+     * @group getContentResources
+     * @group validate
+     */
+    public function testAccessType()
+    {
+        $instance = new getContentResources('contentID',NULL);
+        $this->assertFalse($instance->validate());
+        $this->assertContains('getContentResources.accessType', $instance->getError());
+        $instance->accessType = 1;
+        $this->assertFalse($instance->validate());
+        $this->assertContains('getContentResources.accessType', $instance->getError());
+        $instance->accessType = '';
+        $this->assertFalse($instance->validate());
+        $this->assertContains('getContentResources.accessType', $instance->getError());
+        $instance->accessType = 'STREAM';
         $this->assertTrue($instance->validate());
     }
 }

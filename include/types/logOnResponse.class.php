@@ -19,13 +19,15 @@
  */
 
 require_once('AbstractType.class.php');
+require_once('serviceAttributes.class.php');
+
 
 class logOnResponse extends AbstractType {
 
     /**
-     * @var boolean
+     * @var (object) serviceAttributes
      */
-    public $logOnResult;
+    public $serviceAttributes;
 
 
     /******************** public functions ********************/
@@ -33,32 +35,32 @@ class logOnResponse extends AbstractType {
     /**
      * constructor for class logOnResponse
      */
-    function __construct($_logOnResult = NULL) {
-        if (is_bool($_logOnResult)) $this->setLogOnResult($_logOnResult);
+    function __construct($_serviceAttributes = NULL) {
+        if (is_a($_serviceAttributes,"serviceAttributes")) $this->setServiceAttributes($_serviceAttributes);
     }
 
 
     /******************** class get set methods ********************/
 
     /**
-     * getter for logOnResult
+     * getter for serviceAttributes
      */
-    function getLogOnResult() {
-        return $this->logOnResult;
+    function getServiceAttributes() {
+        return $this->serviceAttributes;
     }
 
     /**
-     * setter for logOnResult
+     * setter for serviceAttributes
      */
-    function setLogOnResult($_logOnResult) {
-        $this->logOnResult = $_logOnResult;
+    function setServiceAttributes($_serviceAttributes) {
+        $this->serviceAttributes = $_serviceAttributes;
     }
 
     /**
-     * resetter for logOnResult
+     * resetter for serviceAttributes
      */
-    function resetLogOnResult() {
-        $this->logOnResult = NULL;
+    function resetServiceAttributes() {
+        $this->serviceAttributes = NULL;
     }
 
 
@@ -69,9 +71,13 @@ class logOnResponse extends AbstractType {
      * validator for class logOnResponse
      */
     function validate() {
-        // logOnResult must occur exactly once
-        if ($this->isBoolean($this->logOnResult, 'logOnResult') === false)
+        // serviceAttributes must occur exactly once
+        if ($this->isInstanceOf($this->serviceAttributes, 'serviceAttributes') === false)
             return false;
+        if ($this->serviceAttributes->validate() === false) {
+            $this->error = __CLASS__ . '.' . $this->serviceAttributes->getError();
+            return false;
+        };
 
         return true;
     }

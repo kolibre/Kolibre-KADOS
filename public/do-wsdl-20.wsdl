@@ -561,6 +561,7 @@
 			<wsdl:fault name="addContentToBookshelf_invalidOperationFault" message="tns:invalidOperationFaultResponse"/>
 			<wsdl:fault name="addContentToBookshelf_invalidParameterFault" message="tns:invalidParameterFaultResponse"/>
 			<wsdl:fault name="addContentToBookshelf_termsOfServiceNotAcceptedFault" message="tns:termsOfServiceNotAcceptedFaultResponse"/>
+			<wsdl:fault name="addContentToBookshelf_operationFailedFault" message="tns:operationFailedFaultResponse"/>
 		</wsdl:operation>
 		<wsdl:operation name="getQuestions">
 			<wsdl:input message="tns:getQuestionsRequest"/>
@@ -863,6 +864,9 @@
 			</wsdl:fault>
 			<wsdl:fault name="addContentToBookshelf_termsOfServiceNotAcceptedFault">
 				<soap:fault use="literal" name="addContentToBookshelf_termsOfServiceNotAcceptedFault"/>
+			</wsdl:fault>
+			<wsdl:fault name="addContentToBookshelf_operationFailedFault">
+				<soap:fault use="literal" name="addContentToBookshelf_operationFailedFault"/>
 			</wsdl:fault>
 		</wsdl:operation>
 		<wsdl:operation name="getQuestions">

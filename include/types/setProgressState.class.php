@@ -29,9 +29,12 @@ class setProgressState extends AbstractType {
 
     /**
      * @var string
-     NOTE: state should follow the following restrictions
-     *     You can have one of the following value:
-     *     [START,PAUSE,RESUME,FINISH]
+     *     NOTE: type should follow the following restrictions
+     *     You can have one of the following value
+     *     START
+     *     PAUSE
+     *     RESUME
+     *     FINISH
      */
     public $state;
 

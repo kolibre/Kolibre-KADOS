@@ -36,6 +36,8 @@ require_once('getServiceAnnouncements.class.php');
 require_once('getServiceAnnouncementsResponse.class.php');
 require_once('markAnnouncementsAsRead.class.php');
 require_once('markAnnouncementsAsReadResponse.class.php');
+require_once('updateBookmarks.class.php');
+require_once('updateBookmarksResponse.class.php');
 require_once('getBookmarks.class.php');
 require_once('getBookmarksResponse.class.php');
 require_once('returnContent.class.php');
@@ -44,6 +46,16 @@ require_once('getQuestions.class.php');
 require_once('getQuestionsResponse.class.php');
 require_once('getKeyExchangeObject.class.php');
 require_once('getKeyExchangeObjectResponse.class.php');
+require_once('addContentToBookshelf.class.php');
+require_once('addContentToBookshelfResponse.class.php');
+require_once('getUserCredentials.class.php');
+require_once('getUserCredentialsResponse.class.php');
+require_once('getTermsOfService.class.php');
+require_once('getTermsOfServiceResponse.class.php');
+require_once('acceptTermsOfService.class.php');
+require_once('acceptTermsOfServiceResponse.class.php');
+require_once('setProgressState.class.php');
+require_once('setProgressStateResponse.class.php');
 
 class DaisyOnlineService
 {

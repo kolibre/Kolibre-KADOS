@@ -74,11 +74,11 @@ class getUserCredentialsTest extends PHPUnit_Framework_TestCase
      * @group getUserCredentials
      * @group validate
      */
-    public function testUsername()
+    public function testReadingSystemAttributes()
     {       
 
-        $systemAttributes = $this->readingSystemAttributes;
-        $this->assertTrue($systemAttributes->validate());
+        $readingSystemAttributes = $this->readingSystemAttributes;
+        $this->assertTrue($readingSystemAttributes->validate());
         $instance = new getUserCredentials(null);
         $this->assertFalse($instance->validate());
         $this->assertContains('getUserCredentials.readingSystemAttributes', $instance->getError());
@@ -88,7 +88,7 @@ class getUserCredentialsTest extends PHPUnit_Framework_TestCase
         $instance->readingSystemAttributes = '';
         $this->assertFalse($instance->validate());
         $this->assertContains('getUserCredentials.readingSystemAttributes', $instance->getError());
-        $instance->readingSystemAttributes = $systemAttributes;
+        $instance->readingSystemAttributes = $readingSystemAttributes;
         $this->assertTrue($instance->validate());
     }
 

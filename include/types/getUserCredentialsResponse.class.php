@@ -24,7 +24,7 @@ require_once('credentials.class.php');
 class getUserCredentialsResponse extends AbstractType {
 
     /**
-     * @var (object) announcements
+     * @var (object) credentials
      */
     public $credentials;
 
@@ -35,28 +35,28 @@ class getUserCredentialsResponse extends AbstractType {
      * constructor for class getUserCredentialsResponse
      */
     function __construct($_credentials = NULL) {
-        if (is_bool($_credentials)) $this->setCredentials($_credentials);
+        if (is_a($_credentials, 'credentials')) $this->setCredentials($_credentials);
     }
 
 
     /******************** class get set methods ********************/
 
     /**
-     * getter for getcredentials
+     * getter for credentials
      */
     function getCredentials() {
-        return $this->getcredentials;
+        return $this->credentials;
     }
 
     /**
-     * setter for getcredentials
+     * setter for credentials
      */
     function setCredentials($_credentials) {
         $this->credentials = $_credentials;
     }
 
     /**
-     * resetter for getcredentials
+     * resetter for credentials
      */
     function resetCredentials() {
         $this->credentials = NULL;

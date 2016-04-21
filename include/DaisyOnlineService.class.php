@@ -467,7 +467,8 @@ class DaisyOnlineService
                 for ($i = $firstItem; $i <= $lastItem; $i++)
                 {
                     $contentId = $contentItems[$i];
-                    $contentItem = new contentItem(null, $contentId);
+                    $contentItem = new contentItem();
+                    $contentItem->setId($contentId);
                     try
                     {
                         $label = $this->adapter->label($contentId, Adapter::LABEL_CONTENTITEM, $this->getClientLangCode());
@@ -479,6 +480,25 @@ class DaisyOnlineService
                         $lastModifiedDate = $this->adapter->contentLastModifiedDate($contentId);
                         if (is_string($lastModifiedDate))
                             $contentItem->setLastModifiedDate($lastModifiedDate);
+
+                        $metadata = $this->adapter->contentMetadata('valid-content-metadata'); 
+                        if(is_array($metadata))
+                            $contentItem->setMetadata($this->createMetaData($metadata));
+                        else
+                            $this->logger->warn("Content with id '$contentId' has no metadata");
+
+                        $contentItem->accessPermission = $this->adapter->contentAccessMethod($contentId);
+                                               
+                        if (!in_array('SET_BOOKMARKS', $this->serviceAttributes['supportedOptionalOperations']))
+                            $contentItem->hasBookmarks = false;
+                        else
+                        {
+                            $boomark = $this->adapter->getBookmarks($contentId, Adapter::BMGET_ALL);
+                            if ($bookmark === false)
+                                $contentItem->hasBookmarks = false;
+                            else
+                                $contentitem->hasBookmarks = true;
+                        }
                     }
                     catch (AdapterException $e)
                     {
@@ -1003,6 +1023,130 @@ class DaisyOnlineService
 
         $label = new label($text, $audio, $lang, $dir);
         return $label;
+    }
+
+    private function createMetaData($metadataArray)
+    {   
+        $title = null;
+        $identifier = null;
+        $publisher = null;
+        $format = null;
+        $date = null;
+        $source = null;
+        $type = null;
+        $subject = null;
+        $rights = null;
+        $relation = null;
+        $language = null;
+        $description = null;
+        $creator = null;
+        $coverage = null;
+        $contributor = null;
+        $narrator = null;
+        $size = null;
+        $meta = null;
+
+
+        // title [mandatory]
+        if (array_key_exists('title', $metadataArray) === false)
+            $this->logger->error("Required field 'title' is missing in metadata");
+        else
+            $title = $metadataArray['title'];
+
+        // indentifier [mandatory]
+        if (array_key_exists('identifier', $metadataArray) === false)
+            $this->logger->error("Required field identifier is missing in metadata");
+        else
+            $identifier = $metadataArray['identifier'];
+
+        // format [mandatory]
+        if (array_key_exists('format', $metadataArray) === false)
+            $this->logger->error("Required field 'format' is missing in metadata");
+        else
+            $format = $metadataArray['format'];
+
+        // size [mandatory]
+        if (array_key_exists('size', $metadataArray) === false)
+            $this->logger->error("Required field 'size' is missing in metadata");
+        else
+            $size = $metadataArray['size'];
+
+        // publisher [optional]
+        if (array_key_exists('publisher', $metadataArray))
+            $publisher = $metadataArray['publisher'];
+        
+        // date [optional]
+        if (array_key_exists('date', $metadataArray))
+            $date = $metadataArray['date'];
+
+        // source [optional]
+        if (array_key_exists('source', $metadataArray))
+            $source = $metadataArray['source'];
+
+        // type [optional]
+        if (array_key_exists('type', $metadataArray))
+            $type = $metadataArray['type'];
+
+        // subject [optional]
+        if (array_key_exists('subject', $metadataArray))
+            $subject = $metadataArray['subject'];
+
+        // rights [optional]
+        if (array_key_exists('rights', $metadataArray))
+            $rights = $metadataArray['rights'];
+
+        // relation [optional]
+        if (array_key_exists('relation', $metadataArray))
+            $relation = $metadataArray['relation'];
+
+        // language [optional]
+        if (array_key_exists('language', $metadataArray))
+            $language = $metadataArray['language'];
+
+        // description [optional]
+        if (array_key_exists('description', $metadataArray))
+            $description = $metadataArray['description'];
+
+        // creator [optional]
+        if (array_key_exists('creator', $metadataArray))
+            $creator = $metadataArray['creator'];
+
+        // coverage [optional]
+        if (array_key_exists('coverage', $metadataArray))
+            $coverage = $metadataArray['coverage'];
+
+        // contributor [optional]
+        if (array_key_exists('contributor', $metadataArray))
+            $contributor = $metadataArray['contributor'];
+
+        // narrator [optional]
+        if (array_key_exists('narrator', $metadataArray))
+            $narrator = $metadataArray['narrator'];
+
+        // meta [optional]
+        if (array_key_exists('meta', $metadataArray))
+            $meta = $metadataArray['meta'];
+        
+        $metadata = new metadata(
+            $title,
+            $identifier,
+            $publisher,
+            $format,
+            $date,
+            $source,
+            $type,
+            $subject,
+            $rights,
+            $relation,
+            $language,
+            $description,
+            $creator,
+            $coverage,
+            $contributor,
+            $narrator,
+            $size,
+            $meta);
+        return $metadata;
     }
 
     private function createAudio($audioArray)

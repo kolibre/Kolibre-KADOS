@@ -174,6 +174,7 @@ class DaisyOnlineServiceTest extends PHPUnit_Framework_TestCase
     /**
      * @group daisyonlineservice
      * @group operation
+     * @group getContentList
      */
     public function testGetContentList()
     {

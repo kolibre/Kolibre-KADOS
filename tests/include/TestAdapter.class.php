@@ -131,7 +131,7 @@ class TestAdapter extends Adapter
     public function contentAccessMethod($contentId)
     {
         // TODO: implement test cases
-        return ACCESS_STREAM_AND_DOWNLOAD_AUTOMATIC_ALLOWED;
+        return Adapter::ACCESS_STREAM_AND_DOWNLOAD_AUTOMATIC_ALLOWED;
     }
 
     public function contentExists($contentId)
@@ -188,24 +188,26 @@ class TestAdapter extends Adapter
         if ($contentId == 'valid-content-metadata')
         {
             $metadata = array();
+            $metadata['title'] = 'title';
+            $metadata['identifier'] = 'identifier';
+            $metadata['publisher'] = 'publisher';
+            $metadata['format'] = 'format';
+            $metadata['date'] = 'date';
+            $metadata['source'] = 'source';
+            $metadata['type'] = 'type';
+            $metadata['subject'] = 'subject';
+            $metadata['rights'] = 'rights';
+            $metadata['relation'] = 'relation';
+            $metadata['language'] = 'language';
+            $metadata['description'] = 'description';
+            $metadata['creator'] = 'creator';
+            $metadata['coverage'] = 'coverage';
+            $metadata['contributor'] = 'contributor';
+            $metadata['narrator'] = 'narrator';
             $metadata['size'] = 1;
-            $metadata['dc:title'] = 'dc:title';
-            $metadata['dc:identifier'] = 'dc:identifier';
-            $metadata['dc:publisher'] = 'dc:publisher';
-            $metadata['dc:format'] = 'dc:format';
-            $metadata['dc:date'] = 'dc:date';
-            $metadata['dc:source'] = 'dc:source';
-            $metadata['dc:type'] = 'dc:type';
-            $metadata['dc:subject'] = 'dc:subject';
-            $metadata['dc:rights'] = 'dc:rights';
-            $metadata['dc:relation'] = 'dc:relation';
-            $metadata['dc:language'] = 'dc:language';
-            $metadata['dc:description'] = 'dc:description';
-            $metadata['dc:creator'] = 'dc:creator';
-            $metadata['dc:coverage'] = 'dc:coverage';
-            $metadata['dc:contributor'] = 'dc:contributor';
-            $metadata['pdtb2:specVersion'] = 'PDTB2';
+            $metadata['meta'] = 'meta';
             return $metadata;
+
         }
 
         return array();

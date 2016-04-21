@@ -802,6 +802,18 @@ class DaisyOnlineService
                 $this->logger->warn($msg);
             }
         }
+        $this->serviceAttributes['accessConfig'] = 'STREAM_AND_DOWNLOAD';
+        if (array_key_exists('accessConfig', $settings))
+        {
+            $allowedValues = array('STREAM_ONLY', 'DOWNLOAD_ONLY', 'STREAM_AND_DOWNLOAD', 'STREAM_AND_RESTRICTED_DOWNLOAD', 'RESTRICTED_DOWNLOAD_ONLY');
+            if (in_array($allowedValues, $settings['accessConfig']))
+                $this->serviceAttributes['accessConfig'] = $settings['accessConfig'];
+            else
+            {
+                $msg = "No valid access config found, defaulting to STREAM_AND_DOWNLOAD";
+                $this->logger->warn($msg);
+            }
+        }
         $this->serviceAttributes['supportedUplinkAudioCodecs'] = array();
         if (array_key_exists('supportedUplinkAudioCodecs', $settings))
         {

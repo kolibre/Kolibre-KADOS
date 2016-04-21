@@ -27,14 +27,23 @@ class getBookmarks extends AbstractType {
      */
     public $contentID;
 
+    /**
+     * @var string with the following allowed values
+     *      LASTMARK
+     *      HILITE
+     *      BOOKMARK
+     *      ALL
+     */
+    public $action;
 
     /******************** public functions ********************/
 
     /**
      * constructor for class getBookmarks
      */
-    function __construct($_contentID = NULL) {
+    function __construct($_contentID = NULL, $_action = NULL) {
         if (is_string($_contentID)) $this->setContentID($_contentID);
+        if (is_string($_action)) $this->setAction($_action);
     }
 
 
@@ -61,6 +70,27 @@ class getBookmarks extends AbstractType {
         $this->contentID = NULL;
     }
 
+    /**
+     * getter for action
+     */
+    function getAction() {
+        return $this->action;
+    }
+
+    /**
+     * setter for action
+     */
+    function setAction($_action) {
+        $this->action = $_action;
+    }
+
+    /**
+     * resetter for action
+     */
+    function resetAction() {
+        $this->action = NULL;
+    }
+
 
     /******************** validator methods ********************/
 
@@ -70,6 +100,11 @@ class getBookmarks extends AbstractType {
     function validate() {
         // contentID must occur exactly once
         if ($this->isNoneEmptyString($this->contentID, 'contentID') === false)
+            return false;
+
+        // action must occur exactly once
+        $allowedValues = array('LASTMARK', 'HILITE', 'BOOKMARK', 'ALL');
+        if ($this->isString($this->action, 'action', $allowedValues) === false)
             return false;
 
         return true;

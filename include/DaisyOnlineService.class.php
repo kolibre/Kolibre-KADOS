@@ -325,9 +325,11 @@ class DaisyOnlineService
         $accessConfig = $this->serviceAttributes['accessConfig'];
 
         // set announcementsPullFrequency
+        // TODO: make this configurable in service.ini
         $announcementsPullFrequency = 720;
 
         // set progressStateOperationAllowed
+        // TODO: make this configurable in service.ini
         $progressStateOperationAllowed = false;
 
         $serviceAttributes = new serviceAttributes(

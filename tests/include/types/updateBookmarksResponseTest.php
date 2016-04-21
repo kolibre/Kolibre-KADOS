@@ -33,11 +33,11 @@ class updateBookmarksResponseTest extends PHPUnit_Framework_TestCase
     {
         $instance = new updateBookmarksResponse();
         $this->assertFalse($instance->validate());
-        $this->assertContains('updateBookmarksResponse.updateBookmarkResult', $instance->getError());
-        $instance->updateBookmarkResult = 'updateBookmarkResult';
+        $this->assertContains('updateBookmarksResponse.updateBookmarksResult', $instance->getError());
+        $instance->updateBookmarksResult = 'updateBookmarksResult';
         $this->assertFalse($instance->validate());
-        $this->assertContains('updateBookmarksResponse.updateBookmarkResult', $instance->getError());
-        $instance->updateBookmarkResult = true;
+        $this->assertContains('updateBookmarksResponse.updateBookmarksResult', $instance->getError());
+        $instance->updateBookmarksResult = true;
         $this->assertTrue($instance->validate());
     }
 }

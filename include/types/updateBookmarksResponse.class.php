@@ -23,42 +23,42 @@ require_once('AbstractType.class.php');
 class updateBookmarksResponse extends AbstractType {
 
     /**
-     * @var object of something
+     * @var boolean
      */
-    public $updateBookmarkResult;
+    public $updateBookmarksResult;
 
 
     /******************** public functions ********************/
 
     /**
-     * constructor for class updateBookmarkResponse
+     * constructor for class updateBookmarksResponse
      */
-    function __construct($_updateBookmarkResult = NULL) {
-        if (is_bool($_updateBookmarkResult)) $this->setUpdateBookmarkResult($_updateBookmarkResult);
+    function __construct($_updateBookmarksResult = NULL) {
+        if (is_bool($_updateBookmarksResult)) $this->setUpdateBookmarkResult($_updateBookmarksResult);
     }
 
 
     /******************** class get set methods ********************/
 
     /**
-     * getter for updateBookmarkResult
+     * getter for updateBookmarksResult
      */
     function getUpdateBookmarkResult() {
-        return $this->updateBookmarkResult;
+        return $this->updateBookmarksResult;
     }
 
     /**
-     * setter for updateBookmarkResult
+     * setter for updateBookmarksResult
      */
-    function setUpdateBookmarkResult($_updateBookmarkResult) {
-        $this->updateBookmarkResult = $_updateBookmarkResult;
+    function setUpdateBookmarkResult($_updateBookmarksResult) {
+        $this->updateBookmarksResult = $_updateBookmarksResult;
     }
 
     /**
-     * resetter for updateBookmarkResult
+     * resetter for updateBookmarksResult
      */
     function resetUpdateBookmarkResult() {
-        $this->updateBookmarkResult = NULL;
+        $this->updateBookmarksResult = NULL;
     }
 
 
@@ -66,11 +66,11 @@ class updateBookmarksResponse extends AbstractType {
 
 
     /**
-     * validator for class updateBookmarkResponse
+     * validator for class updateBookmarksResponse
      */
     function validate() {
-        // updateBookmarkResult must occur exactly once
-        if ($this->isBoolean($this->updateBookmarkResult, 'updateBookmarkResult') === false)
+        // updateBookmarksResult must occur exactly once
+        if ($this->isBoolean($this->updateBookmarksResult, 'updateBookmarksResult') === false)
             return false;
 
         return true;

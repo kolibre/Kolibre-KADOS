@@ -44,7 +44,7 @@ class logOn extends AbstractType {
     /**
      * constructor for class logOn
      */
-    function __construct($_username = NULL, $_password = NULL, $_readingSystemAttributes) {
+    function __construct($_username = NULL, $_password = NULL, $_readingSystemAttributes = NULL) {
         if (is_string($_username)) $this->setUsername($_username);
         if (is_string($_password)) $this->setPassword($_password);
         if (is_a($_readingSystemAttributes, "readingSystemAttributes")) $this->setReadingSystemAttributes($_readingSystemAttributes);

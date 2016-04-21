@@ -32,7 +32,7 @@ class TestAdapter extends Adapter
         if ($this->sessionStarted === false)
         {
             $this->sessionStarted = true;
-            return false;
+            return true;
         }
 
         return true;

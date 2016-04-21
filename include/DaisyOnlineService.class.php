@@ -248,15 +248,9 @@ class DaisyOnlineService
         {
             $msg = "request is not valid " . $input->getError();
             $this->logger->warn($msg);
-            throw new SoapFault('Server', 'Request is not valid', '', '', 'logOn_requestIsNotValid');
+            throw new SoapFault('Client', $input->getError(), '', '', 'logOn_invalidParameterFault');
         }
 
-        // start backend session
-        if ($this->adapter->startSession() === false)
-        {
-            $this->logger->warn("Backend session not active");
-                throw new SoapFault('Server', 'Backend session not active', '', '', 'logOn_BackendSessionNotActive');
-        }
         $username = $input->getUsername();
         $password = $input->getPassword();
         $readingSystemAttributes = $input->getReadingSystemAttributes();
@@ -264,7 +258,7 @@ class DaisyOnlineService
         try
         {
             if ($this->adapter->authenticate($username, $password) === false)
-                throw new SoapFault('Server', 'Invalid username or password', '', '', 'logOn_InvalidUsernameOrPassword');
+                throw new SoapFault('Server', 'Invalid username or password', '', '', 'logOn_unauthorizedFault');
         }
         catch (AdapterException $e)
         {
@@ -272,15 +266,14 @@ class DaisyOnlineService
             throw new SoapFault('Server', 'Internal Server Error', '', '', 'logOn_internalServerErrorFault');
         }
 
-        // store user information
-        $this->sessionUsername = $username;
-        $this->sessionUserLoggedOn = true;
-        
+        // start backend session
+        if ($this->adapter->startSession() === false)
+        {
+            $this->logger->warn("Backend session not active");
+                throw new SoapFault('Server', 'Backend session not active', '', '', 'logOn_internalServerErrorFault');
+        }
 
-        $msg = "User '$username' logged on";
-        $this->logger->info($msg);
-
-        // Building serviceAttributesResponse
+        // build logOnResponse, i.e serviceAttributes
         try
         {
             // set serviceProvider
@@ -306,7 +299,7 @@ class DaisyOnlineService
         catch (AdapterException $e)
         {
             $this->logger->fatal($e->getMessage());
-            throw new SoapFault('Server', 'Internal Server Error', '', '', 'getServiceAttributes_internalServerErrorFault');
+            throw new SoapFault('Server', 'Internal Server Error', '', '', 'logOn_internalServerErrorFault');
         }
 
         // set supportsServerSideBack
@@ -328,14 +321,13 @@ class DaisyOnlineService
         foreach ($this->serviceAttributes['supportedOptionalOperations'] as $operation)
             $supportedOptionalOperations->addOperation($operation);
 
-
         // set accessConfig
-        //$accessConfig = $this->serviceAttributes['accessConfig'];
-        $accessConfig = "STREAM_AND_DOWNLOAD";
-        //set announcementsPullFrequency
+        $accessConfig = $this->serviceAttributes['accessConfig'];
+
+        // set announcementsPullFrequency
         $announcementsPullFrequency = 720;
 
-        //set progressStateOperationAllowed
+        // set progressStateOperationAllowed
         $progressStateOperationAllowed = false;
 
         $serviceAttributes = new serviceAttributes(
@@ -350,19 +342,26 @@ class DaisyOnlineService
             $announcementsPullFrequency,
             $progressStateOperationAllowed);
 
-        
-        if ($serviceAttributes->validate() === false)
+        $output = new logOnResponse($serviceAttributes);
+
+        if ($output->validate() === false)
         {
             $msg = "failed to build response " . $output->getError();
             $this->logger->error($msg);
-            $faultString = 'serviceAttributes could not be built';
-            throw new SoapFault('Server', $faultString,'', '', 'getServiceAttributes_internalServerErrorFault');
+            $faultString = 'logOnResponse could not be built';
+            throw new SoapFault('Server', $faultString,'', '', 'logOn_internalServerErrorFault');
         }
 
-        // start new session
+        // store user information and reading system attributes
+        $this->sessionUsername = $username;
+        $this->sessionUserLoggedOn = true;
         $this->sessionEstablished = true;
-        return new logOnResponse($serviceAttributes);
-        
+        $this->readingSystemAttributes = $input->getReadingSystemAttributes();
+
+        $msg = "User '$username' logged on and establised a session";
+        $this->logger->info($msg);
+
+        return $output;
     }
 
     /**

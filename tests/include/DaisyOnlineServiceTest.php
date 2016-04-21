@@ -101,11 +101,6 @@ class DaisyOnlineServiceTest extends PHPUnit_Framework_TestCase
      */
     public function testLogOn()
     {
-        // request is not valid
-        //$input = new logOn();
-        //$output = self::$instance->logOn($input);
-        //$this->assertFalse($output->logOnResult);
-
         // build readingSystemAttributes
         $accessConfig = "STREAM_ONLY";
         $supportsMultipleSelections = false;
@@ -147,11 +142,11 @@ class DaisyOnlineServiceTest extends PHPUnit_Framework_TestCase
 
         // adapter throws exception on authenticate
         $input = new logOn('exception', 'exception', $readingSystemAttributes);
-        $this->assertTrue($this->callOperation('logOn', $input, 'BackendSessionNotActive'));
+        $this->assertTrue($this->callOperation('logOn', $input, 'internalServerErrorFault'));
 
         // adapter returns false on authenticate
         $input = new logOn('invalid', 'invalid', $readingSystemAttributes);
-        $this->assertTrue($this->callOperation('logOn', $input, 'InvalidUsernameOrPassword'));
+        $this->assertTrue($this->callOperation('logOn', $input, 'unauthorizedFault'));
 
         // adapter returns true on authenticate
         $input = new logOn('valid', 'valid', $readingSystemAttributes);

@@ -1,4 +1,4 @@
-    <?php
+<?php
 
 /*
  * Copyright (C) 2013 Kolibre
@@ -923,7 +923,6 @@ class DaisyOnlineService
         $this->sessionCurrentOperation = $operation;
         array_push($this->sessionInvokedOperations, $operation);
 
-        // when logOn is invoked, initialization sequence must be completed
         if ($operation == 'logOn')
         {
             // new session must be establish every time logOn is invoked
@@ -931,7 +930,6 @@ class DaisyOnlineService
             return;
         }
 
-        // 4.2.1 logOff operation may be invoked anywhere within the initialization sequence
         if ($operation == 'logOff')
         {
             $this->sessionDestroy();
@@ -961,8 +959,6 @@ class DaisyOnlineService
             $faultString = 'No user has logged on yet, try initializing session again';
             throw new SoapFault ('Client', $faultString, '', '', $operation.'_noActiveSessionFault');
         }
-
-
 
         // if session has been established
         if ($this->sessionEstablished === true)

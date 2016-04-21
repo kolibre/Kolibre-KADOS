@@ -766,20 +766,6 @@ class DaisyOnlineService
             $this->serviceAttributes['serviceProvider'] = $settings['serviceProvider'];
         if (array_key_exists('service', $settings))
             $this->serviceAttributes['service'] = $settings['service'];
-        $this->serviceAttributes['supportedContentSelectionMethods'] = array();
-        if (array_key_exists('supportedContentSelectionMethods', $settings))
-        {
-            if (in_array('OUT_OF_BAND', $settings['supportedContentSelectionMethods']))
-                array_push($this->serviceAttributes['supportedContentSelectionMethods'], 'OUT_OF_BAND');
-            if (in_array('BROWSE', $settings['supportedContentSelectionMethods']))
-                array_push($this->serviceAttributes['supportedContentSelectionMethods'], 'BROWSE');
-        }
-        if (sizeof($this->serviceAttributes['supportedContentSelectionMethods']) == 0)
-        {
-            $msg = 'No valid content selection method found in settings, using default OUT_OF_BAND';
-            $this->logger->error($msg);
-            array_push($this->serviceAttributes['supportedContentSelectionMethods'], 'OUT_OF_BAND');
-        }
         $this->serviceAttributes['supportedOptionalOperations'] = array();
         if (array_key_exists('supportedOptionalOperations', $settings))
         {

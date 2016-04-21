@@ -719,15 +719,15 @@ class DaisyOnlineService
     }
 
     /**
-     * Service function setBookmarks
-     * @param object of setBookmarks $input
+     * Service function updateBookmarks
+     * @param object of updateBookmarks $input
      * @return object of setBookmarksResponse
      */
-    public function setBookmarks($input)
+    public function updateBookmarks($input)
     {
         $this->sessionHandle(__FUNCTION__);
         if (!in_array('SET_BOOKMARKS', $this->serviceAttributes['supportedOptionalOperations']))
-            throw new SoapFault ('Client', 'setBookmarks not supported', '', '', 'setBookmarks_operationNotSupportedFault');
+            throw new SoapFault ('Client', 'updateBookmarks not supported', '', '', 'updateBookmarks_operationNotSupportedFault');
     }
 
     /**
@@ -744,6 +744,18 @@ class DaisyOnlineService
     }
 
     /**
+     * Service function addContentToBookshelf
+     * @param object of addContentToBookshelf $input
+     * @return object of addContentToBookshelfResponse
+     */
+    public function addContentToBookshelf($input)
+    {
+        $this->sessionHandle(__FUNCTION__);
+        throw new SoapFault ('Client', 'addContentToBookshelf not supported', '', '', 'addContentToBookshelf_operationNotSupportedFault');
+
+    }
+
+    /**
      * Service function getQuestions
      * @param object of getQuestions $input
      * @return object of getQuestionsResponse
@@ -756,6 +768,18 @@ class DaisyOnlineService
     }
 
     /**
+     * Service function getUserCredentials
+     * @param object of getUserCredentials $input
+     * @return object of getUserCredentialsResponse
+     */
+    public function getUserCredentials($input)
+    {
+        $this->sessionHandle(__FUNCTION__);
+        throw new SoapFault ('Client', 'getUserCredentials not supported', '', '', 'getUserCredentials_operationNotSupportedFault');
+
+    }
+
+    /**
      * Service function getKeyExchangeObject
      * @param object of getKeyExchangeObject $input
      * @return object of getKeyExchangeObjectResponse
@@ -765,6 +789,42 @@ class DaisyOnlineService
         $this->sessionHandle(__FUNCTION__);
         if (!in_array('PDTB2_KEY_PROVISION', $this->serviceAttributes['supportedOptionalOperations']))
             throw new SoapFault ('Client', 'getKeyExchangeObject not supported', '', '', 'getKeyExchangeObject_operationNotSupportedFault');
+    }
+
+    /**
+     * Service function getTermsOfService
+     * @param object of getTermsOfService $input
+     * @return object of getTermsOfServiceResponse
+     */
+    public function getTermsOfService($input)
+    {
+        $this->sessionHandle(__FUNCTION__);
+        throw new SoapFault ('Client', 'getTermsOfService not supported', '', '', 'getTermsOfService_operationNotSupportedFault');
+
+    }
+
+    /**
+     * Service function acceptTermsOfService
+     * @param object of acceptTermsOfService $input
+     * @return object of acceptTermsOfServiceResponse
+     */
+    public function acceptTermsOfService($input)
+    {
+        $this->sessionHandle(__FUNCTION__);
+        throw new SoapFault ('Client', 'acceptTermsOfService not supported', '', '', 'acceptTermsOfService_operationNotSupportedFault');
+
+    }
+
+    /**
+     * Service function setProgressState
+     * @param object of setProgressState $input
+     * @return object of setProgressStateResponse
+     */
+    public function setProgressState($input)
+    {
+        $this->sessionHandle(__FUNCTION__);
+        throw new SoapFault ('Client', 'setProgressState not supported', '', '', 'setProgressState_operationNotSupportedFault');
+
     }
 
     /**

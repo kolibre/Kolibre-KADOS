@@ -121,6 +121,10 @@ abstract class Adapter
      * Enum for retrieving a category label
      */
     const LABEL_CATEGORY = 8;
+    /**
+     * Enum for retrieving a sub catergory label
+     */
+    const LABEL_SUBCATEGORY = 9;
 
     /**
      * Enum that content can ONLY be streamed.
@@ -355,7 +359,7 @@ abstract class Adapter
      */
     public function contentAccessDate($contentId)
     {
-        return array("first" => "", "last" => "");
+        return false;
     }
 
     /**

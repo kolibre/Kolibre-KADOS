@@ -255,9 +255,33 @@ class TestAdapter extends Adapter
             $resource['size'] = 1;
             $resource['localURI'] = 'localURI';
             $resource['lastModifiedDate'] = '1970-01-01T00:00:00+00:00';
+            $resource['serverSideHash'] = 'md5';
             array_push($resources, $resource);
             array_push($resources, $resource);
             array_push($resources, $resource);
+            return $resources;
+        }
+
+        if ($contentId == 'valid-content-resources-with-package')
+        {
+            $resources = array();
+            $resource = array();
+            $resource['uri'] = 'uri';
+            $resource['mimeType'] = 'mimeType';
+            $resource['size'] = 1;
+            $resource['localURI'] = 'localURI';
+            $resource['lastModifiedDate'] = '1970-01-01T00:00:00+00:00';
+            $resource['serverSideHash'] = 'md5';
+            array_push($resources, $resource);
+            array_push($resources, $resource);
+            array_push($resources, $resource);
+            $package = array();
+            $package['uri'] = 'uri';
+            $package['mimeType'] = 'mimeType';
+            $package['size'] = 1;
+            $package['lastModifiedDate'] = '1970-01-01T00:00:00+00:00';
+            $package['resourceRef'] = array('localURI');
+            array_push($resources, $package);
             return $resources;
         }
 

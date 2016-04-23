@@ -588,21 +588,26 @@ class DaisyOnlineService
 
         try
         {
-            // set lastModifiedDate [optional]
+            // set lastModifiedDate
             $lastModifiedDate = $this->adapter->contentLastModifiedDate($contentId);
             if (is_string($lastModifiedDate)) $resources->setLastModifiedDate($lastModifiedDate);
 
             // build resource
             $contentResources = $this->adapter->contentResources($contentId);
             if (empty($contentResources))
-            {   
+            {
                 $msg = "User '$this->sessionUsername' requested resources for non-issued content '$contentId'";
                 $this->logger->warn($msg);
                 $faultString = "content '$contentId' is not issued";
                 throw new SoapFault('Client', $faultString,'', '', 'getContentResources_invalidOperationFault');
             }
             foreach ($contentResources as $resource)
-                $resources->addResource($this->createResource($resource));
+            {
+                if (array_key_exists('resourceRef', $resource) === true)
+                    $resources->addPackage($this->createPackage($resource));
+                else
+                    $resources->addResource($this->createResource($resource));
+            }
 
         }
         catch (AdapterException $e)
@@ -1252,6 +1257,7 @@ class DaisyOnlineService
         $size = null;
         $localURI = null;
         $lastModifiedDate = null;
+        $serverSideHash = null;
 
         // uri [mandatory]
         if (array_key_exists('uri', $resourceArray) === false)
@@ -1277,12 +1283,69 @@ class DaisyOnlineService
         else
             $localURI = $resourceArray['localURI'];
 
-        // lastModifiedDate [optional]
-        if (array_key_exists('lastModifiedDate', $resourceArray))
+        // lastModifiedDate [mandatory]
+        if (array_key_exists('lastModifiedDate', $resourceArray) === false)
+            $this->logger->error("Required field 'lastModifiedDate' is missing in resource");
+        else
             $lastModifiedDate = $resourceArray['lastModifiedDate'];
 
-        $resource = new resource($uri, $mimeType, $size, $localURI, $lastModifiedDate);
+        // serverSideHash [optional]
+        if (array_key_exists('serverSideHash', $resourceArray) === true)
+            $serverSideHash = $resourceArray['serverSideHash'];
+
+
+        $resource = new resource($uri, $mimeType, $size, $localURI, $lastModifiedDate, $serverSideHash);
         return $resource;
+    }
+
+    private function createPackage($resourceArray)
+    {
+        $resourceRef = array();
+        $uri = null;
+        $mimeType = null;
+        $size = null;
+        $lastModifiedDate = null;
+
+        // resourceRef [mandatory]
+        if (array_key_exists('resourceRef', $resourceArray) === false)
+            $this->logger->error("Required field 'resourceRef' is missing in resource");
+        else
+        {
+            if (is_array($resourceArray['resourceRef']) === false)
+                $this->logger->error("Field 'resourceRef' is not an array");
+            else
+            {
+                foreach ($resourceArray['resourceRef'] as $localURI)
+                    array_push($resourceRef, new resourceRef($localURI));
+            }
+        }
+
+        // uri [mandatory]
+        if (array_key_exists('uri', $resourceArray) === false)
+            $this->logger->error("Required field 'uri' is missing in resource");
+        else
+            $uri = $resourceArray['uri'];
+
+        // mimeType [mandatory]
+        if (array_key_exists('mimeType', $resourceArray) === false)
+            $this->logger->error("Required field 'mimeType' is missing in resource");
+        else
+            $mimeType = $resourceArray['mimeType'];
+
+        // size [mandatory]
+        if (array_key_exists('size', $resourceArray) === false)
+            $this->logger->error("Required field 'size' is missing in resource");
+        else
+            $size = (int)$resourceArray['size'];
+
+        // lastModifiedDate [mandatory]
+        if (array_key_exists('lastModifiedDate', $resourceArray) === false)
+            $this->logger->error("Required field 'lastModifiedDate' is missing in resource");
+        else
+            $lastModifiedDate = $resourceArray['lastModifiedDate'];
+
+        $package = new package($resourceRef, $uri, $mimeType, $size, $lastModifiedDate);
+        return $package;
     }
 
     /**

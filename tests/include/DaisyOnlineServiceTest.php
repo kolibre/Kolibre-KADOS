@@ -257,8 +257,6 @@ class DaisyOnlineServiceTest extends PHPUnit_Framework_TestCase
         $this->assertCount(3, $output->contentList->contentItem);
     }
 
-    
-
     /**
      * @group daisyonlineservice
      * @group operation
@@ -305,7 +303,6 @@ class DaisyOnlineServiceTest extends PHPUnit_Framework_TestCase
         // resources contains required elements
         $input = new getContentResources('valid-content-resources',"STREAM");
         $output = self::$instance->getContentResources($input);
-        //$this->assertEquals($output->resources->returnBy, '1970-01-01T00:00:00');
         $this->assertEquals($output->resources->lastModifiedDate, '1970-01-01T00:00:00+00:00');
         $this->assertCount(3, $output->resources->resource);
         foreach ($output->resources->resource as $resource)
@@ -315,6 +312,31 @@ class DaisyOnlineServiceTest extends PHPUnit_Framework_TestCase
             $this->assertEquals($resource->size, 1);
             $this->assertEquals($resource->localURI, 'localURI');
             $this->assertEquals($resource->lastModifiedDate, '1970-01-01T00:00:00+00:00');
+            $this->assertEquals($resource->serverSideHash, 'md5');
+        }
+        $this->assertNull($output->resources->package);
+
+        // resources contains required elements and package
+        $input = new getContentResources('valid-content-resources-with-package',"STREAM");
+        $output = self::$instance->getContentResources($input);
+        $this->assertEquals($output->resources->lastModifiedDate, '1970-01-01T00:00:00+00:00');
+        $this->assertCount(3, $output->resources->resource);
+        foreach ($output->resources->resource as $resource)
+        {
+            $this->assertEquals($resource->uri, 'uri');
+            $this->assertEquals($resource->mimeType, 'mimeType');
+            $this->assertEquals($resource->size, 1);
+            $this->assertEquals($resource->localURI, 'localURI');
+            $this->assertEquals($resource->lastModifiedDate, '1970-01-01T00:00:00+00:00');
+            $this->assertEquals($resource->serverSideHash, 'md5');
+        }
+        $this->assertCount(1, $output->resources->package);
+        foreach ($output->resources->package as $package)
+        {
+            $this->assertEquals($package->uri, 'uri');
+            $this->assertEquals($package->mimeType, 'mimeType');
+            $this->assertEquals($package->size, 1);
+            $this->assertEquals($package->lastModifiedDate, '1970-01-01T00:00:00+00:00');
         }
     }
 

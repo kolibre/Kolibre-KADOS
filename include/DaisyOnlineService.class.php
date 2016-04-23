@@ -484,33 +484,110 @@ class DaisyOnlineService
                     $contentItem->setId($contentId);
                     try
                     {
+                        // label [mandatory]
                         $label = $this->adapter->label($contentId, Adapter::LABEL_CONTENTITEM, $this->getClientLangCode());
                         if (is_array($label))
                             $contentItem->setLabel($this->createLabel($label));
                         else
                             $this->logger->warn("Content with id '$contentId' has no label");
 
-                        $lastModifiedDate = $this->adapter->contentLastModifiedDate($contentId);
-                        if (is_string($lastModifiedDate))
-                            $contentItem->setLastModifiedDate($lastModifiedDate);
+                        // sample [optional]
+                        $sampleId = $this->adapter->contentSample($contentId);
+                        if (is_string($sampleId))
+                            $contentItem->setSample(new sample($sampleId));
 
-                        $metadata = $this->adapter->contentMetadata('valid-content-metadata'); 
-                        if(is_array($metadata))
-                            $contentItem->setMetadata($this->createMetaData($metadata));
-                        else
-                            $this->logger->warn("Content with id '$contentId' has no metadata");
-
-                        $contentItem->accessPermission = $this->adapter->contentAccessMethod($contentId);
-                                               
-                        if (!in_array('SET_BOOKMARKS', $this->serviceAttributes['supportedOptionalOperations']))
-                            $contentItem->hasBookmarks = false;
-                        else
+                        // metadata [mandatory]
+                        $metadata = $this->adapter->contentMetadata($contentId);
+                        if (is_array($metadata) === false)
                         {
-                            $boomark = $this->adapter->getBookmarks($contentId, Adapter::BMGET_ALL);
-                            if ($bookmark === false)
-                                $contentItem->hasBookmarks = false;
+                            $this->logger->warn("Content with id '$contentId' has no metadata");
+                            throw new SoapFault('Server', 'Internal Server Error', '', '', 'getContentList_internalServerErrorFault');
+                        }
+                        $contentItem->setMetadata($this->createMetaData($contentId, $metadata));
+
+                        // categoryLabel [optional]
+                        $categoryLabel = $this->adapter->label($contentId, Adapter::LABEL_CATEGORY, $this->getClientLangCode());
+                        if (is_array($categoryLabel))
+                            $contentItem->setCategoryLabel($this->createLabel($categoryLabel));
+
+                        // subCategoryLabel [optional]
+                        $subCategoryLabel = $this->adapter->label($contentId, Adapter::LABEL_SUBCATEGORY, $this->getClientLangCode());
+                        if (is_array($subCategoryLabel))
+                            $contentItem->setSubCategoryLabel($this->createLabel($subCategoryLabel));
+
+                        // accessPermission [mandatory]
+                        $accessPermission = $this->adapter->contentAccessMethod($contentId);
+                        $contentItem->setAccessPermission($accessPermission);
+
+                        // lastmark [optional]
+                        if (in_array('SET_BOOKMARKS', $this->serviceAttributes['supportedOptionalOperations']))
+                        {
+                            $lastmark = $this->adapter->getBookmarks($contentId, Adapter::BMGET_LASTMARK);
+                            if (is_array($lastmark))
+                            {
+                                // TODO: implement me when getBookmarks operation is implemented
+                                $this->logger->warn("please implement me, lastmark not set");
+                            }
+                        }
+                        // multipleChoiceQuestion [optional]
+                        if (in_array('DYNAMIC_MENUS', $this->serviceAttributes['supportedOptionalOperations']))
+                        {
+                            // TODO: implement me when get
+                            $question = $this->adapter->menuContentQuestion($contentId);
+                            if (is_array($question))
+                            {
+                                // TODO: implement me when getQuestions operation is implemented
+                                $this->logger->warn("please implement me, multipleChoiceQuestion not set");
+                            }
+                        }
+
+                        // firstAccessDate and lastAccessDate [optional]
+                        $accessDates = $this->adapter->contentAccessDate($contentId);
+                        if (is_array($accessDates))
+                        {
+                            // first
+                            if (array_key_exists('first', $accessDates) === false)
+                                $this->logger->error("Required field 'first' is missing in access date");
                             else
-                                $contentitem->hasBookmarks = true;
+                            {
+                                if (is_string($accessDates['first']))
+                                    $contentItem->setFirstAccessedDate($accessDates['first']);
+                            }
+                            // last
+                            if (array_key_exists('last', $accessDates) === false)
+                                $this->logger->error("Required field 'last' is missing in access date");
+                            else
+                            {
+                                if (is_string($accessDates['last']))
+                                    $contentItem->setLastAccessedDate($accessDates['last']);
+                            }
+                        }
+                        // lastModifiedDate [mandatory]
+                        $lastModifiedDate = $this->adapter->contentLastModifiedDate($contentId);
+                        $contentItem->setLastModifiedDate($lastModifiedDate);
+
+                        // category [optional]
+                        $category = $this->adapter->contentCategory($contentId);
+                        if (is_string($category))
+                            $contentItem->setCategory($category);
+
+                        // subCategory [optional]
+                        $subCategory = $this->adapter->contentSubCategory($contentId);
+                        if (is_string($subCategory))
+                            $contentItem->setSubCategory($subCategory);
+
+                        // returnBy [optional]
+                        $returnDate = $this->adapter->contentReturnDate($contentId);
+                        if (is_string($returnDate))
+                            $contentItem->setReturnBy($returnDate);
+
+                        // hasBookmarks [mandatory] assume no bookmarks
+                        $contentItem->setHasBookmarks(false);
+                        if (in_array('SET_BOOKMARKS', $this->serviceAttributes['supportedOptionalOperations']))
+                        {
+                            $boomarks = $this->adapter->getBookmarks($contentId, Adapter::BMGET_ALL);
+                            if (is_array($bookmarks))
+                                $contentitem->setHasBookmarks(true);
                         }
                     }
                     catch (AdapterException $e)
@@ -1097,127 +1174,97 @@ class DaisyOnlineService
         return $label;
     }
 
-    private function createMetaData($metadataArray)
-    {   
-        $title = null;
-        $identifier = null;
-        $publisher = null;
-        $format = null;
-        $date = null;
-        $source = null;
-        $type = null;
-        $subject = null;
-        $rights = null;
-        $relation = null;
-        $language = null;
-        $description = null;
-        $creator = null;
-        $coverage = null;
-        $contributor = null;
-        $narrator = null;
-        $size = null;
-        $meta = null;
-
-
-        // title [mandatory]
-        if (array_key_exists('title', $metadataArray) === false)
-            $this->logger->error("Required field 'title' is missing in metadata");
-        else
-            $title = $metadataArray['title'];
-
-        // indentifier [mandatory]
-        if (array_key_exists('identifier', $metadataArray) === false)
-            $this->logger->error("Required field identifier is missing in metadata");
-        else
-            $identifier = $metadataArray['identifier'];
-
-        // format [mandatory]
-        if (array_key_exists('format', $metadataArray) === false)
-            $this->logger->error("Required field 'format' is missing in metadata");
-        else
-            $format = $metadataArray['format'];
-
-        // size [mandatory]
-        if (array_key_exists('size', $metadataArray) === false)
-            $this->logger->error("Required field 'size' is missing in metadata");
-        else
-            $size = $metadataArray['size'];
-
-        // publisher [optional]
-        if (array_key_exists('publisher', $metadataArray))
-            $publisher = $metadataArray['publisher'];
-        
-        // date [optional]
-        if (array_key_exists('date', $metadataArray))
-            $date = $metadataArray['date'];
-
-        // source [optional]
-        if (array_key_exists('source', $metadataArray))
-            $source = $metadataArray['source'];
-
-        // type [optional]
-        if (array_key_exists('type', $metadataArray))
-            $type = $metadataArray['type'];
-
-        // subject [optional]
-        if (array_key_exists('subject', $metadataArray))
-            $subject = $metadataArray['subject'];
-
-        // rights [optional]
-        if (array_key_exists('rights', $metadataArray))
-            $rights = $metadataArray['rights'];
-
-        // relation [optional]
-        if (array_key_exists('relation', $metadataArray))
-            $relation = $metadataArray['relation'];
-
-        // language [optional]
-        if (array_key_exists('language', $metadataArray))
-            $language = $metadataArray['language'];
-
-        // description [optional]
-        if (array_key_exists('description', $metadataArray))
-            $description = $metadataArray['description'];
-
-        // creator [optional]
-        if (array_key_exists('creator', $metadataArray))
-            $creator = $metadataArray['creator'];
-
-        // coverage [optional]
-        if (array_key_exists('coverage', $metadataArray))
-            $coverage = $metadataArray['coverage'];
-
-        // contributor [optional]
-        if (array_key_exists('contributor', $metadataArray))
-            $contributor = $metadataArray['contributor'];
-
-        // narrator [optional]
-        if (array_key_exists('narrator', $metadataArray))
-            $narrator = $metadataArray['narrator'];
-
-        // meta [optional]
-        if (array_key_exists('meta', $metadataArray))
-            $meta = $metadataArray['meta'];
-        
-        $metadata = new metadata(
-            $title,
-            $identifier,
-            $publisher,
-            $format,
-            $date,
-            $source,
-            $type,
-            $subject,
-            $rights,
-            $relation,
-            $language,
-            $description,
-            $creator,
-            $coverage,
-            $contributor,
-            $narrator,
-            $size,
-            $meta);
+    private function createMetaData($contentId, $metadataValues)
+    {
+        // build metadata        
+        $metadata = new metadata();
+        $metadata->setIdentifier($contentId);
+        foreach ($metadataValues as $key => $value)
+        {
+            switch ($key)
+            {
+            case 'size':
+                $metadata->setSize($value);
+                break;
+            case 'dc:title':
+                $metadata->setTitle($value);
+                break;
+            case 'dc:identifier':
+                // the identifier is not the identifier found in metadata
+                // 7.31 The value of the Dublin Core identifier element must match the Content Identifier of the Content item.
+                break;
+            case 'dc:publisher':
+                $metadata->setPublisher($value);
+                break;
+            case 'dc:format':
+                $metadata->setFormat($value);
+                break;
+            case 'dc:date':
+                $metadata->setDate($value);
+                break;
+            case 'dc:source':
+                $metadata->setSource($value);
+                break;
+            case 'dc:type':
+                if (is_array($value))
+                    foreach ($value as $subvalue) $metadata->addType($subvalue);
+                else
+                    $metadata->addType($value);
+                break;
+            case 'dc:subject':
+                if (is_array($value))
+                    foreach ($value as $subvalue) $metadata->addSubject($subvalue);
+                else
+                    $metadata->addSubject($value);
+                break;
+            case 'dc:rights':
+                if (is_array($value))
+                    foreach ($value as $subvalue) $metadata->addRights($subvalue);
+                else
+                    $metadata->addRights($value);
+                break;
+            case 'dc:relation':
+                if (is_array($value))
+                    foreach ($value as $subvalue) $metadata->addRelation($subvalue);
+                else
+                    $metadata->addRelation($value);
+                break;
+            case 'dc:language':
+                if (is_array($value))
+                    foreach ($value as $subvalue) $metadata->addLanguage($subvalue);
+                else
+                    $metadata->addLanguage($value);
+                break;
+            case 'dc:description':
+                if (is_array($value))
+                    foreach ($value as $subvalue) $metadata->addDescription($subvalue);
+                else
+                    $metadata->addDescription($value);
+                break;
+            case 'dc:creator':
+                if (is_array($value))
+                    foreach ($value as $subvalue) $metadata->addCreator($subvalue);
+                else
+                    $metadata->addCreator($value);
+                break;
+            case 'dc:coverage':
+                if (is_array($value))
+                    foreach ($value as $subvalue) $metadata->addCoverage($subvalue);
+                else
+                    $metadata->addCoverage($value);
+                break;
+            case 'dc:contributor':
+                if (is_array($value))
+                    foreach ($value as $subvalue) $metadata->addContributor($subvalue);
+                else
+                    $metadata->addContributor($value);
+                break;
+            default:
+                if ($key == 'pdtb2:specVersion')
+                    $metadata->addMeta(new meta($key, $value));
+                break;
+            }
+        }
         return $metadata;
     }
 

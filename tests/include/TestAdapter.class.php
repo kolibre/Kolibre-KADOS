@@ -177,7 +177,7 @@ class TestAdapter extends Adapter
         if ($contentId == 'exception-content-returndate')
             throw new AdapterException('Error in adapter');
 
-        return '1970-01-01T00:00:00';
+        return '1970-01-01T00:00:00+00:00';
     }
 
     public function contentMetadata($contentId)
@@ -185,25 +185,26 @@ class TestAdapter extends Adapter
         if ($contentId == 'exception-content-metadata')
             throw new AdapterException('Error in adapter');
 
-        if ($contentId == 'valid-content-metadata')
+        $validContentIds = array('valid-identifier-1', 'valid-identifier-2', 'valid-identifier-3', 'valid-content-metadata');
+        if (in_array($contentId, $validContentIds) === true)
         {
             $metadata = array();
-            $metadata['title'] = 'title';
-            $metadata['identifier'] = 'identifier';
-            $metadata['publisher'] = 'publisher';
-            $metadata['format'] = 'format';
-            $metadata['date'] = 'date';
-            $metadata['source'] = 'source';
-            $metadata['type'] = 'type';
-            $metadata['subject'] = 'subject';
-            $metadata['rights'] = 'rights';
-            $metadata['relation'] = 'relation';
-            $metadata['language'] = 'language';
-            $metadata['description'] = 'description';
-            $metadata['creator'] = 'creator';
-            $metadata['coverage'] = 'coverage';
-            $metadata['contributor'] = 'contributor';
-            $metadata['narrator'] = 'narrator';
+            $metadata['dc:title'] = 'title';
+            $metadata['dc:identifier'] = 'identifier';
+            $metadata['dc:publisher'] = 'publisher';
+            $metadata['dc:format'] = 'format';
+            $metadata['dc:date'] = 'date';
+            $metadata['dc:source'] = 'source';
+            $metadata['dc:type'] = 'type';
+            $metadata['dc:subject'] = 'subject';
+            $metadata['dc:rights'] = 'rights';
+            $metadata['dc:relation'] = 'relation';
+            $metadata['dc:language'] = 'language';
+            $metadata['dc:description'] = 'description';
+            $metadata['dc:creator'] = 'creator';
+            $metadata['dc:coverage'] = 'coverage';
+            $metadata['dc:contributor'] = 'contributor';
+            $metadata['dc:narrator'] = 'narrator';
             $metadata['size'] = 1;
             $metadata['meta'] = 'meta';
             return $metadata;

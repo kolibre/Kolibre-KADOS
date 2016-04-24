@@ -71,6 +71,12 @@ class TestAdapter extends Adapter
                 throw new AdapterException('Error in adapter');
             return $label;
             break;
+        case Adapter::LABEL_CATEGORY:
+            return $label;
+            break;
+        case Adapter::LABEL_SUBCATEGORY:
+            return $label;
+            break;
         default:
             return false;
         }
@@ -128,6 +134,11 @@ class TestAdapter extends Adapter
         return '1970-01-01T00:00:00+00:00';
     }
 
+    public function contentAccessDate($contentId)
+    {
+        return array('first' => '1970-01-01T00:00:00+00:00', 'last' => '1970-01-01T00:00:00+00:00');
+    }
+
     public function contentAccessMethod($contentId)
     {
         // TODO: implement test cases
@@ -170,6 +181,14 @@ class TestAdapter extends Adapter
             throw new AdapterException('Error in adapter');
 
         return 'category';
+    }
+
+    public function contentSubCategory($contentId)
+    {
+        if ($contentId == 'exception-content-category')
+            throw new AdapterException('Error in adapter');
+
+        return 'subCategory';
     }
 
     public function contentReturnDate($contentId)

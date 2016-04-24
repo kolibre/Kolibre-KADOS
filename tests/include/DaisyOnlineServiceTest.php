@@ -255,6 +255,38 @@ class DaisyOnlineServiceTest extends PHPUnit_Framework_TestCase
         $this->assertEquals($output->contentList->firstItem, 0);
         $this->assertEquals($output->contentList->lastItem, 2);
         $this->assertCount(3, $output->contentList->contentItem);
+        foreach ($output->contentList->contentItem as $contentItem)
+        {
+            $this->assertInstanceOf('label', $contentItem->label);
+            $this->assertEquals($contentItem->label->text, 'text');
+            $this->assertInstanceOf('audio', $contentItem->label->audio);
+            $this->assertEquals($contentItem->label->audio->uri, 'uri');
+            $this->assertEquals($contentItem->label->audio->rangeBegin, 0);
+            $this->assertEquals($contentItem->label->audio->rangeEnd, 1);
+            $this->assertEquals($contentItem->label->audio->size, 2);
+            $this->assertEquals($contentItem->label->lang, 'en');
+            $this->assertEquals($contentItem->label->dir, 'ltr');
+            $this->assertInstanceOf('sample', $contentItem->sample);
+            $this->assertEquals($contentItem->sample->id, 'sample');
+            $this->assertInstanceOf('metadata', $contentItem->metadata);
+            $this->assertEquals($contentItem->metadata->title, 'title');
+            $this->assertContains('valid-identifier', $contentItem->metadata->identifier);
+            $this->assertEquals($contentItem->metadata->format, 'format');
+            $this->assertEquals($contentItem->metadata->size, 1);
+            $this->assertInstanceOf('categoryLabel', $contentItem->categoryLabel);
+            $this->assertInstanceOf('subCategoryLabel', $contentItem->subCategoryLabel);
+            $this->assertEquals($contentItem->accessPermission, 'STREAM_AND_DOWNLOAD_AUTOMATIC_ALLOWED');
+            $this->assertNull($contentItem->lastmark);
+            $this->assertNull($contentItem->multipleChoiceQuestion);
+            $this->assertContains('valid-identifier', $contentItem->id);
+            $this->assertEquals($contentItem->firstAccessedDate, '1970-01-01T00:00:00+00:00');
+            $this->assertEquals($contentItem->lastAccessedDate, '1970-01-01T00:00:00+00:00');
+            $this->assertEquals($contentItem->lastModifiedDate, '1970-01-01T00:00:00+00:00');
+            $this->assertEquals($contentItem->category, 'category');
+            $this->assertEquals($contentItem->subCategory, 'subCategory');
+            $this->assertEquals($contentItem->returnBy, '1970-01-01T00:00:00+00:00');
+            $this->assertFalse($contentItem->hasBookmarks);
+        }
     }
 
     /**

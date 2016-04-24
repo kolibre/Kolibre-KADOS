@@ -508,12 +508,12 @@ class DaisyOnlineService
                         // categoryLabel [optional]
                         $categoryLabel = $this->adapter->label($contentId, Adapter::LABEL_CATEGORY, $this->getClientLangCode());
                         if (is_array($categoryLabel))
-                            $contentItem->setCategoryLabel($this->createLabel($categoryLabel));
+                            $contentItem->setCategoryLabel(new categoryLabel($this->createLabel($categoryLabel)));
 
                         // subCategoryLabel [optional]
                         $subCategoryLabel = $this->adapter->label($contentId, Adapter::LABEL_SUBCATEGORY, $this->getClientLangCode());
                         if (is_array($subCategoryLabel))
-                            $contentItem->setSubCategoryLabel($this->createLabel($subCategoryLabel));
+                            $contentItem->setSubCategoryLabel(new subCategoryLabel($this->createLabel($subCategoryLabel)));
 
                         // accessPermission [mandatory]
                         $accessPermission = $this->adapter->contentAccessMethod($contentId);

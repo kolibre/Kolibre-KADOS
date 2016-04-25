@@ -22,16 +22,65 @@ $includePath = dirname(realpath(__FILE__)) . '/../../../include/types';
 set_include_path(get_include_path() . PATH_SEPARATOR . $includePath);
 
 require_once('logOn.class.php');
+require_once('config.class.php');
+require_once('readingSystemAttributes.class.php');
 
 class logOnTest extends PHPUnit_Framework_TestCase
-{
+{    
+
+    protected $config;
+    protected $readingSystemAttributes;
+
+    public function setUp()
+    {
+        $accessConfig = "STREAM_ONLY";
+        $supportsMultipleSelections = false;
+        $supportsAdvancedDynamicMenus = false;
+        $preferredUILanguage = 'preferredUILanguage';
+        $bandwidth = null;
+        $supportedContentFormats = new supportedContentFormats();
+        $supportedContentProtectionFormats = new supportedContentProtectionFormats();
+        $keyRing = null;
+        $supportedMimeTypes = new supportedMimeTypes();
+        $supportedInputTypes = new supportedInputTypes();
+        $requiresAudioLabels = false;
+        $additionalTransferProtocols = null;
+        $this->config = new config(
+            $accessConfig,
+            $supportsMultipleSelections,
+            $supportsAdvancedDynamicMenus,
+            $preferredUILanguage,
+            $bandwidth,
+            $supportedContentFormats,
+            $supportedContentProtectionFormats,
+            $keyRing,
+            $supportedMimeTypes,
+            $supportedInputTypes,
+            $requiresAudioLabels,
+            $additionalTransferProtocols);
+
+        $manufacturer = 'manufacturer';
+        $model = 'model';
+        $serialNumber = null;
+        $version = 'version';
+        $config = $this->config;
+        $this->readingSystemAttributes = new readingSystemAttributes(
+            $manufacturer,
+            $model,
+            $serialNumber,
+            $version,
+            $config);
+        $this->assertTrue($this->readingSystemAttributes->validate());
+    }
+
     /**
      * @group logOn
      * @group validate
      */
     public function testUsername()
-    {
-        $instance = new logOn(null, 'password');
+    {   
+        $readingSystemAttributes = $this->readingSystemAttributes;
+        $instance = new logOn(NULL, 'password', $readingSystemAttributes);
         $this->assertFalse($instance->validate());
         $this->assertContains('logOn.username', $instance->getError());
         $instance->username = 1;
@@ -49,8 +98,9 @@ class logOnTest extends PHPUnit_Framework_TestCase
      * @group validate
      */
     public function testPassword()
-    {
-        $instance = new logOn('username');
+    {   
+        $readingSystemAttributes = $this->readingSystemAttributes;
+        $instance = new logOn('username',NULL, $readingSystemAttributes);
         $this->assertFalse($instance->validate());
         $this->assertContains('logOn.password', $instance->getError());
         $instance->password = 1;
@@ -60,6 +110,22 @@ class logOnTest extends PHPUnit_Framework_TestCase
         $this->assertFalse($instance->validate());
         $this->assertContains('logOn.password', $instance->getError());
         $instance->password = 'password';
+        $this->assertTrue($instance->validate());
+    }
+
+    public function testReadingSystemAttributes()
+    {   
+        $readingSystemAttributes = $this->readingSystemAttributes;
+        $instance = new logOn('username','password', NULL);
+        $this->assertFalse($instance->validate());
+        $this->assertContains('logOn.readingSystemAttributes', $instance->getError());
+        $instance->readingSystemAttributes = 1;
+        $this->assertFalse($instance->validate());
+        $this->assertContains('logOn.readingSystemAttributes', $instance->getError());
+        $instance->readingSystemAttributes = '';
+        $this->assertFalse($instance->validate());
+        $this->assertContains('logOn.readingSystemAttributes', $instance->getError());
+        $instance->readingSystemAttributes = $readingSystemAttributes;
         $this->assertTrue($instance->validate());
     }
 }

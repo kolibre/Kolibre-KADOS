@@ -19,63 +19,62 @@
  */
 
 require_once('AbstractType.class.php');
+require_once('credentials.class.php');
 
-require_once('contentMetadata.class.php');
-
-class getContentMetadataResponse extends AbstractType {
+class getUserCredentialsResponse extends AbstractType {
 
     /**
-     * @var (object)contentMetadata
+     * @var (object) credentials
      */
-    public $contentMetadata;
+    public $credentials;
 
 
     /******************** public functions ********************/
 
     /**
-     * constructor for class getContentMetadataResponse
+     * constructor for class getUserCredentialsResponse
      */
-    function __construct($_contentMetadata = NULL) {
-        if (is_a($_contentMetadata, "contentMetadata")) $this->setContentMetadata($_contentMetadata);
-
+    function __construct($_credentials = NULL) {
+        if (is_a($_credentials, 'credentials')) $this->setCredentials($_credentials);
     }
 
 
     /******************** class get set methods ********************/
 
     /**
-     * getter for contentMetadata
+     * getter for credentials
      */
-    function getContentMetadata() {
-        return $this->contentMetadata;
+    function getCredentials() {
+        return $this->credentials;
     }
 
     /**
-     * setter for contentMetadata
+     * setter for credentials
      */
-    function setContentMetadata($_contentMetadata) {
-        $this->contentMetadata = $_contentMetadata;
+    function setCredentials($_credentials) {
+        $this->credentials = $_credentials;
     }
 
     /**
-     * resetter for contentMetadata
+     * resetter for credentials
      */
-    function resetContentMetadata() {
-        $this->contentMetadata = NULL;
+    function resetCredentials() {
+        $this->credentials = NULL;
     }
 
 
     /******************** validator methods ********************/
 
+
     /**
-     * validator for class getContentMetadataResponse
+     * validator for class getUserCredentialsResponse
      */
     function validate() {
-        // contentMetadata must occur exactly once
-        if ($this->isInstanceOf($this->contentMetadata, 'contentMetadata') === false)
+        // credentials must occur exactly once
+        if ($this->isInstanceOf($this->credentials, 'credentials') === false)
             return false;
-        if ($this->contentMetadata->validate() === false) {
-            $this->error = __CLASS__ . '.' . $this->contentMetadata->getError();
+        if ($this->credentials->validate() === false) {
+            $this->error = __CLASS__ . '.' . $this->credentials->getError();
             return false;
         }
 

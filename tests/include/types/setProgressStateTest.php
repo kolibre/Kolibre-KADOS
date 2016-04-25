@@ -21,45 +21,45 @@
 $includePath = dirname(realpath(__FILE__)) . '/../../../include/types';
 set_include_path(get_include_path() . PATH_SEPARATOR . $includePath);
 
-require_once('getContentResources.class.php');
+require_once('setProgressState.class.php');
 
-class getContentResourcesTest extends PHPUnit_Framework_TestCase
+class setProgressStateTest extends PHPUnit_Framework_TestCase
 {
     /**
-     * @group getContentResources
+     * @group setProgressState
      * @group validate
      */
     public function testContentID()
     {
-        $instance = new getContentResources(NULL, "STREAM");
+        $instance = new setProgressState(null, 'START');
         $this->assertFalse($instance->validate());
-        $this->assertContains('getContentResources.contentID', $instance->getError());
+        $this->assertContains('setProgressState.contentID', $instance->getError());
         $instance->contentID = 1;
         $this->assertFalse($instance->validate());
-        $this->assertContains('getContentResources.contentID', $instance->getError());
+        $this->assertContains('setProgressState.contentID', $instance->getError());
         $instance->contentID = '';
         $this->assertFalse($instance->validate());
-        $this->assertContains('getContentResources.contentID', $instance->getError());
+        $this->assertContains('setProgressState.contentID', $instance->getError());
         $instance->contentID = 'contentID';
         $this->assertTrue($instance->validate());
     }
 
     /**
-     * @group getContentResources
+     * @group setProgressState
      * @group validate
      */
-    public function testAccessType()
+    public function testState()
     {
-        $instance = new getContentResources('contentID',NULL);
+        $instance = new setProgressState('contentID',NULL);
         $this->assertFalse($instance->validate());
-        $this->assertContains('getContentResources.accessType', $instance->getError());
-        $instance->accessType = 1;
+        $this->assertContains('setProgressState.state', $instance->getError());
+        $instance->state = 1;
         $this->assertFalse($instance->validate());
-        $this->assertContains('getContentResources.accessType', $instance->getError());
-        $instance->accessType = '';
+        $this->assertContains('setProgressState.state', $instance->getError());
+        $instance->state = '';
         $this->assertFalse($instance->validate());
-        $this->assertContains('getContentResources.accessType', $instance->getError());
-        $instance->accessType = 'STREAM';
+        $this->assertContains('setProgressState.state', $instance->getError());
+        $instance->state = 'PAUSE';
         $this->assertTrue($instance->validate());
     }
 }

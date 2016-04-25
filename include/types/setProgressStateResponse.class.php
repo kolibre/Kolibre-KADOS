@@ -20,56 +20,57 @@
 
 require_once('AbstractType.class.php');
 
-class setReadingSystemAttributesResponse extends AbstractType {
+class setProgressStateResponse extends AbstractType {
 
     /**
      * @var boolean
      */
-    public $setReadingSystemAttributesResult;
+    public $progressStateResult;
 
 
     /******************** public functions ********************/
 
     /**
-     * constructor for class setReadingSystemAttributesResponse
+     * constructor for class setProgressStateResponse
      */
-    function __construct($_setReadingSystemAttributesResult = NULL) {
-        if (is_bool($_setReadingSystemAttributesResult)) $this->setSetReadingSystemAttributesResult($_setReadingSystemAttributesResult);
+    function __construct($_progressStateResult = NULL) {
+        if (is_bool($_progressStateResult)) $this->setProgressStateResult($_progressStateResult);
     }
 
 
     /******************** class get set methods ********************/
 
     /**
-     * getter for setReadingSystemAttributesResult
+     * getter for progressStateResult
      */
-    function getSetReadingSystemAttributesResult() {
-        return $this->setReadingSystemAttributesResult;
+    function getProgressStateResult() {
+        return $this->progressStateResult;
     }
 
     /**
-     * setter for setReadingSystemAttributesResult
+     * setter for progressStateResult
      */
-    function setSetReadingSystemAttributesResult($_setReadingSystemAttributesResult) {
-        $this->setReadingSystemAttributesResult = $_setReadingSystemAttributesResult;
+    function setProgressStateResult($_progressStateResult) {
+        $this->progressStateResult = $_progressStateResult;
     }
 
     /**
-     * resetter for setReadingSystemAttributesResult
+     * resetter for progressStateResult
      */
-    function resetSetReadingSystemAttributesResult() {
-        $this->setReadingSystemAttributesResult = NULL;
+    function resetProgressStateResult() {
+        $this->progressStateResult = NULL;
     }
 
 
     /******************** validator methods ********************/
 
+
     /**
-     * validator for class setReadingSystemAttributesResponse
+     * validator for class setProgressStateResponse
      */
     function validate() {
-        // setReadingSystemAttributesResult must occur exactly once
-        if ($this->isBoolean($this->setReadingSystemAttributesResult, 'setReadingSystemAttributesResult') === false)
+        // progressStateResult must occur exactly once
+        if ($this->isBoolean($this->progressStateResult, 'progressStateResult') === false)
             return false;
 
         return true;

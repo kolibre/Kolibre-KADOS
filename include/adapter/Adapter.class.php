@@ -121,6 +121,10 @@ abstract class Adapter
      * Enum for retrieving a category label
      */
     const LABEL_CATEGORY = 8;
+    /**
+     * Enum for retrieving a sub catergory label
+     */
+    const LABEL_SUBCATEGORY = 9;
 
     /**
      * Enum that content can ONLY be streamed.
@@ -355,7 +359,7 @@ abstract class Adapter
      */
     public function contentAccessDate($contentId)
     {
-        return array("first" => "", "last" => "");
+        return false;
     }
 
     /**
@@ -544,8 +548,8 @@ abstract class Adapter
      * @return array Returns an associative array.
      *
      * <p>The associative array must be a direct match of a resources object and must contain the required elements.
-     * Specify a key 'package' with value 'true' to indicate that the resource is a package.
-     * Example of an array with three resources and one package</p>
+     * Include a key 'resourceRef' with a string array value to indicate that the resource is a package.
+     * Example of an array with two resources and one package</p>
      * <pre>
      * Array
      * (
@@ -556,6 +560,7 @@ abstract class Adapter
      *             [size] => 1233
      *             [localURI] => "ncc.html"
      *             [lastModifiedDate] => "2016-01-01T00:00:00Z"
+     *             [serverSideHash] => "bf0f0abb1a185f618f96b684232b7579"
      *         )
      *     [1] => Array
      *         (
@@ -564,15 +569,19 @@ abstract class Adapter
      *             [size] => 12
      *             [localURI] => "master.smil"
      *             [lastModifiedDate] => "2016-01-01T00:00:00Z"
+     *             [serverSideHash] => "dbb3e3fe26ec0a3b3b44884a4b917b10"
      *         )
      *     [2] => Array
      *         (
      *             [uri] => "http://localhost/package.zip"
      *             [mimeType] => "application/zip"
      *             [size] => 321
-     *             [localURI] => "package.zip"
      *             [lastModifiedDate] => "2016-01-01T00:00:00Z"
-     *             [package] => true
+     *             [resourceRef] => Array
+     *                 (
+     *                     [0] => "dtb_0001.smil"
+     *                     [1] => "dtb_0002.smil"
+     *                 )
      *         )
      * )
      * </pre>

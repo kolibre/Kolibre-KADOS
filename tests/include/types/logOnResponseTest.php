@@ -24,20 +24,50 @@ set_include_path(get_include_path() . PATH_SEPARATOR . $includePath);
 require_once('logOnResponse.class.php');
 
 class logOnResponseTest extends PHPUnit_Framework_TestCase
-{
+{   
+    protected $serviceAttributes;
+
+    public function setUp()
+    {
+        $serviceProvider = null;
+        $service = null;
+        $supportsServerSideBack = false;
+        $supportsSearch = false;
+        $supportedUplinkAudioCodecs = new supportedUplinkAudioCodecs();
+        $supportsAudioLabels = false;
+        $supportedOptionalOperations = new supportedOptionalOperations();
+        $accessConfig = "STREAM_AND_DOWNLOAD";
+        $announcementsPullFrequency = 1;
+        $progressStateOperationAllowed = false;
+        $this->serviceAttributes = new serviceAttributes(
+            $serviceProvider,
+            $service,
+            $supportsServerSideBack,
+            $supportsSearch,
+            $supportedUplinkAudioCodecs,
+            $supportsAudioLabels,
+            $supportedOptionalOperations,
+            $accessConfig,
+            $announcementsPullFrequency,
+            $progressStateOperationAllowed);
+        $this->assertTrue($this->serviceAttributes->validate());
+
+    }
+
     /**
      * @group logOnResponse
      * @group validate
      */
     public function testLogOnResult()
     {
+        $serviceAttributes = $this->serviceAttributes;
         $instance = new logOnResponse();
         $this->assertFalse($instance->validate());
-        $this->assertContains('logOnResponse.logOnResult', $instance->getError());
-        $instance->logOnResult = 'logOnResult';
+        $this->assertContains('logOnResponse.serviceAttributes', $instance->getError());
+        $instance->serviceAttributes = 'serviceAttributes';
         $this->assertFalse($instance->validate());
-        $this->assertContains('logOnResponse.logOnResult', $instance->getError());
-        $instance->logOnResult = true;
+        $this->assertContains('logOnResponse.serviceAttributes', $instance->getError());
+        $instance->serviceAttributes = $serviceAttributes;
         $this->assertTrue($instance->validate());
     }
 }

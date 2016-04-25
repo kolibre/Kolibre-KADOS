@@ -27,14 +27,20 @@ class getContentResources extends AbstractType {
      */
     public $contentID;
 
+    /**
+     * @var accessType
+     */
+    public $accessType;
+
 
     /******************** public functions ********************/
 
     /**
      * constructor for class getContentResources
      */
-    function __construct($_contentID = NULL) {
+    function __construct($_contentID = NULL, $_accessType = NULL) {
         if (is_string($_contentID)) $this->setContentID($_contentID);
+         if (is_string($_accessType)) $this->setAccessType($_accessType);
     }
 
 
@@ -61,6 +67,27 @@ class getContentResources extends AbstractType {
         $this->contentID = NULL;
     }
 
+    /**
+     * getter for accessType
+     */
+    function getAccessType() {
+        return $this->accessType;
+    }
+
+    /**
+     * setter for accessType
+     */
+    function setAccessType($_accessType) {
+        $this->accessType = $_accessType;
+    }
+
+    /**
+     * resetter for accessType
+     */
+    function resetAccessType() {
+        $this->accessType = NULL;
+    }
+
 
     /******************** validator methods ********************/
 
@@ -72,6 +99,9 @@ class getContentResources extends AbstractType {
         if ($this->isNoneEmptyString($this->contentID, 'contentID') === false)
             return false;
 
+        if ($this->isString($this->accessType, 'accessType', array("STREAM", "DOWNLOAD","AUTOMATIC_DOWNLOAD")) === false)
+            return false;
+        
         return true;
     }
 }

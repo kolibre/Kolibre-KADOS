@@ -21,29 +21,29 @@
 $includePath = dirname(realpath(__FILE__)) . '/../../../include/types';
 set_include_path(get_include_path() . PATH_SEPARATOR . $includePath);
 
-require_once('getContentMetadata.class.php');
+require_once('addContentToBookshelf.class.php');
 
-class getContentMetadataTest extends PHPUnit_Framework_TestCase
+class addContentToBookshelfTest extends PHPUnit_Framework_TestCase
 {
     /**
-     * @group getContentMetadata
+     * @group addContentToBookshelf
      * @group validate
      */
-    public function testContentID()
+    public function testUsername()
     {
-        $instance = new getContentMetadata();
+        $instance = new addContentToBookshelf(null);
         $this->assertFalse($instance->validate());
-        $this->assertContains('getContentMetadata.', $instance->getError());
+        $this->assertContains('addContentToBookshelf.contentID', $instance->getError());
         $instance->contentID = 1;
         $this->assertFalse($instance->validate());
-        $this->assertContains('getContentMetadata.', $instance->getError());
+        $this->assertContains('addContentToBookshelf.contentID', $instance->getError());
         $instance->contentID = '';
         $this->assertFalse($instance->validate());
-        $this->assertContains('getContentMetadata.', $instance->getError());
+        $this->assertContains('addContentToBookshelf.contentID', $instance->getError());
         $instance->contentID = 'contentID';
         $this->assertTrue($instance->validate());
-
     }
+
 }
 
 ?>

@@ -19,6 +19,7 @@
  */
 
 require_once('AbstractType.class.php');
+require_once('readingSystemAttributes.class.php');
 
 class logOn extends AbstractType {
 
@@ -32,15 +33,21 @@ class logOn extends AbstractType {
      */
     public $password;
 
+    /**
+     * @var (object) readingSystemAttributes
+     */
+    public $readingSystemAttributes;
+
 
     /******************** public functions ********************/
 
     /**
      * constructor for class logOn
      */
-    function __construct($_username = NULL, $_password = NULL) {
+    function __construct($_username = NULL, $_password = NULL, $_readingSystemAttributes = NULL) {
         if (is_string($_username)) $this->setUsername($_username);
         if (is_string($_password)) $this->setPassword($_password);
+        if (is_a($_readingSystemAttributes, "readingSystemAttributes")) $this->setReadingSystemAttributes($_readingSystemAttributes);
     }
 
 
@@ -88,6 +95,27 @@ class logOn extends AbstractType {
         $this->password = NULL;
     }
 
+    /**
+     * getter for readingSystemAttributes
+     */
+    function getReadingSystemAttributes() {
+        return $this->readingSystemAttributes;
+    }
+
+    /**
+     * setter for readingSystemAttributes
+     */
+    function setReadingSystemAttributes($_readingSystemAttributes) {
+        $this->readingSystemAttributes = $_readingSystemAttributes;
+    }
+
+    /**
+     * resetter for readingSystemAttributes
+     */
+    function resetReadingSystemAttributes() {
+        $this->readingSystemAttributes = NULL;
+    }
+
 
     /******************** validator methods ********************/
 
@@ -102,6 +130,14 @@ class logOn extends AbstractType {
         // password must occur exactly once
         if ($this->isNoneEmptyString($this->password, 'password') === false)
             return false;
+
+        // readingSystemAttributes must occur exactly once
+        if ($this->isInstanceOf($this->readingSystemAttributes, 'readingSystemAttributes') === false)
+            return false;
+        if ($this->readingSystemAttributes->validate() === false) {
+            $this->error = __CLASS__ . '.' . $this->readingSystemAttributes->getError();
+            return false;
+        }
 
         return true;
     }

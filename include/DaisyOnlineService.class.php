@@ -28,24 +28,16 @@ require_once('logOn.class.php');
 require_once('logOnResponse.class.php');
 require_once('logOff.class.php');
 require_once('logOffResponse.class.php');
-require_once('getServiceAttributes.class.php');
-require_once('getServiceAttributesResponse.class.php');
-require_once('setReadingSystemAttributes.class.php');
-require_once('setReadingSystemAttributesResponse.class.php');
 require_once('getContentList.class.php');
 require_once('getContentListResponse.class.php');
-require_once('getContentMetadata.class.php');
-require_once('getContentMetadataResponse.class.php');
-require_once('issueContent.class.php');
-require_once('issueContentResponse.class.php');
 require_once('getContentResources.class.php');
 require_once('getContentResourcesResponse.class.php');
 require_once('getServiceAnnouncements.class.php');
 require_once('getServiceAnnouncementsResponse.class.php');
 require_once('markAnnouncementsAsRead.class.php');
 require_once('markAnnouncementsAsReadResponse.class.php');
-require_once('setBookmarks.class.php');
-require_once('setBookmarksResponse.class.php');
+require_once('updateBookmarks.class.php');
+require_once('updateBookmarksResponse.class.php');
 require_once('getBookmarks.class.php');
 require_once('getBookmarksResponse.class.php');
 require_once('returnContent.class.php');
@@ -54,6 +46,16 @@ require_once('getQuestions.class.php');
 require_once('getQuestionsResponse.class.php');
 require_once('getKeyExchangeObject.class.php');
 require_once('getKeyExchangeObjectResponse.class.php');
+require_once('addContentToBookshelf.class.php');
+require_once('addContentToBookshelfResponse.class.php');
+require_once('getUserCredentials.class.php');
+require_once('getUserCredentialsResponse.class.php');
+require_once('getTermsOfService.class.php');
+require_once('getTermsOfServiceResponse.class.php');
+require_once('acceptTermsOfService.class.php');
+require_once('acceptTermsOfServiceResponse.class.php');
+require_once('setProgressState.class.php');
+require_once('setProgressStateResponse.class.php');
 
 class DaisyOnlineService
 {
@@ -67,9 +69,6 @@ class DaisyOnlineService
 
     // stack containing invoked operations
     private $sessionInvokedOperations = array();
-
-    // stack containing operations to be invoked in initialization sequence
-    private $sessionInitializationStack = array();
 
     // stack containing content identifiers for which metadata has been retrieved
     private $sessionContentMetadataRequests = array();
@@ -150,7 +149,6 @@ class DaisyOnlineService
         array_push($instance_variables_to_serialize, 'readingSystemAttributes');
         array_push($instance_variables_to_serialize, 'sessionCurrentOperation');
         array_push($instance_variables_to_serialize, 'sessionInvokedOperations');
-        array_push($instance_variables_to_serialize, 'sessionInitializationStack');
         array_push($instance_variables_to_serialize, 'sessionContentMetadataRequests');
         array_push($instance_variables_to_serialize, 'sessionUserLoggedOn');
         array_push($instance_variables_to_serialize, 'sessionEstablished');
@@ -262,16 +260,17 @@ class DaisyOnlineService
         {
             $msg = "request is not valid " . $input->getError();
             $this->logger->warn($msg);
-            return new logOnResponse(false);
+            throw new SoapFault('Client', $input->getError(), '', '', 'logOn_invalidParameterFault');
         }
 
         $username = $input->getUsername();
         $password = $input->getPassword();
+        $readingSystemAttributes = $input->getReadingSystemAttributes();
 
         try
         {
             if ($this->adapter->authenticate($username, $password) === false)
-                return new logOnResponse(false);
+                throw new SoapFault('Server', 'Invalid username or password', '', '', 'logOn_unauthorizedFault');
         }
         catch (AdapterException $e)
         {
@@ -279,38 +278,14 @@ class DaisyOnlineService
             throw new SoapFault('Server', 'Internal Server Error', '', '', 'logOn_internalServerErrorFault');
         }
 
-        // store user information
-        $this->sessionUsername = $username;
-        $this->sessionUserLoggedOn = true;
+        // start backend session
+        if ($this->adapter->startSession() === false)
+        {
+            $this->logger->warn("Backend session not active");
+                throw new SoapFault('Server', 'Backend session not active', '', '', 'logOn_internalServerErrorFault');
+        }
 
-        $msg = "User '$username' logged on";
-        $this->logger->info($msg);
-        return new logOnResponse(true);
-    }
-
-    /**
-     * Service function logOff
-     * @param object of logOff $input
-     * @return object of logOffResponse
-     */
-    public function logOff($input)
-    {
-        $this->sessionHandle(__FUNCTION__);
-
-        $msg = "User '$this->sessionUsername' logged off";
-        $this->logger->info($msg);
-        return new logOffResponse(true);
-    }
-
-    /**
-     * Service function getServiceAttributes
-     * @param object of getServiceAttributes $input
-     * @return object of getServiceAttributesResponse
-     */
-    public function getServiceAttributes($input)
-    {
-        $this->sessionHandle(__FUNCTION__);
-
+        // build logOnResponse, i.e serviceAttributes
         try
         {
             // set serviceProvider
@@ -336,13 +311,8 @@ class DaisyOnlineService
         catch (AdapterException $e)
         {
             $this->logger->fatal($e->getMessage());
-            throw new SoapFault('Server', 'Internal Server Error', '', '', 'getServiceAttributes_internalServerErrorFault');
+            throw new SoapFault('Server', 'Internal Server Error', '', '', 'logOn_internalServerErrorFault');
         }
-
-        // set supportedContentSelectionMethods
-        $supportedContentSelectionMethods = new supportedContentSelectionMethods();
-        foreach ($this->serviceAttributes['supportedContentSelectionMethods'] as $method)
-            $supportedContentSelectionMethods->addMethod($method);
 
         // set supportsServerSideBack
         $supportsServerSideBack = $this->serviceAttributes['supportsServerSideBack'];
@@ -363,58 +333,63 @@ class DaisyOnlineService
         foreach ($this->serviceAttributes['supportedOptionalOperations'] as $operation)
             $supportedOptionalOperations->addOperation($operation);
 
-        $serviceAttributes = new serviceAttributes($serviceProvider,
+        // set accessConfig
+        $accessConfig = $this->serviceAttributes['accessConfig'];
+
+        // set announcementsPullFrequency
+        // TODO: make this configurable in service.ini
+        $announcementsPullFrequency = 720;
+
+        // set progressStateOperationAllowed
+        // TODO: make this configurable in service.ini
+        $progressStateOperationAllowed = false;
+
+        $serviceAttributes = new serviceAttributes(
+            $serviceProvider,
             $service,
-            $supportedContentSelectionMethods,
             $supportsServerSideBack,
             $supportsSearch,
             $supportedUplinkAudioCodecs,
             $supportsAudioLabels,
-            $supportedOptionalOperations);
+            $supportedOptionalOperations,
+            $accessConfig,
+            $announcementsPullFrequency,
+            $progressStateOperationAllowed);
 
-        $output = new getServiceAttributesResponse($serviceAttributes);
+        $output = new logOnResponse($serviceAttributes);
 
         if ($output->validate() === false)
         {
             $msg = "failed to build response " . $output->getError();
             $this->logger->error($msg);
-            $faultString = 'getServiceAttributesResponse could not be built';
-            throw new SoapFault('Server', $faultString,'', '', 'getServiceAttributes_internalServerErrorFault');
+            $faultString = 'logOnResponse could not be built';
+            throw new SoapFault('Server', $faultString,'', '', 'logOn_internalServerErrorFault');
         }
+
+        // store user information and reading system attributes
+        $this->sessionUsername = $username;
+        $this->sessionUserLoggedOn = true;
+        $this->sessionEstablished = true;
+        $this->readingSystemAttributes = $input->getReadingSystemAttributes();
+
+        $msg = "User '$username' logged on and establised a session";
+        $this->logger->info($msg);
 
         return $output;
     }
 
     /**
-     * Service function setReadingSystemAttributes
-     * @param object of setReadingSystemAttributes $input
-     * @return object of setReadingSystemAttributesResponse
+     * Service function logOff
+     * @param object of logOff $input
+     * @return object of logOffResponse
      */
-    public function setReadingSystemAttributes($input)
+    public function logOff($input)
     {
         $this->sessionHandle(__FUNCTION__);
 
-        if ($input->validate() === false)
-        {
-            $msg = "request is not valid " . $input->getError();
-            $this->logger->warn($msg);
-            throw new SoapFault('Client', $input->getError(), '', '', 'setReadingSystemAttributes_invalidParameterFault');
-        }
-
-        // start backend session
-        if ($this->adapter->startSession() === false)
-        {
-            $this->logger->warn("Backend session not active");
-            return new setReadingSystemAttributesResponse(false);
-        }
-
-        // store reading system attributes
-        $this->readingSystemAttributes = $input->getReadingSystemAttributes();
-        $this->sessionEstablished = true;
-
-        $msg = "User '$this->sessionUsername' established a session";
+        $msg = "User '$this->sessionUsername' logged off";
         $this->logger->info($msg);
-        return new setReadingSystemAttributesResponse(true);
+        return new logOffResponse(true);
     }
 
     /**
@@ -505,18 +480,115 @@ class DaisyOnlineService
                 for ($i = $firstItem; $i <= $lastItem; $i++)
                 {
                     $contentId = $contentItems[$i];
-                    $contentItem = new contentItem(null, $contentId);
+                    $contentItem = new contentItem();
+                    $contentItem->setId($contentId);
                     try
                     {
+                        // label [mandatory]
                         $label = $this->adapter->label($contentId, Adapter::LABEL_CONTENTITEM, $this->getClientLangCode());
                         if (is_array($label))
                             $contentItem->setLabel($this->createLabel($label));
                         else
                             $this->logger->warn("Content with id '$contentId' has no label");
 
+                        // sample [optional]
+                        $sampleId = $this->adapter->contentSample($contentId);
+                        if (is_string($sampleId))
+                            $contentItem->setSample(new sample($sampleId));
+
+                        // metadata [mandatory]
+                        $metadata = $this->adapter->contentMetadata($contentId);
+                        if (is_array($metadata) === false)
+                        {
+                            $this->logger->warn("Content with id '$contentId' has no metadata");
+                            throw new SoapFault('Server', 'Internal Server Error', '', '', 'getContentList_internalServerErrorFault');
+                        }
+                        $contentItem->setMetadata($this->createMetaData($contentId, $metadata));
+
+                        // categoryLabel [optional]
+                        $categoryLabel = $this->adapter->label($contentId, Adapter::LABEL_CATEGORY, $this->getClientLangCode());
+                        if (is_array($categoryLabel))
+                            $contentItem->setCategoryLabel(new categoryLabel($this->createLabel($categoryLabel)));
+
+                        // subCategoryLabel [optional]
+                        $subCategoryLabel = $this->adapter->label($contentId, Adapter::LABEL_SUBCATEGORY, $this->getClientLangCode());
+                        if (is_array($subCategoryLabel))
+                            $contentItem->setSubCategoryLabel(new subCategoryLabel($this->createLabel($subCategoryLabel)));
+
+                        // accessPermission [mandatory]
+                        $accessPermission = $this->adapter->contentAccessMethod($contentId);
+                        $contentItem->setAccessPermission($accessPermission);
+
+                        // lastmark [optional]
+                        if (in_array('SET_BOOKMARKS', $this->serviceAttributes['supportedOptionalOperations']))
+                        {
+                            $lastmark = $this->adapter->getBookmarks($contentId, Adapter::BMGET_LASTMARK);
+                            if (is_array($lastmark))
+                            {
+                                // TODO: implement me when getBookmarks operation is implemented
+                                $this->logger->warn("please implement me, lastmark not set");
+                            }
+                        }
+                        // multipleChoiceQuestion [optional]
+                        if (in_array('DYNAMIC_MENUS', $this->serviceAttributes['supportedOptionalOperations']))
+                        {
+                            // TODO: implement me when get
+                            $question = $this->adapter->menuContentQuestion($contentId);
+                            if (is_array($question))
+                            {
+                                // TODO: implement me when getQuestions operation is implemented
+                                $this->logger->warn("please implement me, multipleChoiceQuestion not set");
+                            }
+                        }
+
+                        // firstAccessDate and lastAccessDate [optional]
+                        $accessDates = $this->adapter->contentAccessDate($contentId);
+                        if (is_array($accessDates))
+                        {
+                            // first
+                            if (array_key_exists('first', $accessDates) === false)
+                                $this->logger->error("Required field 'first' is missing in access date");
+                            else
+                            {
+                                if (is_string($accessDates['first']))
+                                    $contentItem->setFirstAccessedDate($accessDates['first']);
+                            }
+                            // last
+                            if (array_key_exists('last', $accessDates) === false)
+                                $this->logger->error("Required field 'last' is missing in access date");
+                            else
+                            {
+                                if (is_string($accessDates['last']))
+                                    $contentItem->setLastAccessedDate($accessDates['last']);
+                            }
+                        }
+                        // lastModifiedDate [mandatory]
                         $lastModifiedDate = $this->adapter->contentLastModifiedDate($contentId);
-                        if (is_string($lastModifiedDate))
-                            $contentItem->setLastModifiedDate($lastModifiedDate);
+                        $contentItem->setLastModifiedDate($lastModifiedDate);
+
+                        // category [optional]
+                        $category = $this->adapter->contentCategory($contentId);
+                        if (is_string($category))
+                            $contentItem->setCategory($category);
+
+                        // subCategory [optional]
+                        $subCategory = $this->adapter->contentSubCategory($contentId);
+                        if (is_string($subCategory))
+                            $contentItem->setSubCategory($subCategory);
+
+                        // returnBy [optional]
+                        $returnDate = $this->adapter->contentReturnDate($contentId);
+                        if (is_string($returnDate))
+                            $contentItem->setReturnBy($returnDate);
+
+                        // hasBookmarks [mandatory] assume no bookmarks
+                        $contentItem->setHasBookmarks(false);
+                        if (in_array('SET_BOOKMARKS', $this->serviceAttributes['supportedOptionalOperations']))
+                        {
+                            $boomarks = $this->adapter->getBookmarks($contentId, Adapter::BMGET_ALL);
+                            if (is_array($bookmarks))
+                                $contentitem->setHasBookmarks(true);
+                        }
                     }
                     catch (AdapterException $e)
                     {
@@ -544,264 +616,6 @@ class DaisyOnlineService
     }
 
     /**
-     * Service function getContentMetadata
-     * @param object of getContentMetadata $input
-     * @return object of getContentMetadataResponse
-     */
-    public function getContentMetadata($input)
-    {
-        $this->sessionHandle(__FUNCTION__);
-
-        if ($input->validate() === false)
-        {
-            $msg = "request is not valid " . $input->getError();
-            $this->logger->warn($msg);
-            throw new SoapFault('Client', $input->getError(), '', '', 'getContentMetadata_invalidParameterFault');
-        }
-
-        // parameters
-        $contentId = $input->getContentID();
-
-        // check if the requested content exists and is accessible
-        try
-        {
-            if ($this->adapter->contentExists($contentId) === false)
-            {
-                $msg = "User '$this->sessionUsername' requested metadata for a nonexistent content '$contentId'";
-                $this->logger->warn($msg);
-                $faultString = "content '$contentId' does not exist";
-                throw new SoapFault('Client', $faultString,'', '', 'getContentMetadata_invalidParameterFault');
-            }
-
-            if ($this->adapter->contentAccessible($contentId) === false)
-            {
-                $msg = "User '$this->sessionUsername' requested metadata for an inaccessible content '$contentId'";
-                $this->logger->warn($msg);
-                $faultString = "content '$contentId' not accessible";
-                throw new SoapFault('Client', $faultString,'', '', 'getContentMetadata_invalidParameterFault');
-            }
-        }
-        catch (AdapterException $e)
-        {
-            $this->logger->fatal($e->getMessage());
-            throw new SoapFault('Server', 'Internal Server Error', '', '', 'getContentMetadata_internalServerErrorFault');
-        }
-
-        // build contentMetadata
-        $contentMetadata = new contentMetadata();
-
-        try
-        {
-            // set sample [optional]
-            $sample = $this->adapter->contentSample($contentId);
-            if (is_string($sample)) $contentMetadata->setSample(new sample($sample));
-
-            // set category [optional]
-            $category = $this->adapter->contentCategory($contentId);
-            if (is_string($category)) $contentMetadata->setCategory($category);
-
-            // set requiresRetrn [mandatory]
-            $returnDate = $this->adapter->contentReturnDate($contentId);
-            if (is_string($returnDate)) $contentMetadata->setRequiresReturn(true);
-            else $contentMetadata->setRequiresReturn(false);
-
-            // build metadata
-            $metadata = new metadata();
-            $metadata->setIdentifier($input->getContentID());
-            $metadataValues = $this->adapter->contentMetadata($contentId);
-            if (is_array($metadataValues) === false) {
-                $this->logger->warn("Content with id '$contentId' has no metadata");
-                throw new SoapFault('Server', 'Internal Server Error', '', '', 'getContentMetadata_internalServerErrorFault');
-            }
-            foreach ($metadataValues as $key => $value)
-            {
-                switch ($key)
-                {
-                case 'size':
-                    $metadata->setSize($value);
-                    break;
-                case 'dc:title':
-                    $metadata->setTitle($value);
-                    break;
-                case 'dc:identifier':
-                    // the identifier is not the identifier found in metadata
-                    break;
-                case 'dc:publisher':
-                    $metadata->setPublisher($value);
-                    break;
-                case 'dc:format':
-                    $metadata->setFormat($value);
-                    break;
-                case 'dc:date':
-                    $metadata->setDate($value);
-                    break;
-                case 'dc:source':
-                    $metadata->setSource($value);
-                    break;
-                case 'dc:type':
-                    if (is_array($value))
-                        foreach ($value as $subvalue) $metadata->addType($subvalue);
-                    else
-                        $metadata->addType($value);
-                    break;
-                case 'dc:subject':
-                    if (is_array($value))
-                        foreach ($value as $subvalue) $metadata->addSubject($subvalue);
-                    else
-                        $metadata->addSubject($value);
-                    break;
-                case 'dc:rights':
-                    if (is_array($value))
-                        foreach ($value as $subvalue) $metadata->addRights($subvalue);
-                    else
-                        $metadata->addRights($value);
-                    break;
-                case 'dc:relation':
-                    if (is_array($value))
-                        foreach ($value as $subvalue) $metadata->addRelation($subvalue);
-                    else
-                        $metadata->addRelation($value);
-                    break;
-                case 'dc:language':
-                    if (is_array($value))
-                        foreach ($value as $subvalue) $metadata->addLanguage($subvalue);
-                    else
-                        $metadata->addLanguage($value);
-                    break;
-                case 'dc:description':
-                    if (is_array($value))
-                        foreach ($value as $subvalue) $metadata->addDescription($subvalue);
-                    else
-                        $metadata->addDescription($value);
-                    break;
-                case 'dc:creator':
-                    if (is_array($value))
-                        foreach ($value as $subvalue) $metadata->addCreator($subvalue);
-                    else
-                        $metadata->addCreator($value);
-                    break;
-                case 'dc:coverage':
-                    if (is_array($value))
-                        foreach ($value as $subvalue) $metadata->addCoverage($subvalue);
-                    else
-                        $metadata->addCoverage($value);
-                    break;
-                case 'dc:contributor':
-                    if (is_array($value))
-                        foreach ($value as $subvalue) $metadata->addContributor($subvalue);
-                    else
-                        $metadata->addContributor($value);
-                    break;
-                default:
-                    if ($key == 'pdtb2:specVersion')
-                        $metadata->addMeta(new meta($key, $value));
-                    break;
-                }
-            }
-        }
-        catch (AdapterException $e)
-        {
-            $this->logger->fatal($e->getMessage());
-            throw new SoapFault('Server', 'Internal Server Error', '', '', 'getContentMetadata_internalServerErrorFault');
-        }
-
-        $contentMetadata->setMetadata($metadata);
-
-        $output = new getContentMetadataResponse($contentMetadata);
-
-        if ($output->validate() === false)
-        {
-            $msg = "failed to build response " . $output->getError();
-            $this->logger->error($msg);
-            $faultString = 'getContentMetadataResponse could not be built';
-            throw new SoapFault('Server', $faultString,'', '', 'getContentMetadata_internalServerErrorFault');
-        }
-
-        // store content identifier in sessionContentMetadataRequests
-        array_push($this->sessionContentMetadataRequests, $contentId);
-
-        return $output;
-    }
-
-    /**
-     * Service function issueContent
-     * @param object of issueContent $input
-     * @return object of issueContentResponse
-     */
-    public function issueContent($input)
-    {
-        $this->sessionHandle(__FUNCTION__);
-
-        if ($input->validate() === false)
-        {
-            $msg = "request is not valid " . $input->getError();
-            $this->logger->warn($msg);
-            throw new SoapFault('Client', $input->getError(), '', '', 'issueContent_invalidParameterFault');
-        }
-
-        // parameters
-        $contentId = $input->getContentID();
-
-        // check if the requested content exists and is accessible
-        try
-        {
-            if ($this->adapter->contentExists($contentId) === false)
-            {
-                $msg = "User '$this->sessionUsername' requested issuing of a nonexistent content '$contentId'";
-                $this->logger->warn($msg);
-                $faultString = "content '$contentId' does not exist";
-                throw new SoapFault('Client', $faultString,'', '', 'issueContent_invalidParameterFault');
-            }
-
-            if ($this->adapter->contentAccessible($contentId) === false)
-            {
-                $msg = "User '$this->sessionUsername' requested issuing of an inaccessible content '$contentId'";
-                $this->logger->warn($msg);
-                $faultString = "content '$contentId' not accessible";
-                throw new SoapFault('Client', $faultString,'', '', 'issueContent_invalidParameterFault');
-            }
-        }
-        catch (AdapterException $e)
-        {
-            $this->logger->fatal($e->getMessage());
-            throw new SoapFault('Server', 'Internal Server Error', '', '', 'issueContent_internalServerErrorFault');
-        }
-
-        // check if a prior call to getContentMetadata has been made
-        if (!$this->sessionHandleDisabled && in_array($contentId, $this->sessionContentMetadataRequests) === false)
-        {
-            $this->logger->warn("No prior call to getContentMetadata for content '$contentId'");
-            $faultString = "Metadata for content has not been requested, call getContentMetadata for content '$contentId'";
-            throw new SoapFault('Client', $faultString, '', '', 'issueContent_invalidOperationFault');
-        }
-
-        // check if content is issuable and issue content
-        try
-        {
-            if ($this->adapter->contentIssuable($contentId) === false)
-            {
-                $msg = "User '$this->sessionUsername' not allowed to issue content with id '$contentId'";
-                $this->logger->warn($msg);
-                $faultString = "content '$contentId' is not issuable";
-                throw new SoapFault('Client', $faultString, '', '', 'issueContent_invalidParameterFault');
-            }
-
-            if ($this->adapter->contentIssue($contentId) === false)
-            {
-                $this->logger->warn("Issuing content '$contentId' failed");
-                return new issueContentResponse(false);
-            }
-        }
-        catch (AdapterException $e)
-        {
-            $this->logger->fatal($e->getMessage());
-            throw new SoapFault('Server', 'Internal Server Error', '', '', 'issueContent_internalServerErrorFault');
-        }
-
-        return new issueContentResponse(true);
-    }
-
-    /**
      * Service function getContentResources
      * @param object of getContentResources $input
      * @return object of getContentResourcesResponse
@@ -819,6 +633,7 @@ class DaisyOnlineService
 
         // parameters
         $contentId = $input->getContentID();
+        $accessType = $input->getAccessType();
 
         // check if the requested content exists and is accessible
         try
@@ -850,7 +665,7 @@ class DaisyOnlineService
 
         try
         {
-            // set lastModifiedDate [optional]
+            // set lastModifiedDate
             $lastModifiedDate = $this->adapter->contentLastModifiedDate($contentId);
             if (is_string($lastModifiedDate)) $resources->setLastModifiedDate($lastModifiedDate);
 
@@ -864,7 +679,12 @@ class DaisyOnlineService
                 throw new SoapFault('Client', $faultString,'', '', 'getContentResources_invalidOperationFault');
             }
             foreach ($contentResources as $resource)
-                $resources->addResource($this->createResource($resource));
+            {
+                if (array_key_exists('resourceRef', $resource) === true)
+                    $resources->addPackage($this->createPackage($resource));
+                else
+                    $resources->addResource($this->createResource($resource));
+            }
 
         }
         catch (AdapterException $e)
@@ -981,15 +801,15 @@ class DaisyOnlineService
     }
 
     /**
-     * Service function setBookmarks
-     * @param object of setBookmarks $input
+     * Service function updateBookmarks
+     * @param object of updateBookmarks $input
      * @return object of setBookmarksResponse
      */
-    public function setBookmarks($input)
+    public function updateBookmarks($input)
     {
         $this->sessionHandle(__FUNCTION__);
         if (!in_array('SET_BOOKMARKS', $this->serviceAttributes['supportedOptionalOperations']))
-            throw new SoapFault ('Client', 'setBookmarks not supported', '', '', 'setBookmarks_operationNotSupportedFault');
+            throw new SoapFault ('Client', 'updateBookmarks not supported', '', '', 'updateBookmarks_operationNotSupportedFault');
     }
 
     /**
@@ -1006,6 +826,18 @@ class DaisyOnlineService
     }
 
     /**
+     * Service function addContentToBookshelf
+     * @param object of addContentToBookshelf $input
+     * @return object of addContentToBookshelfResponse
+     */
+    public function addContentToBookshelf($input)
+    {
+        $this->sessionHandle(__FUNCTION__);
+        throw new SoapFault ('Client', 'addContentToBookshelf not supported', '', '', 'addContentToBookshelf_operationNotSupportedFault');
+
+    }
+
+    /**
      * Service function getQuestions
      * @param object of getQuestions $input
      * @return object of getQuestionsResponse
@@ -1015,6 +847,18 @@ class DaisyOnlineService
         $this->sessionHandle(__FUNCTION__);
         if (!in_array('DYNAMIC_MENUS', $this->serviceAttributes['supportedOptionalOperations']))
             throw new SoapFault ('Client', 'getQuestions not supported', '', '', 'getQuestions_operationNotSupportedFault');
+    }
+
+    /**
+     * Service function getUserCredentials
+     * @param object of getUserCredentials $input
+     * @return object of getUserCredentialsResponse
+     */
+    public function getUserCredentials($input)
+    {
+        $this->sessionHandle(__FUNCTION__);
+        throw new SoapFault ('Client', 'getUserCredentials not supported', '', '', 'getUserCredentials_operationNotSupportedFault');
+
     }
 
     /**
@@ -1030,6 +874,42 @@ class DaisyOnlineService
     }
 
     /**
+     * Service function getTermsOfService
+     * @param object of getTermsOfService $input
+     * @return object of getTermsOfServiceResponse
+     */
+    public function getTermsOfService($input)
+    {
+        $this->sessionHandle(__FUNCTION__);
+        throw new SoapFault ('Client', 'getTermsOfService not supported', '', '', 'getTermsOfService_operationNotSupportedFault');
+
+    }
+
+    /**
+     * Service function acceptTermsOfService
+     * @param object of acceptTermsOfService $input
+     * @return object of acceptTermsOfServiceResponse
+     */
+    public function acceptTermsOfService($input)
+    {
+        $this->sessionHandle(__FUNCTION__);
+        throw new SoapFault ('Client', 'acceptTermsOfService not supported', '', '', 'acceptTermsOfService_operationNotSupportedFault');
+
+    }
+
+    /**
+     * Service function setProgressState
+     * @param object of setProgressState $input
+     * @return object of setProgressStateResponse
+     */
+    public function setProgressState($input)
+    {
+        $this->sessionHandle(__FUNCTION__);
+        throw new SoapFault ('Client', 'setProgressState not supported', '', '', 'setProgressState_operationNotSupportedFault');
+
+    }
+
+    /**
      * Service helper
      *
      * Parses services settings and initializes private service attributes
@@ -1042,20 +922,6 @@ class DaisyOnlineService
             $this->serviceAttributes['serviceProvider'] = $settings['serviceProvider'];
         if (array_key_exists('service', $settings))
             $this->serviceAttributes['service'] = $settings['service'];
-        $this->serviceAttributes['supportedContentSelectionMethods'] = array();
-        if (array_key_exists('supportedContentSelectionMethods', $settings))
-        {
-            if (in_array('OUT_OF_BAND', $settings['supportedContentSelectionMethods']))
-                array_push($this->serviceAttributes['supportedContentSelectionMethods'], 'OUT_OF_BAND');
-            if (in_array('BROWSE', $settings['supportedContentSelectionMethods']))
-                array_push($this->serviceAttributes['supportedContentSelectionMethods'], 'BROWSE');
-        }
-        if (sizeof($this->serviceAttributes['supportedContentSelectionMethods']) == 0)
-        {
-            $msg = 'No valid content selection method found in settings, using default OUT_OF_BAND';
-            $this->logger->error($msg);
-            array_push($this->serviceAttributes['supportedContentSelectionMethods'], 'OUT_OF_BAND');
-        }
         $this->serviceAttributes['supportedOptionalOperations'] = array();
         if (array_key_exists('supportedOptionalOperations', $settings))
         {
@@ -1089,6 +955,18 @@ class DaisyOnlineService
             else
             {
                 $msg = "Reserved parameter 'back' supported in settings but DYNAMIC_MENUS not supported";
+                $this->logger->warn($msg);
+            }
+        }
+        $this->serviceAttributes['accessConfig'] = 'STREAM_AND_DOWNLOAD';
+        if (array_key_exists('accessConfig', $settings))
+        {
+            $allowedValues = array('STREAM_ONLY', 'DOWNLOAD_ONLY', 'STREAM_AND_DOWNLOAD', 'STREAM_AND_RESTRICTED_DOWNLOAD', 'RESTRICTED_DOWNLOAD_ONLY');
+            if (in_array($allowedValues, $settings['accessConfig']))
+                $this->serviceAttributes['accessConfig'] = $settings['accessConfig'];
+            else
+            {
+                $msg = "No valid access config found, defaulting to STREAM_AND_DOWNLOAD";
                 $this->logger->warn($msg);
             }
         }
@@ -1198,23 +1076,13 @@ class DaisyOnlineService
         $this->sessionCurrentOperation = $operation;
         array_push($this->sessionInvokedOperations, $operation);
 
-        // when logOn is invoked, initialization sequence must be completed
         if ($operation == 'logOn')
         {
             // new session must be establish every time logOn is invoked
             $this->sessionDestroy();
-
-            // clear session initialization stack
-            $this->sessionInitializationStack = array();
-
-            // push setReadingSystemAttributes and getServiceAttributes to stack
-            array_push($this->sessionInitializationStack, 'setReadingSystemAttributes');
-            array_push($this->sessionInitializationStack, 'getServiceAttributes');
-
             return;
         }
 
-        // 4.2.1 logOff operation may be invoked anywhere within the initialization sequence
         if ($operation == 'logOff')
         {
             $this->sessionDestroy();
@@ -1243,24 +1111,6 @@ class DaisyOnlineService
             $this->sessionDestroy();
             $faultString = 'No user has logged on yet, try initializing session again';
             throw new SoapFault ('Client', $faultString, '', '', $operation.'_noActiveSessionFault');
-        }
-
-        // if we are still in session initialization phase
-        if (sizeof($this->sessionInitializationStack) > 0)
-        {
-            // next operation to be invoked
-            $nextRequiredOperation = array_pop($this->sessionInitializationStack);
-
-            if ($operation != $nextRequiredOperation)
-            {
-                $msg = "Expected a call to operation $nextRequiredOperation";
-                $this->logger->warn($msg);
-                $this->sessionDestroy();
-                $faultString = "Expected a call to operation $nextRequiredOperation, try initializing session again";
-                throw new SoapFault ('Client', $faultString, '', '', $operation.'_invalidOperationFault');
-            }
-
-            return;
         }
 
         // if session has been established
@@ -1324,6 +1174,100 @@ class DaisyOnlineService
         return $label;
     }
 
+    private function createMetaData($contentId, $metadataValues)
+    {
+        // build metadata        
+        $metadata = new metadata();
+        $metadata->setIdentifier($contentId);
+        foreach ($metadataValues as $key => $value)
+        {
+            switch ($key)
+            {
+            case 'size':
+                $metadata->setSize($value);
+                break;
+            case 'dc:title':
+                $metadata->setTitle($value);
+                break;
+            case 'dc:identifier':
+                // the identifier is not the identifier found in metadata
+                // 7.31 The value of the Dublin Core identifier element must match the Content Identifier of the Content item.
+                break;
+            case 'dc:publisher':
+                $metadata->setPublisher($value);
+                break;
+            case 'dc:format':
+                $metadata->setFormat($value);
+                break;
+            case 'dc:date':
+                $metadata->setDate($value);
+                break;
+            case 'dc:source':
+                $metadata->setSource($value);
+                break;
+            case 'dc:type':
+                if (is_array($value))
+                    foreach ($value as $subvalue) $metadata->addType($subvalue);
+                else
+                    $metadata->addType($value);
+                break;
+            case 'dc:subject':
+                if (is_array($value))
+                    foreach ($value as $subvalue) $metadata->addSubject($subvalue);
+                else
+                    $metadata->addSubject($value);
+                break;
+            case 'dc:rights':
+                if (is_array($value))
+                    foreach ($value as $subvalue) $metadata->addRights($subvalue);
+                else
+                    $metadata->addRights($value);
+                break;
+            case 'dc:relation':
+                if (is_array($value))
+                    foreach ($value as $subvalue) $metadata->addRelation($subvalue);
+                else
+                    $metadata->addRelation($value);
+                break;
+            case 'dc:language':
+                if (is_array($value))
+                    foreach ($value as $subvalue) $metadata->addLanguage($subvalue);
+                else
+                    $metadata->addLanguage($value);
+                break;
+            case 'dc:description':
+                if (is_array($value))
+                    foreach ($value as $subvalue) $metadata->addDescription($subvalue);
+                else
+                    $metadata->addDescription($value);
+                break;
+            case 'dc:creator':
+                if (is_array($value))
+                    foreach ($value as $subvalue) $metadata->addCreator($subvalue);
+                else
+                    $metadata->addCreator($value);
+                break;
+            case 'dc:coverage':
+                if (is_array($value))
+                    foreach ($value as $subvalue) $metadata->addCoverage($subvalue);
+                else
+                    $metadata->addCoverage($value);
+                break;
+            case 'dc:contributor':
+                if (is_array($value))
+                    foreach ($value as $subvalue) $metadata->addContributor($subvalue);
+                else
+                    $metadata->addContributor($value);
+                break;
+            default:
+                if ($key == 'pdtb2:specVersion')
+                    $metadata->addMeta(new meta($key, $value));
+                break;
+            }
+        }
+        return $metadata;
+    }
+
     private function createAudio($audioArray)
     {
         $uri = null;
@@ -1360,6 +1304,7 @@ class DaisyOnlineService
         $size = null;
         $localURI = null;
         $lastModifiedDate = null;
+        $serverSideHash = null;
 
         // uri [mandatory]
         if (array_key_exists('uri', $resourceArray) === false)
@@ -1385,12 +1330,69 @@ class DaisyOnlineService
         else
             $localURI = $resourceArray['localURI'];
 
-        // lastModifiedDate [optional]
-        if (array_key_exists('lastModifiedDate', $resourceArray))
+        // lastModifiedDate [mandatory]
+        if (array_key_exists('lastModifiedDate', $resourceArray) === false)
+            $this->logger->error("Required field 'lastModifiedDate' is missing in resource");
+        else
             $lastModifiedDate = $resourceArray['lastModifiedDate'];
 
-        $resource = new resource($uri, $mimeType, $size, $localURI, $lastModifiedDate);
+        // serverSideHash [optional]
+        if (array_key_exists('serverSideHash', $resourceArray) === true)
+            $serverSideHash = $resourceArray['serverSideHash'];
+
+
+        $resource = new resource($uri, $mimeType, $size, $localURI, $lastModifiedDate, $serverSideHash);
         return $resource;
+    }
+
+    private function createPackage($resourceArray)
+    {
+        $resourceRef = array();
+        $uri = null;
+        $mimeType = null;
+        $size = null;
+        $lastModifiedDate = null;
+
+        // resourceRef [mandatory]
+        if (array_key_exists('resourceRef', $resourceArray) === false)
+            $this->logger->error("Required field 'resourceRef' is missing in resource");
+        else
+        {
+            if (is_array($resourceArray['resourceRef']) === false)
+                $this->logger->error("Field 'resourceRef' is not an array");
+            else
+            {
+                foreach ($resourceArray['resourceRef'] as $localURI)
+                    array_push($resourceRef, new resourceRef($localURI));
+            }
+        }
+
+        // uri [mandatory]
+        if (array_key_exists('uri', $resourceArray) === false)
+            $this->logger->error("Required field 'uri' is missing in resource");
+        else
+            $uri = $resourceArray['uri'];
+
+        // mimeType [mandatory]
+        if (array_key_exists('mimeType', $resourceArray) === false)
+            $this->logger->error("Required field 'mimeType' is missing in resource");
+        else
+            $mimeType = $resourceArray['mimeType'];
+
+        // size [mandatory]
+        if (array_key_exists('size', $resourceArray) === false)
+            $this->logger->error("Required field 'size' is missing in resource");
+        else
+            $size = (int)$resourceArray['size'];
+
+        // lastModifiedDate [mandatory]
+        if (array_key_exists('lastModifiedDate', $resourceArray) === false)
+            $this->logger->error("Required field 'lastModifiedDate' is missing in resource");
+        else
+            $lastModifiedDate = $resourceArray['lastModifiedDate'];
+
+        $package = new package($resourceRef, $uri, $mimeType, $size, $lastModifiedDate);
+        return $package;
     }
 
     /**

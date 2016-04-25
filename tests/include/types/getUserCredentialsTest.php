@@ -21,10 +21,11 @@
 $includePath = dirname(realpath(__FILE__)) . '/../../../include/types';
 set_include_path(get_include_path() . PATH_SEPARATOR . $includePath);
 
-require_once('setReadingSystemAttributes.class.php');
+require_once('getUserCredentials.class.php');
+require_once('readingSystemAttributes.class.php');
 
-class setReadingSystemAttributesTest extends PHPUnit_Framework_TestCase
-{
+class getUserCredentialsTest extends PHPUnit_Framework_TestCase
+{   
     protected $config;
     protected $readingSystemAttributes;
 
@@ -70,20 +71,27 @@ class setReadingSystemAttributesTest extends PHPUnit_Framework_TestCase
     }
 
     /**
-     * @group setReadingSystemAttributes
+     * @group getUserCredentials
      * @group validate
      */
     public function testReadingSystemAttributes()
-    {
-        $instance = new setReadingSystemAttributes();
+    {       
+
+        $readingSystemAttributes = $this->readingSystemAttributes;
+        $this->assertTrue($readingSystemAttributes->validate());
+        $instance = new getUserCredentials(null);
         $this->assertFalse($instance->validate());
-        $this->assertContains('setReadingSystemAttributes.readingSystemAttributes', $instance->getError());
-        $instance->readingSystemAttributes = 'readingSystemAttributes';
+        $this->assertContains('getUserCredentials.readingSystemAttributes', $instance->getError());
+        $instance->readingSystemAttributes = 1;
         $this->assertFalse($instance->validate());
-        $this->assertContains('setReadingSystemAttributes.readingSystemAttributes', $instance->getError());
-        $instance->readingSystemAttributes = $this->readingSystemAttributes;
+        $this->assertContains('getUserCredentials.readingSystemAttributes', $instance->getError());
+        $instance->readingSystemAttributes = '';
+        $this->assertFalse($instance->validate());
+        $this->assertContains('getUserCredentials.readingSystemAttributes', $instance->getError());
+        $instance->readingSystemAttributes = $readingSystemAttributes;
         $this->assertTrue($instance->validate());
     }
+
 }
 
 ?>

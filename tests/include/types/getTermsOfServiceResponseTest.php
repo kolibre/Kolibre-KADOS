@@ -21,26 +21,37 @@
 $includePath = dirname(realpath(__FILE__)) . '/../../../include/types';
 set_include_path(get_include_path() . PATH_SEPARATOR . $includePath);
 
-require_once('issueContent.class.php');
+require_once('getTermsOfServiceResponse.class.php');
 
-class issueContentTest extends PHPUnit_Framework_TestCase
+class getTermsOfServiceResponseTest extends PHPUnit_Framework_TestCase
 {
+    protected $label;
+
+    public function setUp()
+    {
+        $audio = new audio('localURI',1,2,1234);
+        $this->assertTrue($audio->validate());
+        $text = 'text';
+        $lang = 'language';
+        $dir = 'ltr';
+        $this->label = new label($text,$audio,$lang,$dir);
+        $this->assertTrue($this->label->validate());
+
+    }
+
     /**
-     * @group issueContent
+     * @group getLabelResponse
      * @group validate
      */
-    public function testContentID()
+    public function testLabel()
     {
-        $instance = new issueContent();
+        $instance = new getTermsOfServiceResponse();
         $this->assertFalse($instance->validate());
-        $this->assertContains('issueContent.contentID', $instance->getError());
-        $instance->contentID = 1;
+        $this->assertContains('getTermsOfServiceResponse.label', $instance->getError());
+        $instance->label = 'label';
         $this->assertFalse($instance->validate());
-        $this->assertContains('issueContent.contentID', $instance->getError());
-        $instance->contentID = '';
-        $this->assertFalse($instance->validate());
-        $this->assertContains('issueContent.contentID', $instance->getError());
-        $instance->contentID = 'contentID';
+        $this->assertContains('getTermsOfServiceResponse.label', $instance->getError());
+        $instance->label = $this->label;
         $this->assertTrue($instance->validate());
     }
 }

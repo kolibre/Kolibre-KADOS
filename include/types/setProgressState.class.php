@@ -20,22 +20,33 @@
 
 require_once('AbstractType.class.php');
 
-class getContentMetadata extends AbstractType {
+class setProgressState extends AbstractType {
 
     /**
      * @var string
      */
     public $contentID;
 
+    /**
+     * @var string
+     *     NOTE: type should follow the following restrictions
+     *     You can have one of the following value
+     *     START
+     *     PAUSE
+     *     RESUME
+     *     FINISH
+     */
+    public $state;
+
 
     /******************** public functions ********************/
 
     /**
-     * constructor for class getContentMetadata
+     * constructor for class setProgress
      */
-    function __construct($_contentID = NULL) {
+    function __construct($_contentID = NULL, $_state = NULL) {
         if (is_string($_contentID)) $this->setContentID($_contentID);
-
+        if (is_string($_state)) $this->setState($_state);
     }
 
 
@@ -62,15 +73,41 @@ class getContentMetadata extends AbstractType {
         $this->contentID = NULL;
     }
 
+    /**
+     * getter for state
+     */
+    function getState() {
+        return $this->state;
+    }
+
+    /**
+     * setter for state
+     */
+    function setState($_state) {
+        $this->state = $_state;
+    }
+
+    /**
+     * resetter for state
+     */
+    function resetState() {
+        $this->state = NULL;
+    }
+
 
     /******************** validator methods ********************/
 
     /**
-     * validator for class getContentMetadata
+     * validator for class setProgress
      */
     function validate() {
         // contentID must occur exactly once
         if ($this->isNoneEmptyString($this->contentID, 'contentID') === false)
+            return false;
+
+        // state must occur exactly once
+        $allowedValues = array('START', 'PAUSE', 'RESUME', 'FINISH');
+        if ($this->isString($this->state, 'state', $allowedValues) === false)
             return false;
 
         return true;

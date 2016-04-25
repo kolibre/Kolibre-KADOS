@@ -20,62 +20,58 @@
 
 require_once('AbstractType.class.php');
 
-require_once('serviceAttributes.class.php');
-
-class getServiceAttributesResponse extends AbstractType {
+class acceptTermsOfServiceResponse extends AbstractType {
 
     /**
-     * @var (object)serviceAttributes
+     * @var boolean
      */
-    public $serviceAttributes;
+    public $acceptTermsOfServiceResult;
 
 
     /******************** public functions ********************/
 
     /**
-     * constructor for class getServiceAttributesResponse
+     * constructor for class acceptTermsOfServiceResponse
      */
-    function __construct($_serviceAttributes = NULL) {
-        if (is_a($_serviceAttributes, "serviceAttributes")) $this->setServiceAttributes($_serviceAttributes);
+    function __construct($_acceptTermsOfServiceResult = NULL) {
+        if (is_bool($_acceptTermsOfServiceResult)) $this->setAcceptTermsOfServiceResult($_acceptTermsOfServiceResult);
     }
 
 
     /******************** class get set methods ********************/
 
     /**
-     * getter for serviceAttributes
+     * getter for acceptTermsOfServiceResult
      */
-    function getServiceAttributes() {
-        return $this->serviceAttributes;
+    function getAcceptTermsOfServiceResult() {
+        return $this->acceptTermsOfServiceResult;
     }
 
     /**
-     * setter for serviceAttributes
+     * setter for acceptTermsOfServiceResult
      */
-    function setServiceAttributes($_serviceAttributes) {
-        $this->serviceAttributes = $_serviceAttributes;
+    function setAcceptTermsOfServiceResult($_acceptTermsOfServiceResult) {
+        $this->acceptTermsOfServiceResult = $_acceptTermsOfServiceResult;
     }
 
     /**
-     * resetter for serviceAttributes
+     * resetter for acceptTermsOfServiceResult
      */
-    function resetServiceAttributes() {
-        $this->serviceAttributes = NULL;
+    function resetAcceptTermsOfServiceResult() {
+        $this->acceptTermsOfServiceResult = NULL;
     }
+
 
     /******************** validator methods ********************/
 
+
     /**
-     * validator for class getServiceAttributesResponse
+     * validator for class acceptTermsOfServiceResponse
      */
     function validate() {
-        // serviceAttributes must oocur exactly once
-        if ($this->isInstanceOf($this->serviceAttributes, 'serviceAttributes') === false)
+        // acceptTermsOfServiceResult must occur exactly once
+        if ($this->isBoolean($this->acceptTermsOfServiceResult, 'acceptTermsOfServiceResult') === false)
             return false;
-        if ($this->serviceAttributes->validate() === false) {
-            $this->error = __CLASS__ . '.' . $this->serviceAttributes->getError();
-            return false;
-        }
 
         return true;
     }

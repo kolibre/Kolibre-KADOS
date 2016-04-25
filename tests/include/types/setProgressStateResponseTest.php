@@ -21,23 +21,23 @@
 $includePath = dirname(realpath(__FILE__)) . '/../../../include/types';
 set_include_path(get_include_path() . PATH_SEPARATOR . $includePath);
 
-require_once('setReadingSystemAttributesResponse.class.php');
+require_once('setProgressStateResponse.class.php');
 
-class setReadingSystemAttributesResponseTest extends PHPUnit_Framework_TestCase
+class setProgressStateResponseTest extends PHPUnit_Framework_TestCase
 {
     /**
-     * @group setReadingSystemAttributesResponse
+     * @group setProgressStateResponse
      * @group validate
      */
-    public function testsetReadingSystemAttributesResult()
+    public function testProgressStateResult()
     {
-        $instance = new setReadingSystemAttributesResponse();
+        $instance = new setProgressStateResponse();
         $this->assertFalse($instance->validate());
-        $this->assertContains('setReadingSystemAttributesResponse.setReadingSystemAttributesResult', $instance->getError());
-        $instance->setReadingSystemAttributesResult = 'setReadingSystemAttributesResult';
+        $this->assertContains('setProgressStateResponse.progressStateResult', $instance->getError());
+        $instance->progressStateResult = 'progressStateResult';
         $this->assertFalse($instance->validate());
-        $this->assertContains('setReadingSystemAttributesResponse.setReadingSystemAttributesResult', $instance->getError());
-        $instance->setReadingSystemAttributesResult = true;
+        $this->assertContains('setProgressStateResponse.progressStateResult', $instance->getError());
+        $instance->progressStateResult = true;
         $this->assertTrue($instance->validate());
     }
 }

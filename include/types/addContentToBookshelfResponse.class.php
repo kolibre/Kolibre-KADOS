@@ -19,48 +19,46 @@
  */
 
 require_once('AbstractType.class.php');
-require_once('serviceAttributes.class.php');
 
-
-class logOnResponse extends AbstractType {
+class addContentToBookshelfResponse extends AbstractType {
 
     /**
-     * @var (object) serviceAttributes
+     * @var boolean
      */
-    public $serviceAttributes;
+    public $addContentToBookshelfResult;
 
 
     /******************** public functions ********************/
 
     /**
-     * constructor for class logOnResponse
+     * constructor for class addContentToBookshelfResponse
      */
-    function __construct($_serviceAttributes = NULL) {
-        if (is_a($_serviceAttributes,"serviceAttributes")) $this->setServiceAttributes($_serviceAttributes);
+    function __construct($_addContentToBookshelfResult = NULL) {
+        if (is_bool($_addContentToBookshelfResult)) $this->setAddContentToBookshelfResult($_addContentToBookshelfResult);
     }
 
 
     /******************** class get set methods ********************/
 
     /**
-     * getter for serviceAttributes
+     * getter for addContentToBookshelfResult
      */
-    function getServiceAttributes() {
-        return $this->serviceAttributes;
+    function getAddContentToBookshelfResult() {
+        return $this->addContentToBookshelfResult;
     }
 
     /**
-     * setter for serviceAttributes
+     * setter for addContentToBookshelfResult
      */
-    function setServiceAttributes($_serviceAttributes) {
-        $this->serviceAttributes = $_serviceAttributes;
+    function setAddContentToBookshelfResult($_addContentToBookshelfResult) {
+        $this->addContentToBookshelfResult = $_addContentToBookshelfResult;
     }
 
     /**
-     * resetter for serviceAttributes
+     * resetter for addContentToBookshelfResult
      */
-    function resetServiceAttributes() {
-        $this->serviceAttributes = NULL;
+    function resetAddContentToBookshelfResult() {
+        $this->addContentToBookshelfResult = NULL;
     }
 
 
@@ -68,16 +66,12 @@ class logOnResponse extends AbstractType {
 
 
     /**
-     * validator for class logOnResponse
+     * validator for class addContentToBookshelfResponse
      */
     function validate() {
-        // serviceAttributes must occur exactly once
-        if ($this->isInstanceOf($this->serviceAttributes, 'serviceAttributes') === false)
+        // addContentToBookshelfResult must occur exactly once
+        if ($this->isBoolean($this->addContentToBookshelfResult, 'addContentToBookshelfResult') === false)
             return false;
-        if ($this->serviceAttributes->validate() === false) {
-            $this->error = __CLASS__ . '.' . $this->serviceAttributes->getError();
-            return false;
-        };
 
         return true;
     }

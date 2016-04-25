@@ -217,8 +217,8 @@ $testClient = new TestClient($serviceUrl, $username, $password);
 
 // establish session
 $result = $testClient->logOn();
-$result = $testClient->getServiceAttributes();
-$result = $testClient->setReadingSystemAttributes();
+//$result = $testClient->getServiceAttributes();
+//$result = $testClient->setReadingSystemAttributes();
 
 // issue new content
 $contentList = $testClient->getContentList('new');

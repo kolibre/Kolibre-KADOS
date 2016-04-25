@@ -21,7 +21,7 @@
 require_once('AbstractType.class.php');
 
 
-class getServiceAttributes extends AbstractType {
+class getTermsOfService extends AbstractType {
 
 }
 

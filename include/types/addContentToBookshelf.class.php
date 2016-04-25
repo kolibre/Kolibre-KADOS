@@ -20,18 +20,19 @@
 
 require_once('AbstractType.class.php');
 
-class issueContent extends AbstractType {
+class addContentToBookshelf extends AbstractType {
 
     /**
      * @var string
      */
     public $contentID;
 
+    
 
     /******************** public functions ********************/
 
     /**
-     * constructor for class issueContent
+     * constructor for class addContentToBookshelf
      */
     function __construct($_contentID = NULL) {
         if (is_string($_contentID)) $this->setContentID($_contentID);
@@ -60,19 +61,19 @@ class issueContent extends AbstractType {
     function resetContentID() {
         $this->contentID = NULL;
     }
-
+    
 
     /******************** validator methods ********************/
 
     /**
-     * validator for class issueContent
+     * validator for class addContentToBookshelf
      */
     function validate() {
         // contentID must occur exactly once
         if ($this->isNoneEmptyString($this->contentID, 'contentID') === false)
             return false;
 
-        return true;
+         return true;
     }
 }
 

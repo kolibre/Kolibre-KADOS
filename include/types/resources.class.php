@@ -21,6 +21,7 @@
 require_once('AbstractType.class.php');
 
 require_once('resource.class.php');
+require_once('package.class.php');
 
 class resources extends AbstractType {
 
@@ -163,8 +164,9 @@ class resources extends AbstractType {
             unset($this->resource[$i]);
     }
 
-/****************************** get set methods for package arrays **********************************/
-      /**
+    /****************************** get set methods for package arrays **********************************/
+
+    /**
      * get the ith element of package
      */
     function getPackageAt($i) {

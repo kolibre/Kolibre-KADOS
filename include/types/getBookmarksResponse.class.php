@@ -20,14 +20,14 @@
 
 require_once('AbstractType.class.php');
 
-require_once('bookmarkSet.class.php');
+require_once('bookmarkObject.class.php');
 
 class getBookmarksResponse extends AbstractType {
 
     /**
-     * @var (object)bookmarkSet
+     * @var (object)bookmarkObject
      */
-    public $bookmarkSet;
+    public $bookmarkObject;
 
 
     /******************** public functions ********************/
@@ -35,32 +35,32 @@ class getBookmarksResponse extends AbstractType {
     /**
      * constructor for class getBookmarksResponse
      */
-    function __construct($_bookmarkSet = NULL) {
-        if (is_a($_bookmarkSet, "bookmarkSet")) $this->setBookmarkSet($_bookmarkSet);
+    function __construct($_bookmarkObject = NULL) {
+        if (is_a($_bookmarkObject, "bookmarkObject")) $this->setBookmarkSet($_bookmarkObject);
     }
 
 
     /******************** class get set methods ********************/
 
     /**
-     * getter for bookmarkSet
+     * getter for bookmarkObject
      */
     function getBookmarkSet() {
-        return $this->bookmarkSet;
+        return $this->bookmarkObject;
     }
 
     /**
-     * setter for bookmarkSet
+     * setter for bookmarkObject
      */
-    function setBookmarkSet($_bookmarkSet) {
-        $this->bookmarkSet = $_bookmarkSet;
+    function setBookmarkSet($_bookmarkObject) {
+        $this->bookmarkObject = $_bookmarkObject;
     }
 
     /**
-     * resetter for bookmarkSet
+     * resetter for bookmarkObject
      */
     function resetBookmarkSet() {
-        $this->bookmarkSet = NULL;
+        $this->bookmarkObject = NULL;
     }
 
 
@@ -70,11 +70,11 @@ class getBookmarksResponse extends AbstractType {
      * validator for class getBookmarksResponse
      */
     function validate() {
-        // bookmarkSet must occur exactly once
-        if ($this->isInstanceOf($this->bookmarkSet, 'bookmarkSet') === false)
+        // bookmarkObject must occur exactly once
+        if ($this->isInstanceOf($this->bookmarkObject, 'bookmarkObject') === false)
             return false;
-        if ($this->bookmarkSet->validate() === false) {
-            $this->error = __CLASS__ . '.' . $this->bookmarkSet->getError();
+        if ($this->bookmarkObject->validate() === false) {
+            $this->error = __CLASS__ . '.' . $this->bookmarkObject->getError();
             return false;
         }
 

@@ -20,57 +20,62 @@
 
 require_once('AbstractType.class.php');
 
-class issueContentResponse extends AbstractType {
+require_once('label.class.php');
+
+class getTermsOfServiceResponse extends AbstractType {
 
     /**
-     * @var boolean
+     * @var (object)label
      */
-    public $issueContentResult;
+    public $label;
 
 
     /******************** public functions ********************/
 
     /**
-     * constructor for class issueContentResponse
+     * constructor for class getTermsOfServiceResponse
      */
-    function __construct($_issueContentResult = NULL) {
-        if (is_bool($_issueContentResult)) $this->setIssueContentResult($_issueContentResult);
+    function __construct($_label = NULL) {
+        if (is_a($_label, "label")) $this->setLabel($_label);
     }
 
 
     /******************** class get set methods ********************/
 
     /**
-     * getter for issueContentResult
+     * getter for label
      */
-    function getIssueContentResult() {
-        return $this->issueContentResult;
+    function getLabel() {
+        return $this->label;
     }
 
     /**
-     * setter for issueContentResult
+     * setter for label
      */
-    function setIssueContentResult($_issueContentResult) {
-        $this->issueContentResult = $_issueContentResult;
+    function setLabel($_label) {
+        $this->label = $_label;
     }
 
     /**
-     * resetter for issueContentResult
+     * resetter for label
      */
-    function resetIssueContentResult() {
-        $this->issueContentResult = NULL;
+    function resetLabel() {
+        $this->label = NULL;
     }
-
 
     /******************** validator methods ********************/
 
     /**
-     * validator for class issueContentResponse
+     * validator for class getTermsOfServiceResponse
      */
     function validate() {
-        // issueContentResult must occur exactly once
-        if ($this->isBoolean($this->issueContentResult, 'issueContentResult') === false)
+        // label must oocur exactly once
+        if ($this->isInstanceOf($this->label, 'label') === false)
             return false;
+        if ($this->label->validate() === false) {
+            $this->error = __CLASS__ . '.' . $this->label->getError();
+            return false;
+        }
 
         return true;
     }

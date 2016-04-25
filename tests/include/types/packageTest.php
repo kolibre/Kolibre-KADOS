@@ -32,22 +32,27 @@ class packageTest extends PHPUnit_Framework_TestCase
      */
     public function testResourceRef()
     {   
-        
-
         $package = new package(NULL, 'uri', 'mimetype', 1234, '2016-03-11T14:23:23+00:00');
         $this->assertFalse($package->validate());
-        
+        $this->assertContains('package.resourceRef', $package->getError());
 
         $package->resourceRef = '';
         $this->assertFalse($package->validate());
-        
-        
-        $resourceRef = new resourceRef('localURI');
-        // check the resourceRef is correctoly instantiated
-        $this->assertTrue($resourceRef->validate());
-        $package = new package($resourceRef, 'uri', 'mimetype', 1234, '2016-03-11T14:23:23Z');
-        $this->assertTrue($package->validate());
+        $this->assertContains('package.resourceRef', $package->getError());
 
+        $package->resourceRef = array();
+        $this->assertFalse($package->validate());
+        $this->assertContains('package.resourceRef', $package->getError());
+
+        $package->resourceRef = array('resourceRef');
+        $this->assertFalse($package->validate());
+        $this->assertContains('package.resourceRef', $package->getError());
+
+        $resourceRef = new resourceRef('localURI');
+        // check the resourceRef is correctly instantiated
+        $this->assertTrue($resourceRef->validate());
+        $package->resourceRef = array($resourceRef);
+        $this->assertTrue($package->validate());
      }
 
     /**
@@ -57,13 +62,13 @@ class packageTest extends PHPUnit_Framework_TestCase
     public function testUri()
     {   
         $resourceRef = new resourceRef('localURI');
-        // check the resourceRef is correctoly instantiated
+        // check the resourceRef is correctly instantiated
         $this->assertTrue($resourceRef->validate());
 
-        $package = new package($resourceRef, NULL, 'mimetype', 1234, '2016-03-11T14:23:23+00:00');
+        $package = new package(array($resourceRef), NULL, 'mimetype', 1234, '2016-03-11T14:23:23+00:00');
         $this->assertFalse($package->validate());
         $this->assertContains('package.uri', $package->getError());
-        
+
         $package->uri = 1;
         $this->assertFalse($package->validate());
         $this->assertContains('package.uri', $package->getError());
@@ -74,7 +79,6 @@ class packageTest extends PHPUnit_Framework_TestCase
 
         $package->uri = 'uri';
         $this->assertTrue($package->validate());
-       
     }
 
     /**
@@ -84,13 +88,13 @@ class packageTest extends PHPUnit_Framework_TestCase
     public function testMimeType()
     {   
         $resourceRef = new resourceRef('localURI');
-        // check the resourceRef is correctoly instantiated
+        // check the resourceRef is correctly instantiated
         $this->assertTrue($resourceRef->validate());
 
-        $package = new package($resourceRef, 'uri', NULL, 1234, '2016-03-11T14:23:23+00:00');
+        $package = new package(array($resourceRef), 'uri', NULL, 1234, '2016-03-11T14:23:23+00:00');
         $this->assertFalse($package->validate());
         $this->assertContains('package.mimeType', $package->getError());
-        
+
         $package->mimeType = 1;
         $this->assertFalse($package->validate());
         $this->assertContains('package.mimeType', $package->getError());
@@ -101,7 +105,6 @@ class packageTest extends PHPUnit_Framework_TestCase
 
         $package->mimeType = 'mimeType';
         $this->assertTrue($package->validate());
-       
     }
 
     /**
@@ -111,16 +114,15 @@ class packageTest extends PHPUnit_Framework_TestCase
     public function testSize()
     {   
         $resourceRef = new resourceRef('localURI');
-        // check the resourceRef is correctoly instantiated
+        // check the resourceRef is correctly instantiated
         $this->assertTrue($resourceRef->validate());
 
-        $package = new package($resourceRef, 'uri', 'mimeType', NULL, '2016-03-11T14:23:23+00:00');
+        $package = new package(array($resourceRef), 'uri', 'mimeType', NULL, '2016-03-11T14:23:23+00:00');
         $this->assertFalse($package->validate());
-                
+
         $package->size = '';
         $this->assertFalse($package->validate());
         $this->assertContains('package.size', $package->getError());
-
         
         $package->size = -14;
         $this->assertFalse($package->validate());
@@ -128,7 +130,6 @@ class packageTest extends PHPUnit_Framework_TestCase
 
         $package->size = 15;
         $this->assertTrue($package->validate());
-       
     }
 
     /**
@@ -138,12 +139,12 @@ class packageTest extends PHPUnit_Framework_TestCase
     public function testLastModifiedDate()
     {   
         $resourceRef = new resourceRef('localURI');
-        // check the resourceRef is correctoly instantiated
+        // check the resourceRef is correctly instantiated
         $this->assertTrue($resourceRef->validate());
 
-        $package = new package($resourceRef, 'uri', 'mimeType', 1234, NULL);
+        $package = new package(array($resourceRef), 'uri', 'mimeType', 1234, NULL);
         $this->assertFalse($package->validate());
-                
+
         $package->lastModifiedDate = 124;
         $this->assertFalse($package->validate());
         $this->assertContains('package.lastModifiedDate', $package->getError());
@@ -151,12 +152,9 @@ class packageTest extends PHPUnit_Framework_TestCase
         $package->lastModifiedDate = '2016-03-11T14:23:23Z';
         $this->assertTrue($package->validate());
        
-
         $package->lastModifiedDate = '2016-03-11T14:23:23+00:00';
         $this->assertTrue($package->validate());
-       
     }
-
 }
 
 ?>

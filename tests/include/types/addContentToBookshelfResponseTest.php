@@ -21,23 +21,23 @@
 $includePath = dirname(realpath(__FILE__)) . '/../../../include/types';
 set_include_path(get_include_path() . PATH_SEPARATOR . $includePath);
 
-require_once('issueContentResponse.class.php');
+require_once('addContentToBookshelfResponse.class.php');
 
-class issueContentResponseTest extends PHPUnit_Framework_TestCase
+class addContentToBookshelfResponseTest extends PHPUnit_Framework_TestCase
 {
     /**
-     * @group issueContentResponse
+     * @group addContentToBookshelfResponse
      * @group validate
      */
-    public function testIssueContentResult()
+    public function testAddContentToBookshelfResult()
     {
-        $instance = new issueContentResponse();
+        $instance = new addContentToBookshelfResponse();
         $this->assertFalse($instance->validate());
-        $this->assertContains('issueContentResponse.issueContentResult', $instance->getError());
-        $instance->issueContentResult = 'issueContentResult';
+        $this->assertContains('addContentToBookshelfResponse.addContentToBookshelfResult', $instance->getError());
+        $instance->addContentToBookshelfResult = 'addContentToBookshelfResult';
         $this->assertFalse($instance->validate());
-        $this->assertContains('issueContentResponse.issueContentResult', $instance->getError());
-        $instance->issueContentResult = true;
+        $this->assertContains('addContentToBookshelfResponse.addContentToBookshelfResult', $instance->getError());
+        $instance->addContentToBookshelfResult = true;
         $this->assertTrue($instance->validate());
     }
 }

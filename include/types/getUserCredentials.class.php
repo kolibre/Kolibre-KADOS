@@ -20,23 +20,22 @@
 
 require_once('AbstractType.class.php');
 
-require_once('readingSystemAttributes.class.php');
-
-class setReadingSystemAttributes extends AbstractType {
+class getUserCredentials extends AbstractType {
 
     /**
-     * @var (object)readingSystemAttributes
+     * @var (object) readingSystemAttributes
      */
     public $readingSystemAttributes;
 
+    
 
     /******************** public functions ********************/
 
     /**
-     * constructor for class setReadingSystemAttributes
+     * constructor for class getUserCredentials
      */
     function __construct($_readingSystemAttributes = NULL) {
-        if (is_a($_readingSystemAttributes, "readingSystemAttributes")) $this->setReadingSystemAttributes($_readingSystemAttributes);
+        if (is_a($_readingSystemAttributes,"readingSystemAttributes")) $this->setReadingSystemAttributes($_readingSystemAttributes);
     }
 
 
@@ -62,24 +61,22 @@ class setReadingSystemAttributes extends AbstractType {
     function resetReadingSystemAttributes() {
         $this->readingSystemAttributes = NULL;
     }
-
+    
 
     /******************** validator methods ********************/
 
     /**
-     * validator for class setReadingSystemAttributes
+     * validator for class getUserCredentials
      */
     function validate() {
-        // readingSystemAttributes must occut exactly once
+        // readingSystemAttributes must occur exactly once
         if ($this->isInstanceOf($this->readingSystemAttributes, 'readingSystemAttributes') === false)
             return false;
-        if ($this->readingSystemAttributes->validate() === false)
-        {
+        if ($this->readingSystemAttributes->validate() === false) {
             $this->error = __CLASS__ . '.' . $this->readingSystemAttributes->getError();
             return false;
         }
-
-        return true;
+         return true;
     }
 }
 

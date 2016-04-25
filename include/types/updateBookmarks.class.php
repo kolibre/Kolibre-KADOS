@@ -19,10 +19,9 @@
  */
 
 require_once('AbstractType.class.php');
+require_once('bookmarkObject.class.php');
 
-require_once('bookmarkSet.class.php');
-
-class setBookmarks extends AbstractType {
+class updateBookmarks extends AbstractType {
 
     /**
      * @var string
@@ -30,19 +29,28 @@ class setBookmarks extends AbstractType {
     public $contentID;
 
     /**
-     * @var (object)bookmarkSet
+     * @var string with the following allowed values
+     *      REPLACE_ALL
+     *      ADD
+     *      REMOVE
      */
-    public $bookmarkSet;
+    public $action;
+
+    /**
+     * @var (object) bookmarkObject
+     */
+    public $bookmarkObject;
 
 
     /******************** public functions ********************/
 
     /**
-     * constructor for class setBookmarks
+     * constructor for class updateBookmark
      */
-    function __construct($_contentID = NULL, $_bookmarkSet = NULL) {
+    function __construct($_contentID = NULL, $_action = NULL, $_bookmarkObject) {
         if (is_string($_contentID)) $this->setContentID($_contentID);
-        if (is_a($_bookmarkSet, "bookmarkSet")) $this->setBookmarkSet($_bookmarkSet);
+        if (is_string($_action)) $this->setAction($_action);
+        if(is_a($_bookmarkObject, 'bookmarkObject')) $this->setBookmarkObject($_bookmarkObject);
     }
 
 
@@ -70,45 +78,70 @@ class setBookmarks extends AbstractType {
     }
 
     /**
-     * getter for bookmarkSet
+     * getter for action
      */
-    function getBookmarkSet() {
-        return $this->bookmarkSet;
+    function getAction() {
+        return $this->action;
     }
 
     /**
-     * setter for bookmarkSet
+     * setter for action
      */
-    function setBookmarkSet($_bookmarkSet) {
-        $this->bookmarkSet = $_bookmarkSet;
+    function setAction($_action) {
+        $this->action = $_action;
     }
 
     /**
-     * resetter for bookmarkSet
+     * resetter for action
      */
-    function resetBookmarkSet() {
-        $this->bookmarkSet = NULL;
+    function resetAction() {
+        $this->action = NULL;
+    }
+
+    /**
+     * getter for bookmarkObject
+     */
+    function getBookmarkObject() {
+        return $this->bookmarkObject;
+    }
+
+    /**
+     * setter for bookmarkObject
+     */
+    function setBookmarkObject($_bookmarkObject) {
+        $this->bookmarkObject = $_bookmarkObject;
+    }
+
+    /**
+     * resetter for bookmarkObject
+     */
+    function resetBookmarkObject() {
+        $this->bookmarkObject = NULL;
     }
 
 
     /******************** validator methods ********************/
 
     /**
-     * validator for class setBookmarks
+     * validator for class updateBookmark
      */
     function validate() {
         // contentID must occur exactly once
         if ($this->isNoneEmptyString($this->contentID, 'contentID') === false)
             return false;
 
-        // bookmarkSet must occur exactly once
-        if ($this->isInstanceOf($this->bookmarkSet, 'bookmarkSet') === false)
+        // action must occur exactly once
+        if ($this->isString($this->action, 'action', array("REPLACE_ALL","ADD", "REMOVE")) === false)
             return false;
-        if ($this->bookmarkSet->validate() === false) {
-            $this->error = __CLASS__ . '.' . $this->bookmarkSet->getError();
-            return false;
-        }
 
+        // bookmarkObject must occur exactly once
+        if ($this->isInstanceOf($this->bookmarkObject, 'bookmarkObject') === false)
+            return false;
+        if ($this->bookmarkObject->validate() === false) {
+            $this->error = __CLASS__ . '.' . $this->label->getError();
+            return false;
+        } 
+        
         return true;
     }
 }

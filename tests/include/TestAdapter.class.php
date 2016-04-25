@@ -32,7 +32,7 @@ class TestAdapter extends Adapter
         if ($this->sessionStarted === false)
         {
             $this->sessionStarted = true;
-            return false;
+            return true;
         }
 
         return true;
@@ -69,6 +69,12 @@ class TestAdapter extends Adapter
         case Adapter::LABEL_CONTENTITEM:
             if ($id == 'valid-list-label-exception')
                 throw new AdapterException('Error in adapter');
+            return $label;
+            break;
+        case Adapter::LABEL_CATEGORY:
+            return $label;
+            break;
+        case Adapter::LABEL_SUBCATEGORY:
             return $label;
             break;
         default:
@@ -125,13 +131,18 @@ class TestAdapter extends Adapter
         if ($contentId == 'exception-content-lastmodifieddate')
             throw new AdapterException('Error in adapter');
 
-        return '1970-01-01T00:00:00';
+        return '1970-01-01T00:00:00+00:00';
+    }
+
+    public function contentAccessDate($contentId)
+    {
+        return array('first' => '1970-01-01T00:00:00+00:00', 'last' => '1970-01-01T00:00:00+00:00');
     }
 
     public function contentAccessMethod($contentId)
     {
         // TODO: implement test cases
-        return ACCESS_STREAM_AND_DOWNLOAD_AUTOMATIC_ALLOWED;
+        return Adapter::ACCESS_STREAM_AND_DOWNLOAD_AUTOMATIC_ALLOWED;
     }
 
     public function contentExists($contentId)
@@ -172,12 +183,20 @@ class TestAdapter extends Adapter
         return 'category';
     }
 
+    public function contentSubCategory($contentId)
+    {
+        if ($contentId == 'exception-content-category')
+            throw new AdapterException('Error in adapter');
+
+        return 'subCategory';
+    }
+
     public function contentReturnDate($contentId)
     {
         if ($contentId == 'exception-content-returndate')
             throw new AdapterException('Error in adapter');
 
-        return '1970-01-01T00:00:00';
+        return '1970-01-01T00:00:00+00:00';
     }
 
     public function contentMetadata($contentId)
@@ -185,27 +204,30 @@ class TestAdapter extends Adapter
         if ($contentId == 'exception-content-metadata')
             throw new AdapterException('Error in adapter');
 
-        if ($contentId == 'valid-content-metadata')
+        $validContentIds = array('valid-identifier-1', 'valid-identifier-2', 'valid-identifier-3', 'valid-content-metadata');
+        if (in_array($contentId, $validContentIds) === true)
         {
             $metadata = array();
+            $metadata['dc:title'] = 'title';
+            $metadata['dc:identifier'] = 'identifier';
+            $metadata['dc:publisher'] = 'publisher';
+            $metadata['dc:format'] = 'format';
+            $metadata['dc:date'] = 'date';
+            $metadata['dc:source'] = 'source';
+            $metadata['dc:type'] = 'type';
+            $metadata['dc:subject'] = 'subject';
+            $metadata['dc:rights'] = 'rights';
+            $metadata['dc:relation'] = 'relation';
+            $metadata['dc:language'] = 'language';
+            $metadata['dc:description'] = 'description';
+            $metadata['dc:creator'] = 'creator';
+            $metadata['dc:coverage'] = 'coverage';
+            $metadata['dc:contributor'] = 'contributor';
+            $metadata['dc:narrator'] = 'narrator';
             $metadata['size'] = 1;
-            $metadata['dc:title'] = 'dc:title';
-            $metadata['dc:identifier'] = 'dc:identifier';
-            $metadata['dc:publisher'] = 'dc:publisher';
-            $metadata['dc:format'] = 'dc:format';
-            $metadata['dc:date'] = 'dc:date';
-            $metadata['dc:source'] = 'dc:source';
-            $metadata['dc:type'] = 'dc:type';
-            $metadata['dc:subject'] = 'dc:subject';
-            $metadata['dc:rights'] = 'dc:rights';
-            $metadata['dc:relation'] = 'dc:relation';
-            $metadata['dc:language'] = 'dc:language';
-            $metadata['dc:description'] = 'dc:description';
-            $metadata['dc:creator'] = 'dc:creator';
-            $metadata['dc:coverage'] = 'dc:coverage';
-            $metadata['dc:contributor'] = 'dc:contributor';
-            $metadata['pdtb2:specVersion'] = 'PDTB2';
+            $metadata['meta'] = 'meta';
             return $metadata;
+
         }
 
         return array();
@@ -252,10 +274,34 @@ class TestAdapter extends Adapter
             $resource['mimeType'] = 'mimeType';
             $resource['size'] = 1;
             $resource['localURI'] = 'localURI';
-            $resource['lastModifiedDate'] = '1970-01-01T00:00:00';
+            $resource['lastModifiedDate'] = '1970-01-01T00:00:00+00:00';
+            $resource['serverSideHash'] = 'md5';
             array_push($resources, $resource);
             array_push($resources, $resource);
             array_push($resources, $resource);
+            return $resources;
+        }
+
+        if ($contentId == 'valid-content-resources-with-package')
+        {
+            $resources = array();
+            $resource = array();
+            $resource['uri'] = 'uri';
+            $resource['mimeType'] = 'mimeType';
+            $resource['size'] = 1;
+            $resource['localURI'] = 'localURI';
+            $resource['lastModifiedDate'] = '1970-01-01T00:00:00+00:00';
+            $resource['serverSideHash'] = 'md5';
+            array_push($resources, $resource);
+            array_push($resources, $resource);
+            array_push($resources, $resource);
+            $package = array();
+            $package['uri'] = 'uri';
+            $package['mimeType'] = 'mimeType';
+            $package['size'] = 1;
+            $package['lastModifiedDate'] = '1970-01-01T00:00:00+00:00';
+            $package['resourceRef'] = array('localURI');
+            array_push($resources, $package);
             return $resources;
         }
 

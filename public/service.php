@@ -32,7 +32,7 @@ $serviceLogger = Logger::getLogger('kolibre.daisyonline.service');
 require_once('DaisyOnlineService.class.php');
 
 // Define wsdl filename
-$wsdl_filename = 'do-wsdl-10.wsdl';
+$wsdl_filename = 'do-wsdl-20.wsdl';
 
 // if WSDL file was requested (service.php?wsdl)
 if (in_array('wsdl', array_map('strtolower', array_keys($_GET))))

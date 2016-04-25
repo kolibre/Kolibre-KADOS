@@ -1,0 +1,513 @@
+<xs:schema elementFormDefault="qualified" attributeFormDefault="unqualified" targetNamespace="http://www.daisy.org/ns/daisy-online/" 
+           xmlns="http://www.daisy.org/ns/daisy-online/" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:xlink="http://www.w3.org/1999/xlink" 
+           xmlns:db="http://docbook.org/ns/docbook" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:bm="http://www.daisy.org/z3986/2005/bookmark/">
+  <xs:annotation>
+    <xs:documentation>
+      This W3C XML Schema document and the entities referenced from within it are a
+      normative part of the DAISY Online Protocol Specification
+      (http://www.daisy.org/projects/daisy-online-delivery/). Version: 2.0.1
+    </xs:documentation>
+  </xs:annotation>
+  <!-- <xs:import namespace="http://www.w3.org/XML/1998/namespace" schemaLocation="xml.xsd"/>-->
+  <xs:import namespace="http://purl.org/dc/elements/1.1/" schemaLocation="dc.xsd"/>
+  <xs:import namespace="http://www.daisy.org/z3986/2005/bookmark/" schemaLocation="bookmark-2005-1.xsd"/>
+  <xs:import namespace="http://www.daisy.org/DRM/2005/KeyExchange" schemaLocation="KeyExchange-2005-1.xsd"/>
+
+<!-- <xs:schema xmlns="http://www.daisy.org/ns/daisy-online/" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:db="http://docbook.org/ns/docbook" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:bm="http://www.daisy.org/z3986/2005/bookmark/" xmlns:ns1="http://www.daisy.org/DRM/2005/KeyExchange" xmlns:ns2="http://www.w3.org/2000/09/xmldsig#" xmlns:ns3="http://www.w3.org/2001/04/xmlenc#" targetNamespace="http://www.daisy.org/ns/daisy-online/" elementFormDefault="qualified" attributeFormDefault="unqualified">
+	<xs:annotation>
+		<xs:documentation xml:lang="en"> This W3C XML Schema document and the entities referenced from within it are a
+			normative part of the DAISY Online Protocol Specification
+			(http://www.daisy.org/projects/daisy-online-delivery/). Version: 2.0.1
+      
+      Draft 1 - Original schema nased on DODP2 Specification
+      Draft 2 - Applied changes from Conference
+      Draft 3 - Changed hasBookmarks from Element to Attribute
+      
+       
+  </xs:documentation>
+	</xs:annotation>
+	<xs:import namespace="http://purl.org/dc/elements/1.1/" schemaLocation="dc.xsd"/>
+	<xs:import namespace="http://www.daisy.org/DRM/2005/KeyExchange" schemaLocation="KeyExchange-2005-1.xsd"/>
+	<xs:import namespace="http://www.w3.org/2000/09/xmldsig#" schemaLocation="xmldsig-core-schema.xsd"/>
+	<xs:import namespace="http://www.w3.org/2001/04/xmlenc#" schemaLocation="xenc-schema.xsd"/>
+	<xs:import namespace="http://www.daisy.org/z3986/2005/bookmark/" schemaLocation="bookmark-2005-1.xsd"/>
+  <xs:import namespace="http://www.w3.org/XML/1998/namespace" schemaLocation="xml.xsd"/>
+  -->
+  <xs:element name="readingSystemAttributes">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="manufacturer" type="xs:string" minOccurs="1" maxOccurs="1"/>
+        <xs:element name="model" type="xs:string" minOccurs="1" maxOccurs="1"/>
+        <xs:element name="serialNumber" type="xs:string" minOccurs="0" maxOccurs="1"/>
+        <xs:element name="version" type="xs:string" minOccurs="1" maxOccurs="1"/>
+        <xs:element name="config" minOccurs="1" maxOccurs="1">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element ref="accessConfig" minOccurs="1" maxOccurs="1"/>
+              <xs:element name="supportsMultipleSelections" type="xs:boolean" minOccurs="1" maxOccurs="1"/>
+              <xs:element name="supportsAdvancedDynamicMenus" type="xs:boolean" minOccurs="1" maxOccurs="1"/>
+              <xs:element name="preferredUILanguage" type="xs:language" minOccurs="1" maxOccurs="1"/>
+              <xs:element name="bandwidth" type="xs:int" minOccurs="0" maxOccurs="1"/>
+              <xs:element name="supportedContentFormats" minOccurs="1" maxOccurs="1">
+                <xs:complexType>
+                  <xs:sequence>
+                    <xs:element name="contentFormat" type="xs:string" minOccurs="0" maxOccurs="unbounded"/>
+                  </xs:sequence>
+                </xs:complexType>
+              </xs:element>
+              <xs:element name="supportedContentProtectionFormats" minOccurs="1" maxOccurs="1">
+                <xs:complexType>
+                  <xs:sequence>
+                    <xs:element name="protectionFormat" minOccurs="0" maxOccurs="unbounded">
+                      <xs:simpleType>
+                        <xs:restriction base="xs:string">
+                          <xs:enumeration value="PDTB2"/>
+                        </xs:restriction>
+                      </xs:simpleType>
+                    </xs:element>
+                  </xs:sequence>
+                </xs:complexType>
+              </xs:element>
+              <xs:element ref="keyRing" minOccurs="0" maxOccurs="1"/>
+              <xs:element name="supportedMimeTypes" minOccurs="1" maxOccurs="1">
+                <xs:complexType>
+                  <xs:sequence>
+                    <xs:element name="mimeType" minOccurs="0" maxOccurs="unbounded">
+                      <xs:complexType>
+                        <xs:attribute name="type" type="xs:string" use="required"/>
+                        <xs:attribute ref="xml:lang" use="optional"/>
+                      </xs:complexType>
+                    </xs:element>
+                  </xs:sequence>
+                </xs:complexType>
+              </xs:element>
+              <xs:element name="supportedInputTypes" minOccurs="1" maxOccurs="1">
+                <xs:complexType>
+                  <xs:sequence>
+                    <xs:element ref="input" minOccurs="0" maxOccurs="unbounded"/>
+                  </xs:sequence>
+                </xs:complexType>
+              </xs:element>
+              <xs:element name="requiresAudioLabels" type="xs:boolean" minOccurs="1" maxOccurs="1"/>
+              <xs:element name="additionalTransferProtocols" minOccurs="0" maxOccurs="1">
+                <xs:complexType>
+                  <xs:sequence>
+                    <xs:element name="protocol" type="xs:string" minOccurs="1" maxOccurs="unbounded"/>
+                  </xs:sequence>
+                </xs:complexType>
+              </xs:element>
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="bookmarkObject">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element ref="bm:bookmarkSet" minOccurs="1" maxOccurs="1"/>
+      </xs:sequence>
+      <xs:attribute name="lastModifiedDate" type="xs:dateTime" use="optional"/>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="credentials">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="username" type="xs:string" minOccurs="1" maxOccurs="1"/>
+        <xs:element name="password" type="xs:string" minOccurs="1" maxOccurs="1"/>
+      </xs:sequence>
+      <xs:attribute name="encryptionScheme" type="xs:NMTOKEN" use="required"/>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="accessConfig">
+    <xs:simpleType>
+      <xs:restriction base="xs:string">
+        <xs:enumeration value="STREAM_ONLY"/>
+        <xs:enumeration value="DOWNLOAD_ONLY"/>
+        <xs:enumeration value="STREAM_AND_DOWNLOAD"/>
+        <xs:enumeration value="STREAM_AND_RESTRICTED_DOWNLOAD"/>
+        <xs:enumeration value="RESTRICTED_DOWNLOAD_ONLY"/>
+      </xs:restriction>
+    </xs:simpleType>
+  </xs:element>
+  <xs:element name="input">
+    <xs:complexType>
+      <xs:attribute name="type" use="required">
+        <xs:simpleType>
+          <xs:restriction base="xs:string">
+            <xs:enumeration value="TEXT_NUMERIC"/>
+            <xs:enumeration value="TEXT_ALPHANUMERIC"/>
+            <xs:enumeration value="AUDIO"/>
+          </xs:restriction>
+        </xs:simpleType>
+      </xs:attribute>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="announcements">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="announcement" minOccurs="0" maxOccurs="unbounded">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element ref="label" minOccurs="1" maxOccurs="1"/>
+            </xs:sequence>
+            <xs:attribute name="id" type="xs:NMTOKEN" use="required"/>
+            <xs:attribute name="type" use="optional" default="INFORMATION">
+              <xs:simpleType>
+                <xs:restriction base="xs:string">
+                  <xs:enumeration value="INFORMATION"/>
+                  <xs:enumeration value="SYSTEM"/>
+                </xs:restriction>
+              </xs:simpleType>
+            </xs:attribute>
+            <xs:attribute name="priority" use="optional" default="LOW">
+              <xs:simpleType>
+                <xs:restriction base="xs:string">
+                  <xs:enumeration value="HIGH"/>
+                  <xs:enumeration value="MEDIUM"/>
+                  <xs:enumeration value="LOW"/>
+                </xs:restriction>
+              </xs:simpleType>
+            </xs:attribute>
+          </xs:complexType>
+        </xs:element>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="categoryLabel">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element ref="label" minOccurs="1" maxOccurs="1"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="subCategoryLabel">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element ref="label" minOccurs="1" maxOccurs="1"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="label">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="text" type="xs:string" minOccurs="1" maxOccurs="1"/>
+        <xs:element name="audio" minOccurs="0" maxOccurs="1">
+          <xs:complexType>
+            <xs:attribute name="uri" type="xs:anyURI" use="required"/>
+            <xs:attribute name="rangeBegin" type="xs:long" use="optional"/>
+            <xs:attribute name="rangeEnd" type="xs:long" use="optional"/>
+            <xs:attribute name="size" type="xs:long" use="optional"/>
+          </xs:complexType>
+        </xs:element>
+      </xs:sequence>
+      <xs:attribute ref="xml:lang" use="required"/>
+      <xs:attribute name="dir" use="optional">
+        <xs:simpleType>
+          <xs:restriction base="xs:string">
+            <xs:enumeration value="ltr"/>
+            <xs:enumeration value="rtl"/>
+          </xs:restriction>
+        </xs:simpleType>
+      </xs:attribute>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="resources">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="resource" minOccurs="1" maxOccurs="unbounded">
+          <xs:complexType>
+            <xs:attribute name="uri" type="xs:anyURI" use="required"/>
+            <xs:attribute name="mimeType" type="xs:string" use="required"/>
+            <xs:attribute name="size" type="xs:long" use="required"/>
+            <xs:attribute name="localURI" type="xs:anyURI" use="required"/>
+            <xs:attribute name="lastModifiedDate" type="xs:dateTime" use="optional"/>
+            <xs:attribute name="serverSideHash" type="xs:string" use="optional"/>
+          </xs:complexType>
+        </xs:element>
+        <xs:element name="package" minOccurs="0" maxOccurs="unbounded">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="resourceRef" minOccurs="1" maxOccurs="unbounded">
+                <xs:complexType>
+                  <xs:attribute name="localURI" type="xs:anyURI" use="required"/>
+                </xs:complexType>
+              </xs:element>
+            </xs:sequence>
+            <xs:attribute name="uri" type="xs:anyURI" use="required"/>
+            <xs:attribute name="mimeType" type="xs:string" use="required"/>
+            <xs:attribute name="size" type="xs:long" use="required"/>
+            <xs:attribute name="lastModifiedDate" type="xs:dateTime" use="required"/>
+          </xs:complexType>
+        </xs:element>
+      </xs:sequence>
+      <xs:attribute name="lastModifiedDate" type="xs:dateTime" use="optional"/>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="contentList">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element ref="label" minOccurs="0" maxOccurs="1"/>
+        <xs:element name="contentItem" minOccurs="0" maxOccurs="unbounded">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element ref="label" minOccurs="1" maxOccurs="1"/>
+              <xs:element name="sample" minOccurs="0" maxOccurs="1">
+                <xs:complexType>
+                  <xs:attribute name="id" type="xs:string" use="required"/>
+                </xs:complexType>
+              </xs:element>
+              <xs:element name="metadata" minOccurs="1" maxOccurs="1">
+                <xs:complexType>
+                  <xs:sequence>
+                    <xs:element ref="dc:title" minOccurs="1" maxOccurs="1"/>
+                    <xs:element ref="dc:identifier" minOccurs="1" maxOccurs="1"/>
+                    <xs:element ref="dc:publisher" minOccurs="0" maxOccurs="1"/>
+                    <xs:element ref="dc:format" minOccurs="1" maxOccurs="1"/>
+                    <xs:element ref="dc:date" minOccurs="0" maxOccurs="1"/>
+                    <xs:element ref="dc:source" minOccurs="0" maxOccurs="1"/>
+                    <xs:element ref="dc:type" minOccurs="0" maxOccurs="unbounded"/>
+                    <xs:element ref="dc:subject" minOccurs="0" maxOccurs="unbounded"/>
+                    <xs:element ref="dc:rights" minOccurs="0" maxOccurs="unbounded"/>
+                    <xs:element ref="dc:relation" minOccurs="0" maxOccurs="unbounded"/>
+                    <xs:element ref="dc:language" minOccurs="0" maxOccurs="unbounded"/>
+                    <xs:element ref="dc:description" minOccurs="0" maxOccurs="unbounded"/>
+                    <xs:element ref="dc:creator" minOccurs="0" maxOccurs="unbounded"/>
+                    <xs:element ref="dc:coverage" minOccurs="0" maxOccurs="unbounded"/>
+                    <xs:element ref="dc:contributor" minOccurs="0" maxOccurs="unbounded"/>
+                    <xs:element name="narrator" type="xs:string" minOccurs="0" maxOccurs="unbounded"/>
+                    <xs:element name="size" type="xs:long" minOccurs="1" maxOccurs="1"/>
+                    <xs:element name="meta" minOccurs="0" maxOccurs="unbounded">
+                      <xs:complexType>
+                        <xs:attribute name="name" use="required"/>
+                        <xs:attribute name="content" use="required"/>
+                      </xs:complexType>
+                    </xs:element>
+                    <xs:choice minOccurs="0" maxOccurs="unbounded">
+                      <xs:any namespace="##other" processContents="lax"/>
+                    </xs:choice>
+                  </xs:sequence>
+                </xs:complexType>
+              </xs:element>
+              <xs:element ref="categoryLabel" minOccurs="0" maxOccurs="1"/>
+              <xs:element ref="subCategoryLabel" minOccurs="0" maxOccurs="1"/>
+              <xs:element name="accessPermission" minOccurs="1" maxOccurs="1">
+                <xs:simpleType>
+                  <xs:restriction base="xs:string">
+                    <xs:enumeration value="STREAM_ONLY"/>
+                    <xs:enumeration value="DOWNLOAD_ONLY"/>
+                    <xs:enumeration value="STREAM_AND_DOWNLOAD"/>
+                    <xs:enumeration value="STREAM_AND_RESTRICTED_DOWNLOAD"/>
+                    <xs:enumeration value="RESTRICTED_DOWNLOAD_ONLY"/>
+                    <xs:enumeration value="DOWNLOAD_ONLY_AUTOMATED_ALLOWED"/>
+                    <xs:enumeration value="STREAM_AND_DOWNLOAD_AUTOMATED_ALLOWED"/>
+                    <xs:enumeration value="STREAM_AND_RESTRICTED_DOWNLOAD_AUTOMATED_ALLOWED"/>
+                    <xs:enumeration value="RESTRICTED_DOWNLOAD_ONLY_AUTOMATED_ALLOWED"/>
+                  </xs:restriction>
+                </xs:simpleType>
+              </xs:element>
+              <xs:element ref="bm:lastmark" minOccurs="0" maxOccurs="1"/>
+              <xs:element ref="multipleChoiceQuestion" minOccurs="0" maxOccurs="1"/>
+            </xs:sequence>
+            <xs:attribute name="id" type="xs:string" use="required"/>
+            <xs:attribute name="firstAccessedDate" type="xs:dateTime" use="optional"/>
+            <xs:attribute name="lastAccessedDate" type="xs:dateTime" use="optional"/>
+            <xs:attribute name="lastModifiedDate" type="xs:dateTime" use="required"/>
+            <xs:attribute name="category" use="optional"/>
+            <xs:attribute name="subCategory" use="optional"/>
+            <xs:attribute name="returnBy" type="xs:dateTime" use="optional"/>
+            <xs:attribute name="hasBookmarks" type="xs:boolean" use="optional"/>
+          </xs:complexType>
+        </xs:element>
+      </xs:sequence>
+      <xs:attribute name="totalItems" type="xs:int" use="required"/>
+      <xs:attribute name="firstItem" type="xs:int" use="optional"/>
+      <xs:attribute name="lastItem" type="xs:int" use="optional"/>
+      <xs:attribute name="id" type="xs:NMTOKEN" use="required"/>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="inputQuestion">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="inputTypes" minOccurs="0" maxOccurs="1">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element ref="input" minOccurs="1" maxOccurs="unbounded"/>
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+        <xs:element ref="label" minOccurs="1" maxOccurs="1"/>
+      </xs:sequence>
+      <xs:attribute name="id" type="xs:NMTOKEN" use="required"/>
+      <xs:attribute name="defaultValue" type="xs:string" use="optional"/>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="questions">
+    <xs:complexType>
+      <xs:choice minOccurs="1" maxOccurs="1">
+        <xs:sequence>
+          <xs:choice minOccurs="1" maxOccurs="1">
+            <xs:choice minOccurs="1" maxOccurs="unbounded">
+              <xs:element ref="multipleChoiceQuestion"/>
+              <xs:element ref="inputQuestion"/>
+            </xs:choice>
+            <xs:element name="contentListRef" type="xs:NMTOKEN"/>
+          </xs:choice>
+          <xs:element ref="label" minOccurs="0" maxOccurs="1"/>
+        </xs:sequence>
+        <xs:element ref="label" />
+      </xs:choice>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="multipleChoiceQuestion">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element ref="label" minOccurs="1" maxOccurs="1"/>
+        <xs:element name="choices" minOccurs="1" maxOccurs="1">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="choice" minOccurs="1" maxOccurs="unbounded">
+                <xs:complexType>
+                  <xs:sequence>
+                    <xs:element ref="label" minOccurs="1" maxOccurs="1"/>
+                  </xs:sequence>
+                  <xs:attribute name="id" type="xs:NMTOKEN" use="required"/>
+                </xs:complexType>
+              </xs:element>
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+      </xs:sequence>
+      <xs:attribute name="id" type="xs:NMTOKEN" use="required"/>
+      <xs:attribute name="allowMultipleSelections" type="xs:boolean" use="optional" default="false"/>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="userResponses">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="userResponse" minOccurs="1" maxOccurs="unbounded">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="data" minOccurs="0" maxOccurs="1">
+                <xs:simpleType>
+                  <xs:restriction base="xs:base64Binary"/>
+                </xs:simpleType>
+              </xs:element>
+            </xs:sequence>
+            <xs:attribute name="questionID" type="xs:NMTOKEN" use="required"/>
+            <xs:attribute name="value" type="xs:string" use="optional"/>
+          </xs:complexType>
+        </xs:element>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="serviceAttributes">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="serviceProvider" minOccurs="0" maxOccurs="1">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element ref="label" minOccurs="0" maxOccurs="1"/>
+            </xs:sequence>
+            <xs:attribute name="id" type="xs:NMTOKEN" use="required"/>
+          </xs:complexType>
+        </xs:element>
+        <xs:element name="service" minOccurs="0" maxOccurs="1">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element ref="label" minOccurs="0" maxOccurs="1"/>
+            </xs:sequence>
+            <xs:attribute name="id" type="xs:NMTOKEN" use="required"/>
+          </xs:complexType>
+        </xs:element>
+        <xs:element name="supportsServerSideBack" type="xs:boolean" minOccurs="1" maxOccurs="1"/>
+        <xs:element name="supportsSearch" type="xs:boolean" minOccurs="1" maxOccurs="1"/>
+        <xs:element name="supportedUplinkAudioCodecs" minOccurs="1" maxOccurs="1">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="codec" type="xs:string" minOccurs="0" maxOccurs="unbounded"/>
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+        <xs:element name="supportsAudioLabels" type="xs:boolean" minOccurs="1" maxOccurs="1"/>
+        <xs:element name="supportedOptionalOperations" minOccurs="1" maxOccurs="1">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="operation" minOccurs="0" maxOccurs="unbounded">
+                <xs:simpleType>
+                  <xs:restriction base="xs:string">
+                    <xs:enumeration value="SET_BOOKMARKS"/>
+                    <xs:enumeration value="GET_BOOKMARKS"/>
+                    <xs:enumeration value="DYNAMIC_MENUS"/>
+                    <xs:enumeration value="SERVICE_ANNOUNCEMENTS"/>
+                    <xs:enumeration value="PDTB2_KEY_PROVISION"/>
+                  </xs:restriction>
+                </xs:simpleType>
+              </xs:element>
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+        <xs:element ref="accessConfig" minOccurs="1" maxOccurs="1"/>
+        <xs:element name="announcementsPullFrequency" type="xs:int" minOccurs="1" maxOccurs="1"/>
+        <xs:element name="progressStateOperationAllowed" type="xs:boolean" minOccurs="1" maxOccurs="1"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="item" type="xs:string"/>
+  <xs:element name="read">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element ref="item" minOccurs="0" maxOccurs="unbounded"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="keyRing">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element ref="item" minOccurs="0" maxOccurs="unbounded"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="serviceList">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="service" minOccurs="1" maxOccurs="unbounded">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element ref="label" minOccurs="1" maxOccurs="1"/>
+              <xs:element name="url" minOccurs="1" maxOccurs="1"/>
+              <xs:element name="website" minOccurs="0" maxOccurs="1"/>
+              <xs:element name="phone" minOccurs="0" maxOccurs="1"/>
+              <xs:element name="email" minOccurs="0" maxOccurs="1"/>
+              <xs:element name="country" minOccurs="1" maxOccurs="1"/>
+              <xs:element name="languages" minOccurs="1" maxOccurs="unbounded">
+                <xs:complexType>
+                  <xs:sequence>
+                    <xs:element name="language" minOccurs="1" maxOccurs="unbounded"/>
+                  </xs:sequence>
+                </xs:complexType>
+              </xs:element>
+              <xs:element name="latitude" minOccurs="1" maxOccurs="1"/>
+              <xs:element name="longitude" minOccurs="1" maxOccurs="1"/>
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="readingSystemList">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="readingSystem" minOccurs="1" maxOccurs="unbounded">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="manufacturer" type="xs:string" minOccurs="1" maxOccurs="1"/>
+              <xs:element name="model" type="xs:string" minOccurs="0" maxOccurs="1"/>
+              <xs:element name="publicKey" type="xs:string" minOccurs="1" maxOccurs="1"/>
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+</xs:schema>

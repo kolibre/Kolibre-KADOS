@@ -1,0 +1,1022 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<wsdl:definitions name="DAISYOnlineService" 
+  xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
+	xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"
+	xmlns:tns="http://www.daisy.org/ns/daisy-online/" 
+  xmlns:db="http://docbook.org/ns/docbook"
+	targetNamespace="http://www.daisy.org/ns/daisy-online/"
+	xmlns:do="http://www.daisy.org/ns/daisy-online/"
+  xmlns:dc="http://purl.org/dc/elements/1.1/"
+  xmlns:xs="http://www.w3.org/2001/XMLSchema">
+	<wsdl:types>
+    <xs:schema targetNamespace="http://www.daisy.org/ns/daisy-online/" 
+                elementFormDefault="qualified" attributeFormDefault="unqualified"
+                xmlns:xs="http://www.w3.org/2001/XMLSchema" 
+                xmlns:bm="http://www.daisy.org/z3986/2005/bookmark/"
+                xmlns:pdtb2="http://www.daisy.org/DRM/2005/KeyExchange"
+                xmlns:db="http://docbook.org/ns/docbook"
+                xmlns:dc="http://purl.org/dc/elements/1.1/"
+                xmlns:tns="http://www.daisy.org/ns/daisy-online/">
+      <xs:annotation>
+        <xs:documentation xml:lang="en">
+          This W3C XML Schema document and the entities referenced from within it are a
+          normative part of the DAISY Online Protocol Specification 
+          (http://www.daisy.org/projects/daisy-online-delivery/). Version: 2.0.1
+        </xs:documentation>
+      </xs:annotation>
+      <xs:include schemaLocation="do-types-20.xsd"/>
+      <xs:import namespace="http://www.daisy.org/z3986/2005/bookmark/" schemaLocation="bookmark-2005-1.xsd"/>
+      <xs:import namespace="http://www.daisy.org/DRM/2005/KeyExchange" schemaLocation="KeyExchange-2005-1.xsd"/>
+      <xs:import namespace="http://purl.org/dc/elements/1.1/" schemaLocation="dc.xsd"/>
+			<xs:element name="logOn">
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="username" type="xs:string" minOccurs="1" maxOccurs="1"/>
+						<xs:element name="password" type="xs:string" minOccurs="1" maxOccurs="1"/>
+						<xs:element ref="tns:readingSystemAttributes" minOccurs="1" maxOccurs="1"/>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="logOnResponse">
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element ref="tns:serviceAttributes" minOccurs="1" maxOccurs="1"/>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="logOff">
+				<xs:complexType>
+					<xs:sequence>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="logOffResponse">
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="logOffResult" type="xs:boolean" minOccurs="1" maxOccurs="1"/>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="getContentResources">
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="contentID" type="xs:string" minOccurs="1" maxOccurs="1"/>
+						<xs:element name="accessType" minOccurs="1" maxOccurs="1">
+							<xs:simpleType>
+								<xs:restriction base="xs:string">
+									<xs:enumeration value="STREAM"/>
+									<xs:enumeration value="DOWNLOAD"/>
+									<xs:enumeration value="AUTOMATIC_DOWNLOAD"/>
+								</xs:restriction>
+							</xs:simpleType>
+						</xs:element>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="getContentResourcesResponse">
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element ref="tns:resources" minOccurs="1" maxOccurs="1"/>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="getContentList">
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="id" type="xs:string" minOccurs="1" maxOccurs="1"/>
+						<xs:element name="firstItem" type="xs:int" minOccurs="1" maxOccurs="1"/>
+						<xs:element name="lastItem" type="xs:int" minOccurs="1" maxOccurs="1"/>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="getContentListResponse">
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element ref="tns:contentList" minOccurs="1" maxOccurs="1"/>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="returnContent">
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="contentID" type="xs:string" minOccurs="1" maxOccurs="1"/>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="returnContentResponse">
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="returnContentResult" type="xs:boolean" minOccurs="1" maxOccurs="1"/>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="getServiceAnnouncements">
+				<xs:complexType>
+					<xs:sequence>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="getServiceAnnouncementsResponse">
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element ref="tns:announcements" minOccurs="1" maxOccurs="1"/>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="markAnnouncementsAsRead">
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element ref="tns:read" minOccurs="1" maxOccurs="1"/>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="markAnnouncementsAsReadResponse">
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="markAnnouncementsAsReadResult" type="xs:boolean" minOccurs="1" maxOccurs="1"/>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="updateBookmarks">
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="contentID" type="xs:string" minOccurs="1" maxOccurs="1"/>
+						<xs:element name="action" minOccurs="1" maxOccurs="1">
+							<xs:simpleType>
+								<xs:restriction base="xs:string">
+									<xs:enumeration value="REPLACE_ALL"/>
+									<xs:enumeration value="ADD"/>
+									<xs:enumeration value="REMOVE"/>
+								</xs:restriction>
+							</xs:simpleType>
+						</xs:element>
+						<xs:element ref="tns:bookmarkObject" minOccurs="1" maxOccurs="1"/>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="updateBookmarksResponse">
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="updateBookmarksResult" type="xs:boolean" minOccurs="1" maxOccurs="1"/>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="getBookmarks">
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="contentID" type="xs:string" minOccurs="1" maxOccurs="1"/>
+						<xs:element name="action" minOccurs="1" maxOccurs="1">
+							<xs:simpleType>
+								<xs:restriction base="xs:string">
+									<xs:enumeration value="LASTMARK"/>
+									<xs:enumeration value="HILITE"/>
+									<xs:enumeration value="BOOKMARK"/>
+									<xs:enumeration value="ALL"/>
+								</xs:restriction>
+							</xs:simpleType>
+						</xs:element>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="getBookmarksResponse">
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element ref="tns:bookmarkObject" minOccurs="1" maxOccurs="1"/>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="addContentToBookshelf">
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="contentID" type="xs:string" minOccurs="1" maxOccurs="1"/>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="addContentToBookshelfResponse">
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="addContentToBookshelfResult" type="xs:boolean" minOccurs="1" maxOccurs="1"/>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="getQuestions">
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element ref="tns:userResponses" minOccurs="1" maxOccurs="1"/>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="getQuestionsResponse">
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element ref="tns:questions" minOccurs="1" maxOccurs="1"/>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="getUserCredentials">
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element ref="tns:readingSystemAttributes" minOccurs="1" maxOccurs="1"/>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="getUserCredentialsResponse">
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element ref="tns:credentials" minOccurs="1" maxOccurs="1"/>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="getKeyExchangeObject">
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="requestedKeyName" type="xs:string" minOccurs="1" maxOccurs="1"/>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="getKeyExchangeObjectResponse">
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element ref="pdtb2:KeyExchange" minOccurs="1" maxOccurs="1"/>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="getTermsOfService">
+				<xs:complexType>
+					<xs:sequence>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="getTermsOfServiceResponse">
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element ref="tns:label" minOccurs="1" maxOccurs="1"/>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="acceptTermsOfService">
+				<xs:complexType>
+					<xs:sequence>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="acceptTermsOfServiceResponse">
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="acceptTermsOfServiceResult" type="xs:boolean" minOccurs="1" maxOccurs="1"/>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="setProgressState">
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="contentID" type="xs:string" minOccurs="1" maxOccurs="1"/>
+						<xs:element name="state" minOccurs="1" maxOccurs="1">
+							<xs:simpleType>
+								<xs:restriction base="xs:string">
+									<xs:enumeration value="START"/>
+									<xs:enumeration value="PAUSE"/>
+									<xs:enumeration value="RESUME"/>
+									<xs:enumeration value="FINISH"/>
+								</xs:restriction>
+							</xs:simpleType>
+						</xs:element>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="setProgressStateResponse">
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="setProgressStateResult" type="xs:boolean" minOccurs="1" maxOccurs="1"/>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="internalServerErrorFault">
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="reason" type="xs:string" minOccurs="0" maxOccurs="1"/>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="noActiveSessionFault">
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="reason" type="xs:string" minOccurs="0" maxOccurs="1"/>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="operationNotSupportedFault">
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="reason" type="xs:string" minOccurs="0" maxOccurs="1"/>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="invalidOperationFault">
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="reason" type="xs:string" minOccurs="0" maxOccurs="1"/>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="invalidParameterFault">
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="reason" type="xs:string" minOccurs="0" maxOccurs="1"/>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="termsOfServiceNotAcceptedFault">
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="reason" type="xs:string" minOccurs="0" maxOccurs="1"/>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="operationFailedFault">
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="reason" type="xs:string" minOccurs="0" maxOccurs="1"/>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="unauthorizedFault">
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="reason" type="xs:string" minOccurs="0" maxOccurs="1"/>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+    </xs:schema>
+  </wsdl:types>
+	<wsdl:message name="logOnRequest">
+		<wsdl:part name="parameters" element="tns:logOn"/>
+	</wsdl:message>
+	<wsdl:message name="logOnResponse">
+		<wsdl:part name="parameters" element="tns:logOnResponse"/>
+	</wsdl:message>
+	<wsdl:message name="logOffRequest">
+		<wsdl:part name="parameters" element="tns:logOff"/>
+	</wsdl:message>
+	<wsdl:message name="logOffResponse">
+		<wsdl:part name="parameters" element="tns:logOffResponse"/>
+	</wsdl:message>
+	<wsdl:message name="getServiceAnnouncementsRequest">
+		<wsdl:part name="parameters" element="tns:getServiceAnnouncements"/>
+	</wsdl:message>
+	<wsdl:message name="getServiceAnnouncementsResponse">
+		<wsdl:part name="parameters" element="tns:getServiceAnnouncementsResponse"/>
+	</wsdl:message>
+	<wsdl:message name="getContentResourcesRequest">
+		<wsdl:part name="parameters" element="tns:getContentResources"/>
+	</wsdl:message>
+	<wsdl:message name="getContentResourcesResponse">
+		<wsdl:part name="parameters" element="tns:getContentResourcesResponse"/>
+	</wsdl:message>
+	<wsdl:message name="getContentListRequest">
+		<wsdl:part name="parameters" element="tns:getContentList"/>
+	</wsdl:message>
+	<wsdl:message name="getContentListResponse">
+		<wsdl:part name="parameters" element="tns:getContentListResponse"/>
+	</wsdl:message>
+	<wsdl:message name="returnContentRequest">
+		<wsdl:part name="parameters" element="tns:returnContent"/>
+	</wsdl:message>
+	<wsdl:message name="returnContentResponse">
+		<wsdl:part name="parameters" element="tns:returnContentResponse"/>
+	</wsdl:message>
+	<wsdl:message name="markAnnouncementsAsReadRequest">
+		<wsdl:part name="parameters" element="tns:markAnnouncementsAsRead"/>
+	</wsdl:message>
+	<wsdl:message name="markAnnouncementsAsReadResponse">
+		<wsdl:part name="parameters" element="tns:markAnnouncementsAsReadResponse"/>
+	</wsdl:message>
+	<wsdl:message name="updateBookmarksRequest">
+		<wsdl:part name="parameters" element="tns:updateBookmarks"/>
+	</wsdl:message>
+	<wsdl:message name="updateBookmarksResponse">
+		<wsdl:part name="parameters" element="tns:updateBookmarksResponse"/>
+	</wsdl:message>
+	<wsdl:message name="getBookmarksRequest">
+		<wsdl:part name="parameters" element="tns:getBookmarks"/>
+	</wsdl:message>
+	<wsdl:message name="getBookmarksResponse">
+		<wsdl:part name="parameters" element="tns:getBookmarksResponse"/>
+	</wsdl:message>
+	<wsdl:message name="addContentToBookshelfRequest">
+		<wsdl:part name="parameters" element="tns:addContentToBookshelf"/>
+	</wsdl:message>
+	<wsdl:message name="addContentToBookshelfResponse">
+		<wsdl:part name="parameters" element="tns:addContentToBookshelfResponse"/>
+	</wsdl:message>
+	<wsdl:message name="getQuestionsRequest">
+		<wsdl:part name="parameters" element="tns:getQuestions"/>
+	</wsdl:message>
+	<wsdl:message name="getQuestionsResponse">
+		<wsdl:part name="parameters" element="tns:getQuestionsResponse"/>
+	</wsdl:message>
+	<wsdl:message name="getUserCredentialsRequest">
+		<wsdl:part name="parameters" element="tns:getUserCredentials"/>
+	</wsdl:message>
+	<wsdl:message name="getUserCredentialsResponse">
+		<wsdl:part name="parameters" element="tns:getUserCredentialsResponse"/>
+	</wsdl:message>
+	<wsdl:message name="getKeyExchangeObjectRequest">
+		<wsdl:part name="parameters" element="tns:getKeyExchangeObject"/>
+	</wsdl:message>
+	<wsdl:message name="getKeyExchangeObjectResponse">
+		<wsdl:part name="parameters" element="tns:getKeyExchangeObjectResponse"/>
+	</wsdl:message>
+	<wsdl:message name="getTermsOfServiceRequest">
+		<wsdl:part name="parameters" element="tns:getTermsOfService"/>
+	</wsdl:message>
+	<wsdl:message name="getTermsOfServiceResponse">
+		<wsdl:part name="parameters" element="tns:getTermsOfServiceResponse"/>
+	</wsdl:message>
+	<wsdl:message name="acceptTermsOfServiceRequest">
+		<wsdl:part name="parameters" element="tns:acceptTermsOfService"/>
+	</wsdl:message>
+	<wsdl:message name="acceptTermsOfServiceResponse">
+		<wsdl:part name="parameters" element="tns:acceptTermsOfServiceResponse"/>
+	</wsdl:message>
+	<wsdl:message name="setProgressStateRequest">
+		<wsdl:part name="parameters" element="tns:setProgressState"/>
+	</wsdl:message>
+	<wsdl:message name="setProgressStateResponse">
+		<wsdl:part name="parameters" element="tns:setProgressStateResponse"/>
+	</wsdl:message>
+	<wsdl:message name="internalServerErrorFaultResponse">
+		<wsdl:part name="parameters" element="tns:internalServerErrorFault"/>
+	</wsdl:message>
+	<wsdl:message name="noActiveSessionFaultResponse">
+		<wsdl:part name="parameters" element="tns:noActiveSessionFault"/>
+	</wsdl:message>
+	<wsdl:message name="operationNotSupportedFaultResponse">
+		<wsdl:part name="parameters" element="tns:operationNotSupportedFault"/>
+	</wsdl:message>
+	<wsdl:message name="invalidOperationFaultResponse">
+		<wsdl:part name="parameters" element="tns:invalidOperationFault"/>
+	</wsdl:message>
+	<wsdl:message name="invalidParameterFaultResponse">
+		<wsdl:part name="parameters" element="tns:invalidParameterFault"/>
+	</wsdl:message>
+	<wsdl:message name="termsOfServiceNotAcceptedFaultResponse">
+		<wsdl:part name="parameters" element="tns:termsOfServiceNotAcceptedFault"/>
+	</wsdl:message>
+	<wsdl:message name="operationFailedFaultResponse">
+		<wsdl:part name="parameters" element="tns:operationFailedFault"/>
+	</wsdl:message>
+	<wsdl:message name="unauthorizedFaultResponse">
+		<wsdl:part name="parameters" element="tns:unauthorizedFault"/>
+	</wsdl:message>
+	<wsdl:portType name="DAISYOnlineService">
+		<wsdl:operation name="logOn" parameterOrder="parameters">
+			<wsdl:input message="tns:logOnRequest"/>
+			<wsdl:output message="tns:logOnResponse"/>
+			<wsdl:fault name="logOn_internalServerErrorFault" message="tns:internalServerErrorFaultResponse"/>
+			<wsdl:fault name="logOn_invalidOperationFault" message="tns:invalidOperationFaultResponse"/>
+			<wsdl:fault name="logOn_invalidParameterFault" message="tns:invalidParameterFaultResponse"/>
+			<wsdl:fault name="logOn_unauthorizedFault" message="tns:unauthorizedFaultResponse"/>
+		</wsdl:operation>
+		<wsdl:operation name="logOff" parameterOrder="parameters">
+			<wsdl:input message="tns:logOffRequest"/>
+			<wsdl:output message="tns:logOffResponse"/>
+			<wsdl:fault name="logOff_internalServerErrorFault" message="tns:internalServerErrorFaultResponse"/>
+			<wsdl:fault name="logOff_noActiveSessionFault" message="tns:noActiveSessionFaultResponse"/>
+			<wsdl:fault name="logOff_operationFailedFault" message="tns:operationFailedFaultResponse"/>
+		</wsdl:operation>
+		<wsdl:operation name="getServiceAnnouncements">
+			<wsdl:input message="tns:getServiceAnnouncementsRequest"/>
+			<wsdl:output message="tns:getServiceAnnouncementsResponse"/>
+			<wsdl:fault name="getServiceAnnouncements_internalServerErrorFault" message="tns:internalServerErrorFaultResponse"/>
+			<wsdl:fault name="getServiceAnnouncements_noActiveSessionFault" message="tns:noActiveSessionFaultResponse"/>
+			<wsdl:fault name="getServiceAnnouncements_operationNotSupportedFault" message="tns:operationNotSupportedFaultResponse"/>
+			<wsdl:fault name="getServiceAnnouncements_invalidOperationFault" message="tns:invalidOperationFaultResponse"/>
+			<wsdl:fault name="getServiceAnnouncements_termsOfServiceNotAcceptedFault" message="tns:termsOfServiceNotAcceptedFaultResponse"/>
+		</wsdl:operation>
+		<wsdl:operation name="getContentResources">
+			<wsdl:input message="tns:getContentResourcesRequest"/>
+			<wsdl:output message="tns:getContentResourcesResponse"/>
+			<wsdl:fault name="getContentResources_internalServerErrorFault" message="tns:internalServerErrorFaultResponse"/>
+			<wsdl:fault name="getContentResources_noActiveSessionFault" message="tns:noActiveSessionFaultResponse"/>
+			<wsdl:fault name="getContentResources_invalidOperationFault" message="tns:invalidOperationFaultResponse"/>
+			<wsdl:fault name="getContentResources_invalidParameterFault" message="tns:invalidParameterFaultResponse"/>
+			<wsdl:fault name="getContentResources_termsOfServiceNotAcceptedFault" message="tns:termsOfServiceNotAcceptedFaultResponse"/>
+		</wsdl:operation>
+		<wsdl:operation name="getContentList">
+			<wsdl:input message="tns:getContentListRequest"/>
+			<wsdl:output message="tns:getContentListResponse"/>
+			<wsdl:fault name="getContentList_internalServerErrorFault" message="tns:internalServerErrorFaultResponse"/>
+			<wsdl:fault name="getContentList_noActiveSessionFault" message="tns:noActiveSessionFaultResponse"/>
+			<wsdl:fault name="getContentList_invalidOperationFault" message="tns:invalidOperationFaultResponse"/>
+			<wsdl:fault name="getContentList_invalidParameterFault" message="tns:invalidParameterFaultResponse"/>
+			<wsdl:fault name="getContentList_termsOfServiceNotAcceptedFault" message="tns:termsOfServiceNotAcceptedFaultResponse"/>
+		</wsdl:operation>
+		<wsdl:operation name="returnContent">
+			<wsdl:input message="tns:returnContentRequest"/>
+			<wsdl:output message="tns:returnContentResponse"/>
+			<wsdl:fault name="returnContent_internalServerErrorFault" message="tns:internalServerErrorFaultResponse"/>
+			<wsdl:fault name="returnContent_noActiveSessionFault" message="tns:noActiveSessionFaultResponse"/>
+			<wsdl:fault name="returnContent_invalidOperationFault" message="tns:invalidOperationFaultResponse"/>
+			<wsdl:fault name="returnContent_invalidParameterFault" message="tns:invalidParameterFaultResponse"/>
+			<wsdl:fault name="returnContent_termsOfServiceNotAcceptedFault" message="tns:termsOfServiceNotAcceptedFaultResponse"/>
+		</wsdl:operation>
+		<wsdl:operation name="markAnnouncementsAsRead">
+			<wsdl:input message="tns:markAnnouncementsAsReadRequest"/>
+			<wsdl:output message="tns:markAnnouncementsAsReadResponse"/>
+			<wsdl:fault name="markAnnouncementsAsRead_internalServerErrorFault" message="tns:internalServerErrorFaultResponse"/>
+			<wsdl:fault name="markAnnouncementsAsRead_noActiveSessionFault" message="tns:noActiveSessionFaultResponse"/>
+			<wsdl:fault name="markAnnouncementsAsRead_operationNotSupportedFault" message="tns:operationNotSupportedFaultResponse"/>
+			<wsdl:fault name="markAnnouncementsAsRead_invalidOperationFault" message="tns:invalidOperationFaultResponse"/>
+			<wsdl:fault name="markAnnouncementsAsRead_invalidParameterFault" message="tns:invalidParameterFaultResponse"/>
+			<wsdl:fault name="markAnnouncementsAsRead_termsOfServiceNotAcceptedFault" message="tns:termsOfServiceNotAcceptedFaultResponse"/>
+			<wsdl:fault name="markAnnouncementsAsRead_operationFailedFault" message="tns:operationFailedFaultResponse"/>
+		</wsdl:operation>
+		<wsdl:operation name="updateBookmarks">
+			<wsdl:input message="tns:updateBookmarksRequest"/>
+			<wsdl:output message="tns:updateBookmarksResponse"/>
+			<wsdl:fault name="updateBookmarks_internalServerErrorFault" message="tns:internalServerErrorFaultResponse"/>
+			<wsdl:fault name="updateBookmarks_noActiveSessionFault" message="tns:noActiveSessionFaultResponse"/>
+			<wsdl:fault name="updateBookmarks_operationNotSupportedFault" message="tns:operationNotSupportedFaultResponse"/>
+			<wsdl:fault name="updateBookmarks_invalidOperationFault" message="tns:invalidOperationFaultResponse"/>
+			<wsdl:fault name="updateBookmarks_invalidParameterFault" message="tns:invalidParameterFaultResponse"/>
+			<wsdl:fault name="updateBookmarks_termsOfServiceNotAcceptedFault" message="tns:termsOfServiceNotAcceptedFaultResponse"/>
+		</wsdl:operation>
+		<wsdl:operation name="getBookmarks">
+			<wsdl:input message="tns:getBookmarksRequest"/>
+			<wsdl:output message="tns:getBookmarksResponse"/>
+			<wsdl:fault name="getBookmarks_internalServerErrorFault" message="tns:internalServerErrorFaultResponse"/>
+			<wsdl:fault name="getBookmarks_noActiveSessionFault" message="tns:noActiveSessionFaultResponse"/>
+			<wsdl:fault name="getBookmarks_operationNotSupportedFault" message="tns:operationNotSupportedFaultResponse"/>
+			<wsdl:fault name="getBookmarks_invalidOperationFault" message="tns:invalidOperationFaultResponse"/>
+			<wsdl:fault name="getBookmarks_invalidParameterFault" message="tns:invalidParameterFaultResponse"/>
+			<wsdl:fault name="getBookmarks_termsOfServiceNotAcceptedFault" message="tns:termsOfServiceNotAcceptedFaultResponse"/>
+		</wsdl:operation>
+		<wsdl:operation name="addContentToBookshelf">
+			<wsdl:input message="tns:addContentToBookshelfRequest"/>
+			<wsdl:output message="tns:addContentToBookshelfResponse"/>
+			<wsdl:fault name="addContentToBookshelf_internalServerErrorFault" message="tns:internalServerErrorFaultResponse"/>
+			<wsdl:fault name="addContentToBookshelf_noActiveSessionFault" message="tns:noActiveSessionFaultResponse"/>
+			<wsdl:fault name="addContentToBookshelf_operationNotSupportedFault" message="tns:operationNotSupportedFaultResponse"/>
+			<wsdl:fault name="addContentToBookshelf_invalidOperationFault" message="tns:invalidOperationFaultResponse"/>
+			<wsdl:fault name="addContentToBookshelf_invalidParameterFault" message="tns:invalidParameterFaultResponse"/>
+			<wsdl:fault name="addContentToBookshelf_termsOfServiceNotAcceptedFault" message="tns:termsOfServiceNotAcceptedFaultResponse"/>
+			<wsdl:fault name="addContentToBookshelf_operationFailedFault" message="tns:operationFailedFaultResponse"/>
+		</wsdl:operation>
+		<wsdl:operation name="getQuestions">
+			<wsdl:input message="tns:getQuestionsRequest"/>
+			<wsdl:output message="tns:getQuestionsResponse"/>
+			<wsdl:fault name="getQuestions_internalServerErrorFault" message="tns:internalServerErrorFaultResponse"/>
+			<wsdl:fault name="getQuestions_noActiveSessionFault" message="tns:noActiveSessionFaultResponse"/>
+			<wsdl:fault name="getQuestions_operationNotSupportedFault" message="tns:operationNotSupportedFaultResponse"/>
+			<wsdl:fault name="getQuestions_invalidOperationFault" message="tns:invalidOperationFaultResponse"/>
+			<wsdl:fault name="getQuestions_invalidParameterFault" message="tns:invalidParameterFaultResponse"/>
+			<wsdl:fault name="getQuestions_termsOfServiceNotAcceptedFault" message="tns:termsOfServiceNotAcceptedFaultResponse"/>
+		</wsdl:operation>
+		<wsdl:operation name="getUserCredentials">
+			<wsdl:input message="tns:getUserCredentialsRequest"/>
+			<wsdl:output message="tns:getUserCredentialsResponse"/>
+			<wsdl:fault name="getUserCredentials_internalServerErrorFault" message="tns:internalServerErrorFaultResponse"/>
+			<wsdl:fault name="getUserCredentials_operationNotSupportedFault" message="tns:operationNotSupportedFaultResponse"/>
+			<wsdl:fault name="getUserCredentials_invalidOperationFault" message="tns:invalidOperationFaultResponse"/>
+			<wsdl:fault name="getUserCredentials_invalidParameterFault" message="tns:invalidParameterFaultResponse"/>
+		</wsdl:operation>
+		<wsdl:operation name="getKeyExchangeObject">
+			<wsdl:input message="tns:getKeyExchangeObjectRequest"/>
+			<wsdl:output message="tns:getKeyExchangeObjectResponse"/>
+			<wsdl:fault name="getKeyExchangeObject_internalServerErrorFault" message="tns:internalServerErrorFaultResponse"/>
+			<wsdl:fault name="getKeyExchangeObject_noActiveSessionFault" message="tns:noActiveSessionFaultResponse"/>
+			<wsdl:fault name="getKeyExchangeObject_operationNotSupportedFault" message="tns:operationNotSupportedFaultResponse"/>
+			<wsdl:fault name="getKeyExchangeObject_invalidOperationFault" message="tns:invalidOperationFaultResponse"/>
+			<wsdl:fault name="getKeyExchangeObject_invalidParameterFault" message="tns:invalidParameterFaultResponse"/>
+			<wsdl:fault name="getKeyExchangeObject_termsOfServiceNotAcceptedFault" message="tns:termsOfServiceNotAcceptedFaultResponse"/>
+		</wsdl:operation>
+		<wsdl:operation name="getTermsOfService">
+			<wsdl:input message="tns:getTermsOfServiceRequest"/>
+			<wsdl:output message="tns:getTermsOfServiceResponse"/>
+			<wsdl:fault name="getTermsOfService_internalServerErrorFault" message="tns:internalServerErrorFaultResponse"/>
+			<wsdl:fault name="getTermsOfService_noActiveSessionFault" message="tns:noActiveSessionFaultResponse"/>
+			<wsdl:fault name="getTermsOfService_operationNotSupportedFault" message="tns:operationNotSupportedFaultResponse"/>
+			<wsdl:fault name="getTermsOfService_invalidOperationFault" message="tns:invalidOperationFaultResponse"/>
+		</wsdl:operation>
+		<wsdl:operation name="acceptTermsOfService">
+			<wsdl:input message="tns:acceptTermsOfServiceRequest"/>
+			<wsdl:output message="tns:acceptTermsOfServiceResponse"/>
+			<wsdl:fault name="acceptTermsOfService_internalServerErrorFault" message="tns:internalServerErrorFaultResponse"/>
+			<wsdl:fault name="acceptTermsOfService_noActiveSessionFault" message="tns:noActiveSessionFaultResponse"/>
+			<wsdl:fault name="acceptTermsOfService_operationNotSupportedFault" message="tns:operationNotSupportedFaultResponse"/>
+			<wsdl:fault name="acceptTermsOfService_invalidOperationFault" message="tns:invalidOperationFaultResponse"/>
+		</wsdl:operation>
+		<wsdl:operation name="setProgressState">
+			<wsdl:input message="tns:setProgressStateRequest"/>
+			<wsdl:output message="tns:setProgressStateResponse"/>
+			<wsdl:fault name="setProgressState_internalServerErrorFault" message="tns:internalServerErrorFaultResponse"/>
+			<wsdl:fault name="setProgressState_noActiveSessionFault" message="tns:noActiveSessionFaultResponse"/>
+			<wsdl:fault name="setProgressState_operationNotSupportedFault" message="tns:operationNotSupportedFaultResponse"/>
+			<wsdl:fault name="setProgressState_invalidOperationFault" message="tns:invalidOperationFaultResponse"/>
+			<wsdl:fault name="setProgressState_invalidParameterFault" message="tns:invalidParameterFaultResponse"/>
+			<wsdl:fault name="setProgressState_termsOfServiceNotAcceptedFault" message="tns:termsOfServiceNotAcceptedFaultResponse"/>
+		</wsdl:operation>
+	</wsdl:portType>
+	<wsdl:binding name="DAISYOnline_SOAP_Binding" type="tns:DAISYOnlineService">
+		<soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
+		<wsdl:operation name="logOn">
+			<soap:operation soapAction="urn:http://www.daisy.org/ns/daisy-online/logOn" style="document"/>
+			<wsdl:input>
+				<soap:body use="literal"/>
+			</wsdl:input>
+			<wsdl:output>
+				<soap:body use="literal"/>
+			</wsdl:output>
+			<wsdl:fault name="logOn_internalServerErrorFault">
+				<soap:fault use="literal" name="logOn_internalServerErrorFault"/>
+			</wsdl:fault>
+			<wsdl:fault name="logOn_invalidOperationFault">
+				<soap:fault use="literal" name="logOn_invalidOperationFault"/>
+			</wsdl:fault>
+			<wsdl:fault name="logOn_invalidParameterFault">
+				<soap:fault use="literal" name="logOn_invalidParameterFault"/>
+			</wsdl:fault>
+			<wsdl:fault name="logOn_unauthorizedFault">
+				<soap:fault use="literal" name="logOn_unauthorizedFault"/>
+			</wsdl:fault>
+		</wsdl:operation>
+		<wsdl:operation name="logOff">
+			<soap:operation soapAction="urn:http://www.daisy.org/ns/daisy-online/logOff" style="document"/>
+			<wsdl:input>
+				<soap:body use="literal"/>
+			</wsdl:input>
+			<wsdl:output>
+				<soap:body use="literal"/>
+			</wsdl:output>
+			<wsdl:fault name="logOff_internalServerErrorFault">
+				<soap:fault use="literal" name="logOff_internalServerErrorFault"/>
+			</wsdl:fault>
+			<wsdl:fault name="logOff_noActiveSessionFault">
+				<soap:fault use="literal" name="logOff_noActiveSessionFault"/>
+			</wsdl:fault>
+			<wsdl:fault name="logOff_operationFailedFault">
+				<soap:fault use="literal" name="logOff_operationFailedFault"/>
+			</wsdl:fault>
+		</wsdl:operation>
+		<wsdl:operation name="getServiceAnnouncements">
+			<soap:operation soapAction="urn:http://www.daisy.org/ns/daisy-online/getServiceAnnouncements" style="document"/>
+			<wsdl:input>
+				<soap:body use="literal"/>
+			</wsdl:input>
+			<wsdl:output>
+				<soap:body use="literal"/>
+			</wsdl:output>
+			<wsdl:fault name="getServiceAnnouncements_internalServerErrorFault">
+				<soap:fault use="literal" name="getServiceAnnouncements_internalServerErrorFault"/>
+			</wsdl:fault>
+			<wsdl:fault name="getServiceAnnouncements_noActiveSessionFault">
+				<soap:fault use="literal" name="getServiceAnnouncements_noActiveSessionFault"/>
+			</wsdl:fault>
+			<wsdl:fault name="getServiceAnnouncements_operationNotSupportedFault">
+				<soap:fault use="literal" name="getServiceAnnouncements_operationNotSupportedFault"/>
+			</wsdl:fault>
+			<wsdl:fault name="getServiceAnnouncements_invalidOperationFault">
+				<soap:fault use="literal" name="getServiceAnnouncements_invalidOperationFault"/>
+			</wsdl:fault>
+			<wsdl:fault name="getServiceAnnouncements_termsOfServiceNotAcceptedFault">
+				<soap:fault use="literal" name="getServiceAnnouncements_termsOfServiceNotAcceptedFault"/>
+			</wsdl:fault>
+		</wsdl:operation>
+		<wsdl:operation name="getContentResources">
+			<soap:operation soapAction="urn:http://www.daisy.org/ns/daisy-online/getContentResources" style="document"/>
+			<wsdl:input>
+				<soap:body use="literal"/>
+			</wsdl:input>
+			<wsdl:output>
+				<soap:body use="literal"/>
+			</wsdl:output>
+			<wsdl:fault name="getContentResources_internalServerErrorFault">
+				<soap:fault use="literal" name="getContentResources_internalServerErrorFault"/>
+			</wsdl:fault>
+			<wsdl:fault name="getContentResources_noActiveSessionFault">
+				<soap:fault use="literal" name="getContentResources_noActiveSessionFault"/>
+			</wsdl:fault>
+			<wsdl:fault name="getContentResources_invalidOperationFault">
+				<soap:fault use="literal" name="getContentResources_invalidOperationFault"/>
+			</wsdl:fault>
+			<wsdl:fault name="getContentResources_invalidParameterFault">
+				<soap:fault use="literal" name="getContentResources_invalidParameterFault"/>
+			</wsdl:fault>
+			<wsdl:fault name="getContentResources_termsOfServiceNotAcceptedFault">
+				<soap:fault use="literal" name="getContentResources_termsOfServiceNotAcceptedFault"/>
+			</wsdl:fault>
+		</wsdl:operation>
+		<wsdl:operation name="getContentList">
+			<soap:operation soapAction="urn:http://www.daisy.org/ns/daisy-online/getContentList" style="document"/>
+			<wsdl:input>
+				<soap:body use="literal"/>
+			</wsdl:input>
+			<wsdl:output>
+				<soap:body use="literal"/>
+			</wsdl:output>
+			<wsdl:fault name="getContentList_internalServerErrorFault">
+				<soap:fault use="literal" name="getContentList_internalServerErrorFault"/>
+			</wsdl:fault>
+			<wsdl:fault name="getContentList_noActiveSessionFault">
+				<soap:fault use="literal" name="getContentList_noActiveSessionFault"/>
+			</wsdl:fault>
+			<wsdl:fault name="getContentList_invalidOperationFault">
+				<soap:fault use="literal" name="getContentList_invalidOperationFault"/>
+			</wsdl:fault>
+			<wsdl:fault name="getContentList_invalidParameterFault">
+				<soap:fault use="literal" name="getContentList_invalidParameterFault"/>
+			</wsdl:fault>
+			<wsdl:fault name="getContentList_termsOfServiceNotAcceptedFault">
+				<soap:fault use="literal" name="getContentList_termsOfServiceNotAcceptedFault"/>
+			</wsdl:fault>
+		</wsdl:operation>
+		<wsdl:operation name="returnContent">
+			<soap:operation soapAction="urn:http://www.daisy.org/ns/daisy-online/returnContent" style="document"/>
+			<wsdl:input>
+				<soap:body use="literal"/>
+			</wsdl:input>
+			<wsdl:output>
+				<soap:body use="literal"/>
+			</wsdl:output>
+			<wsdl:fault name="returnContent_internalServerErrorFault">
+				<soap:fault use="literal" name="returnContent_internalServerErrorFault"/>
+			</wsdl:fault>
+			<wsdl:fault name="returnContent_noActiveSessionFault">
+				<soap:fault use="literal" name="returnContent_noActiveSessionFault"/>
+			</wsdl:fault>
+			<wsdl:fault name="returnContent_invalidOperationFault">
+				<soap:fault use="literal" name="returnContent_invalidOperationFault"/>
+			</wsdl:fault>
+			<wsdl:fault name="returnContent_invalidParameterFault">
+				<soap:fault use="literal" name="returnContent_invalidParameterFault"/>
+			</wsdl:fault>
+			<wsdl:fault name="returnContent_termsOfServiceNotAcceptedFault">
+				<soap:fault use="literal" name="returnContent_termsOfServiceNotAcceptedFault"/>
+			</wsdl:fault>
+		</wsdl:operation>
+		<wsdl:operation name="markAnnouncementsAsRead">
+			<soap:operation soapAction="urn:http://www.daisy.org/ns/daisy-online/markAnnouncementsAsRead" style="document"/>
+			<wsdl:input>
+				<soap:body use="literal"/>
+			</wsdl:input>
+			<wsdl:output>
+				<soap:body use="literal"/>
+			</wsdl:output>
+			<wsdl:fault name="markAnnouncementsAsRead_internalServerErrorFault">
+				<soap:fault use="literal" name="markAnnouncementsAsRead_internalServerErrorFault"/>
+			</wsdl:fault>
+			<wsdl:fault name="markAnnouncementsAsRead_noActiveSessionFault">
+				<soap:fault use="literal" name="markAnnouncementsAsRead_noActiveSessionFault"/>
+			</wsdl:fault>
+			<wsdl:fault name="markAnnouncementsAsRead_operationNotSupportedFault">
+				<soap:fault use="literal" name="markAnnouncementsAsRead_operationNotSupportedFault"/>
+			</wsdl:fault>
+			<wsdl:fault name="markAnnouncementsAsRead_invalidOperationFault">
+				<soap:fault use="literal" name="markAnnouncementsAsRead_invalidOperationFault"/>
+			</wsdl:fault>
+			<wsdl:fault name="markAnnouncementsAsRead_invalidParameterFault">
+				<soap:fault use="literal" name="markAnnouncementsAsRead_invalidParameterFault"/>
+			</wsdl:fault>
+			<wsdl:fault name="markAnnouncementsAsRead_termsOfServiceNotAcceptedFault">
+				<soap:fault use="literal" name="markAnnouncementsAsRead_termsOfServiceNotAcceptedFault"/>
+			</wsdl:fault>
+			<wsdl:fault name="markAnnouncementsAsRead_operationFailedFault">
+				<soap:fault use="literal" name="markAnnouncementsAsRead_operationFailedFault"/>
+			</wsdl:fault>
+		</wsdl:operation>
+		<wsdl:operation name="updateBookmarks">
+			<soap:operation soapAction="urn:http://www.daisy.org/ns/daisy-online/updateBookmarks" style="document"/>
+			<wsdl:input>
+				<soap:body use="literal"/>
+			</wsdl:input>
+			<wsdl:output>
+				<soap:body use="literal"/>
+			</wsdl:output>
+			<wsdl:fault name="updateBookmarks_internalServerErrorFault">
+				<soap:fault use="literal" name="updateBookmarks_internalServerErrorFault"/>
+			</wsdl:fault>
+			<wsdl:fault name="updateBookmarks_noActiveSessionFault">
+				<soap:fault use="literal" name="updateBookmarks_noActiveSessionFault"/>
+			</wsdl:fault>
+			<wsdl:fault name="updateBookmarks_operationNotSupportedFault">
+				<soap:fault use="literal" name="updateBookmarks_operationNotSupportedFault"/>
+			</wsdl:fault>
+			<wsdl:fault name="updateBookmarks_invalidOperationFault">
+				<soap:fault use="literal" name="updateBookmarks_invalidOperationFault"/>
+			</wsdl:fault>
+			<wsdl:fault name="updateBookmarks_invalidParameterFault">
+				<soap:fault use="literal" name="updateBookmarks_invalidParameterFault"/>
+			</wsdl:fault>
+			<wsdl:fault name="updateBookmarks_termsOfServiceNotAcceptedFault">
+				<soap:fault use="literal" name="updateBookmarks_termsOfServiceNotAcceptedFault"/>
+			</wsdl:fault>
+		</wsdl:operation>
+		<wsdl:operation name="getBookmarks">
+			<soap:operation soapAction="urn:http://www.daisy.org/ns/daisy-online/getBookmarks" style="document"/>
+			<wsdl:input>
+				<soap:body use="literal"/>
+			</wsdl:input>
+			<wsdl:output>
+				<soap:body use="literal"/>
+			</wsdl:output>
+			<wsdl:fault name="getBookmarks_internalServerErrorFault">
+				<soap:fault use="literal" name="getBookmarks_internalServerErrorFault"/>
+			</wsdl:fault>
+			<wsdl:fault name="getBookmarks_noActiveSessionFault">
+				<soap:fault use="literal" name="getBookmarks_noActiveSessionFault"/>
+			</wsdl:fault>
+			<wsdl:fault name="getBookmarks_operationNotSupportedFault">
+				<soap:fault use="literal" name="getBookmarks_operationNotSupportedFault"/>
+			</wsdl:fault>
+			<wsdl:fault name="getBookmarks_invalidOperationFault">
+				<soap:fault use="literal" name="getBookmarks_invalidOperationFault"/>
+			</wsdl:fault>
+			<wsdl:fault name="getBookmarks_invalidParameterFault">
+				<soap:fault use="literal" name="getBookmarks_invalidParameterFault"/>
+			</wsdl:fault>
+			<wsdl:fault name="getBookmarks_termsOfServiceNotAcceptedFault">
+				<soap:fault use="literal" name="getBookmarks_termsOfServiceNotAcceptedFault"/>
+			</wsdl:fault>
+		</wsdl:operation>
+		<wsdl:operation name="addContentToBookshelf">
+			<soap:operation soapAction="urn:http://www.daisy.org/ns/daisy-online/addContentToBookshelf" style="document"/>
+			<wsdl:input>
+				<soap:body use="literal"/>
+			</wsdl:input>
+			<wsdl:output>
+				<soap:body use="literal"/>
+			</wsdl:output>
+			<wsdl:fault name="addContentToBookshelf_internalServerErrorFault">
+				<soap:fault use="literal" name="addContentToBookshelf_internalServerErrorFault"/>
+			</wsdl:fault>
+			<wsdl:fault name="addContentToBookshelf_noActiveSessionFault">
+				<soap:fault use="literal" name="addContentToBookshelf_noActiveSessionFault"/>
+			</wsdl:fault>
+			<wsdl:fault name="addContentToBookshelf_operationNotSupportedFault">
+				<soap:fault use="literal" name="addContentToBookshelf_operationNotSupportedFault"/>
+			</wsdl:fault>
+			<wsdl:fault name="addContentToBookshelf_invalidOperationFault">
+				<soap:fault use="literal" name="addContentToBookshelf_invalidOperationFault"/>
+			</wsdl:fault>
+			<wsdl:fault name="addContentToBookshelf_invalidParameterFault">
+				<soap:fault use="literal" name="addContentToBookshelf_invalidParameterFault"/>
+			</wsdl:fault>
+			<wsdl:fault name="addContentToBookshelf_termsOfServiceNotAcceptedFault">
+				<soap:fault use="literal" name="addContentToBookshelf_termsOfServiceNotAcceptedFault"/>
+			</wsdl:fault>
+			<wsdl:fault name="addContentToBookshelf_operationFailedFault">
+				<soap:fault use="literal" name="addContentToBookshelf_operationFailedFault"/>
+			</wsdl:fault>
+		</wsdl:operation>
+		<wsdl:operation name="getQuestions">
+			<soap:operation soapAction="urn:http://www.daisy.org/ns/daisy-online/getQuestions" style="document"/>
+			<wsdl:input>
+				<soap:body use="literal"/>
+			</wsdl:input>
+			<wsdl:output>
+				<soap:body use="literal"/>
+			</wsdl:output>
+			<wsdl:fault name="getQuestions_internalServerErrorFault">
+				<soap:fault use="literal" name="getQuestions_internalServerErrorFault"/>
+			</wsdl:fault>
+			<wsdl:fault name="getQuestions_noActiveSessionFault">
+				<soap:fault use="literal" name="getQuestions_noActiveSessionFault"/>
+			</wsdl:fault>
+			<wsdl:fault name="getQuestions_operationNotSupportedFault">
+				<soap:fault use="literal" name="getQuestions_operationNotSupportedFault"/>
+			</wsdl:fault>
+			<wsdl:fault name="getQuestions_invalidOperationFault">
+				<soap:fault use="literal" name="getQuestions_invalidOperationFault"/>
+			</wsdl:fault>
+			<wsdl:fault name="getQuestions_invalidParameterFault">
+				<soap:fault use="literal" name="getQuestions_invalidParameterFault"/>
+			</wsdl:fault>
+			<wsdl:fault name="getQuestions_termsOfServiceNotAcceptedFault">
+				<soap:fault use="literal" name="getQuestions_termsOfServiceNotAcceptedFault"/>
+			</wsdl:fault>
+		</wsdl:operation>
+		<wsdl:operation name="getUserCredentials">
+			<soap:operation soapAction="urn:http://www.daisy.org/ns/daisy-online/getUserCredentials" style="document"/>
+			<wsdl:input>
+				<soap:body use="literal"/>
+			</wsdl:input>
+			<wsdl:output>
+				<soap:body use="literal"/>
+			</wsdl:output>
+			<wsdl:fault name="getUserCredentials_internalServerErrorFault">
+				<soap:fault use="literal" name="getUserCredentials_internalServerErrorFault"/>
+			</wsdl:fault>
+			<wsdl:fault name="getUserCredentials_operationNotSupportedFault">
+				<soap:fault use="literal" name="getUserCredentials_operationNotSupportedFault"/>
+			</wsdl:fault>
+			<wsdl:fault name="getUserCredentials_invalidOperationFault">
+				<soap:fault use="literal" name="getUserCredentials_invalidOperationFault"/>
+			</wsdl:fault>
+			<wsdl:fault name="getUserCredentials_invalidParameterFault">
+				<soap:fault use="literal" name="getUserCredentials_invalidParameterFault"/>
+			</wsdl:fault>
+		</wsdl:operation>
+		<wsdl:operation name="getKeyExchangeObject">
+			<soap:operation soapAction="urn:http://www.daisy.org/ns/daisy-online/getKeyExchangeObject" style="document"/>
+			<wsdl:input>
+				<soap:body use="literal"/>
+			</wsdl:input>
+			<wsdl:output>
+				<soap:body use="literal"/>
+			</wsdl:output>
+			<wsdl:fault name="getKeyExchangeObject_internalServerErrorFault">
+				<soap:fault use="literal" name="getKeyExchangeObject_internalServerErrorFault"/>
+			</wsdl:fault>
+			<wsdl:fault name="getKeyExchangeObject_noActiveSessionFault">
+				<soap:fault use="literal" name="getKeyExchangeObject_noActiveSessionFault"/>
+			</wsdl:fault>
+			<wsdl:fault name="getKeyExchangeObject_operationNotSupportedFault">
+				<soap:fault use="literal" name="getKeyExchangeObject_operationNotSupportedFault"/>
+			</wsdl:fault>
+			<wsdl:fault name="getKeyExchangeObject_invalidOperationFault">
+				<soap:fault use="literal" name="getKeyExchangeObject_invalidOperationFault"/>
+			</wsdl:fault>
+			<wsdl:fault name="getKeyExchangeObject_invalidParameterFault">
+				<soap:fault use="literal" name="getKeyExchangeObject_invalidParameterFault"/>
+			</wsdl:fault>
+			<wsdl:fault name="getKeyExchangeObject_termsOfServiceNotAcceptedFault">
+				<soap:fault use="literal" name="getKeyExchangeObject_termsOfServiceNotAcceptedFault"/>
+			</wsdl:fault>
+		</wsdl:operation>
+		<wsdl:operation name="getTermsOfService">
+			<soap:operation soapAction="urn:http://www.daisy.org/ns/daisy-online/getTermsOfService" style="document"/>
+			<wsdl:input>
+				<soap:body use="literal"/>
+			</wsdl:input>
+			<wsdl:output>
+				<soap:body use="literal"/>
+			</wsdl:output>
+			<wsdl:fault name="getTermsOfService_internalServerErrorFault">
+				<soap:fault use="literal" name="getTermsOfService_internalServerErrorFault"/>
+			</wsdl:fault>
+			<wsdl:fault name="getTermsOfService_noActiveSessionFault">
+				<soap:fault use="literal" name="getTermsOfService_noActiveSessionFault"/>
+			</wsdl:fault>
+			<wsdl:fault name="getTermsOfService_operationNotSupportedFault">
+				<soap:fault use="literal" name="getTermsOfService_operationNotSupportedFault"/>
+			</wsdl:fault>
+			<wsdl:fault name="getTermsOfService_invalidOperationFault">
+				<soap:fault use="literal" name="getTermsOfService_invalidOperationFault"/>
+			</wsdl:fault>
+		</wsdl:operation>
+		<wsdl:operation name="acceptTermsOfService">
+			<soap:operation soapAction="urn:http://www.daisy.org/ns/daisy-online/acceptTermsOfService" style="document"/>
+			<wsdl:input>
+				<soap:body use="literal"/>
+			</wsdl:input>
+			<wsdl:output>
+				<soap:body use="literal"/>
+			</wsdl:output>
+			<wsdl:fault name="acceptTermsOfService_internalServerErrorFault">
+				<soap:fault use="literal" name="acceptTermsOfService_internalServerErrorFault"/>
+			</wsdl:fault>
+			<wsdl:fault name="acceptTermsOfService_noActiveSessionFault">
+				<soap:fault use="literal" name="acceptTermsOfService_noActiveSessionFault"/>
+			</wsdl:fault>
+			<wsdl:fault name="acceptTermsOfService_operationNotSupportedFault">
+				<soap:fault use="literal" name="acceptTermsOfService_operationNotSupportedFault"/>
+			</wsdl:fault>
+			<wsdl:fault name="acceptTermsOfService_invalidOperationFault">
+				<soap:fault use="literal" name="acceptTermsOfService_invalidOperationFault"/>
+			</wsdl:fault>
+		</wsdl:operation>
+		<wsdl:operation name="setProgressState">
+			<soap:operation soapAction="urn:http://www.daisy.org/ns/daisy-online/setProgressState" style="document"/>
+			<wsdl:input>
+				<soap:body use="literal"/>
+			</wsdl:input>
+			<wsdl:output>
+				<soap:body use="literal"/>
+			</wsdl:output>
+			<wsdl:fault name="setProgressState_internalServerErrorFault">
+				<soap:fault use="literal" name="setProgressState_internalServerErrorFault"/>
+			</wsdl:fault>
+			<wsdl:fault name="setProgressState_noActiveSessionFault">
+				<soap:fault use="literal" name="setProgressState_noActiveSessionFault"/>
+			</wsdl:fault>
+			<wsdl:fault name="setProgressState_operationNotSupportedFault">
+				<soap:fault use="literal" name="setProgressState_operationNotSupportedFault"/>
+			</wsdl:fault>
+			<wsdl:fault name="setProgressState_invalidOperationFault">
+				<soap:fault use="literal" name="setProgressState_invalidOperationFault"/>
+			</wsdl:fault>
+			<wsdl:fault name="setProgressState_invalidParameterFault">
+				<soap:fault use="literal" name="setProgressState_invalidParameterFault"/>
+			</wsdl:fault>
+			<wsdl:fault name="setProgressState_termsOfServiceNotAcceptedFault">
+				<soap:fault use="literal" name="setProgressState_termsOfServiceNotAcceptedFault"/>
+			</wsdl:fault>
+		</wsdl:operation>
+	</wsdl:binding>
+	<wsdl:service name="DAISYOnline">
+		<wsdl:port name="DAISYOnlineService" binding="tns:DAISYOnline_SOAP_Binding">
+			<soap:address location="SERVICE_WSDL_URI_PLACEHOLDER"/>
+		</wsdl:port>
+	</wsdl:service>
+</wsdl:definitions>

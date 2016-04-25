@@ -46,7 +46,9 @@ class DaisyOnlineServiceSession extends PHPUnit_Framework_TestCase
         self::$instance->disableCookieCheckInSessionHandle();
 
         // build readingSystemAttributes object
+        $accessConfig = 'STREAM_ONLY';
         $supportsMultipleSelections = false;
+        $supportsAdvancedDynamicMenus = false;
         $preferredUILanguage = 'preferredUILanguage';
         $bandwidth = null;
         $supportedContentFormats = new supportedContentFormats();
@@ -57,7 +59,9 @@ class DaisyOnlineServiceSession extends PHPUnit_Framework_TestCase
         $requiresAudioLabels = false;
         $additionalTransferProtocols = null;
         $config = new config(
+            $accessConfig,
             $supportsMultipleSelections,
+            $supportsAdvancedDynamicMenus,
             $preferredUILanguage,
             $bandwidth,
             $supportedContentFormats,
@@ -136,17 +140,9 @@ class DaisyOnlineServiceSession extends PHPUnit_Framework_TestCase
      */
     public function testNoActiveSessionBeforeLogOn()
     {
-        $input = new getServiceAttributes();
-        $this->assertTrue($this->callOperation('getServiceAttributes', $input, 'noActiveSessionFault'));
-        $input = new setReadingSystemAttributes(self::$rsa);
-        $this->assertTrue($this->callOperation('setReadingSystemAttributes', $input, 'noActiveSessionFault'));
         $input = new getContentList('id', 0, -1);
         $this->assertTrue($this->callOperation('getContentList', $input, 'noActiveSessionFault'));
-        $input = new getContentMetadata('contentID');
-        $this->assertTrue($this->callOperation('getContentMetadata', $input, 'noActiveSessionFault'));
-        $input = new issueContent('contentID');
-        $this->assertTrue($this->callOperation('issueContent', $input, 'noActiveSessionFault'));
-        $input = new getContentResources('contentID');
+        $input = new getContentResources('contentID', 'STREAM');
         $this->assertTrue($this->callOperation('getContentResources', $input, 'noActiveSessionFault'));
         $input = new returnContent('contentID');
         $this->assertTrue($this->callOperation('returnContent', $input, 'noActiveSessionFault'));
@@ -154,136 +150,61 @@ class DaisyOnlineServiceSession extends PHPUnit_Framework_TestCase
         $this->assertTrue($this->callOperation('getServiceAnnouncements', $input, 'noActiveSessionFault'));
         $input = new markAnnouncementsAsRead(new read());
         $this->assertTrue($this->callOperation('markAnnouncementsAsRead', $input, 'noActiveSessionFault'));
-        $input = new setBookmarks('contentID', new bookmarkSet(new title('title'), 'uid'));
-        $this->assertTrue($this->callOperation('setBookmarks', $input, 'noActiveSessionFault'));
-        $input = new getBookmarks('contentID');
+        $input = new updateBookmarks('contentID', 'ADD', new bookmarkObject(new bookmarkSet(new title('title'), 'uid')), '1970-01-01T00:00:00+00:00');
+        $this->assertTrue($this->callOperation('updateBookmarks', $input, 'noActiveSessionFault'));
+        $input = new getBookmarks('contentID', 'ALL');
         $this->assertTrue($this->callOperation('getBookmarks', $input, 'noActiveSessionFault'));
+        $input = new addContentToBookshelf('contentID');
+        $this->assertTrue($this->callOperation('addContentToBookshelf', $input, 'noActiveSessionFault'));
         $input = new getQuestions(new userResponses(array(new userResponse('default'))));
         $this->assertTrue($this->callOperation('getQuestions', $input, 'noActiveSessionFault'));
+        $input = new getUserCredentials();
+        $this->assertTrue($this->callOperation('getUserCredentials', $input, 'noActiveSessionFault'));
         $input = new getKeyExchangeObject('requestedKeyName');
-        $this->assertTrue($this->callOperation('getKeyExchangeObject', $input, 'noActiveSessionFault'));
+        $input = new getTermsOfService();
+        $this->assertTrue($this->callOperation('getTermsOfService', $input, 'noActiveSessionFault'));
+        $input = new acceptTermsOfService();
+        $this->assertTrue($this->callOperation('acceptTermsOfService', $input, 'noActiveSessionFault'));
+        $input = new setProgressState('contentID', 'START');
+        $this->assertTrue($this->callOperation('setProgressState', $input, 'noActiveSessionFault'));
     }
 
     /**
      * @group daisyonlineservice
      * @group session
      */
-    public function testGetServiceAttributesAfterLogOnFailed()
+    public function testLogOnWithIncorrectUsernameAndPassword()
     {
-        $input = new logOn('invalid', 'invalid');
-        $output = self::$instance->logOn($input);
-        $this->assertFalse($output->logOnResult);
-        $input = new getServiceAttributes();
-        $this->assertTrue($this->callOperation('getServiceAttributes', $input, 'noActiveSessionFault'));
+        $input = new logOn('invalid', 'invalid', self::$rsa);
+        $this->assertTrue($this->callOperation('logOn', $input, 'unauthorizedFault'));
+        $input = new getContentList('empty', 0, -1);
+        $this->assertTrue($this->callOperation('getContentList', $input, 'noActiveSessionFault'));
     }
 
     /**
      * @group daisyonlineservice
      * @group session
      */
-    public function testSetReadingSystemAttributesAfterLogOn()
+    public function testLogOnWithIncorrectReadingSystemAttributes()
     {
-        $input = new logOn('valid', 'valid');
-        $output = self::$instance->logOn($input);
-        $this->assertTrue($output->logOnResult);
-        $input = new setReadingSystemAttributes(self::$rsa);
-        $this->assertTrue($this->callOperation('setReadingSystemAttributes', $input, 'invalidOperationFault'));
+        $input = new logOn('invalid', 'invalid', null);
+        $this->assertTrue($this->callOperation('logOn', $input, 'invalidParameterFault'));
+        $input = new getContentList('empty', 0, -1);
+        $this->assertTrue($this->callOperation('getContentList', $input, 'noActiveSessionFault'));
     }
 
     /**
      * @group daisyonlineservice
      * @group session
      */
-    public function testGetServiceAttributesAfterGetServiceAttributes()
+    public function testLogOnWithCorrectUsernameAndPassword()
     {
-        $input = new logOn('valid', 'valid');
+        $input = new logOn('valid', 'valid', self::$rsa);
         $output = self::$instance->logOn($input);
-        $this->assertTrue($output->logOnResult);
-        $input = new getServiceAttributes();
-        $output = self::$instance->getServiceAttributes($input);
-        $this->assertInstanceOf('getServiceAttributesResponse', $output);
-    }
-
-    /**
-     * @group daisyonlineservice
-     * @group session
-     */
-    public function testReverseInvokeOfGetServiceAttribtesAndSetReadingSystemAttributes()
-    {
-        $input = new logOn('valid', 'valid');
-        $output = self::$instance->logOn($input);
-        $this->assertTrue($output->logOnResult);
-        $input = new setReadingSystemAttributes(self::$rsa);
-        $this->assertTrue($this->callOperation('setReadingSystemAttributes', $input, 'invalidOperationFault'));
-        $input = new getServiceAttributes();
-        $this->assertTrue($this->callOperation('getServiceAttributes', $input, 'noActiveSessionFault'));
-    }
-
-    /**
-     * @group daisyonlineservice
-     * @group session
-     */
-    public function testCorrectSessionEstablishmentSequence()
-    {
-        $input = new logOn('valid', 'valid');
-        $output = self::$instance->logOn($input);
-        $this->assertTrue($output->logOnResult);
-        $input = new getServiceAttributes($input);
-        $output = self::$instance->getServiceAttributes($input);
-        $this->assertInstanceOf('getServiceAttributesResponse', $output);
-        $input = new setReadingSystemAttributes(self::$rsa);
-        $output = self::$instance->setReadingSystemAttributes($input);
-        $this->assertTrue($output->setReadingSystemAttributesResult);
+        $this->assertInstanceOf('serviceAttributes', $output->serviceAttributes);
         $input = new getContentList('empty', 0, -1);
         $output = self::$instance->getContentList($input);
         $this->assertInstanceOf('getContentListResponse', $output);
-    }
-
-    /**
-     * @group daisyonlineservice
-     * @group session
-     */
-    public function testLogOnAnywhereWithinSessionInitialization()
-    {
-        $input = new logOn('valid', 'valid');
-        $output = self::$instance->logOn($input);
-        $this->assertTrue($output->logOnResult);
-        $output = self::$instance->getServiceAttributes($input);
-        $this->assertInstanceOf('getServiceAttributesResponse', $output);
-        $input = new logOn('valid', 'valid');
-        $output = self::$instance->logOn($input);
-        $this->assertTrue($output->logOnResult);
-        $input = new setReadingSystemAttributes(self::$rsa);
-        $this->assertTrue($this->callOperation('setReadingSystemAttributes', $input, 'invalidOperationFault'));
-    }
-
-    /**
-     * @group daisyonlineservice
-     * @group session
-     */
-    public function testLogOffAnywhereWithinSessionInitialization()
-    {
-        $input = new logOff();
-        $output = self::$instance->logOff($input);
-        $this->assertTrue($output->logOffResult);
-        $input = new logOn('valid', 'valid');
-        $output = self::$instance->logOn($input);
-        $this->assertTrue($output->logOnResult);
-        $input = new logOff();
-        $output = self::$instance->logOff($input);
-        $this->assertTrue($output->logOffResult);
-        $input = new getServiceAttributes($input);
-        $this->assertTrue($this->callOperation('getServiceAttributes', $input, 'noActiveSessionFault'));
-        $input = new logOn('valid', 'valid');
-        $output = self::$instance->logOn($input);
-        $this->assertTrue($output->logOnResult);
-        $output = self::$instance->getServiceAttributes($input);
-        $this->assertInstanceOf('getServiceAttributesResponse', $output);
-        $input = new logOff();
-        $output = self::$instance->logOff($input);
-        $this->assertTrue($output->logOffResult);
-        $input = new setReadingSystemAttributes(self::$rsa);
-        $this->assertTrue($this->callOperation('setReadingSystemAttributes', $input, 'noActiveSessionFault'));
     }
 
     /**
@@ -292,15 +213,9 @@ class DaisyOnlineServiceSession extends PHPUnit_Framework_TestCase
      */
     public function testSessionDestroyedByLogOff()
     {
-        $input = new logOn('valid', 'valid');
+        $input = new logOn('valid', 'valid', self::$rsa);
         $output = self::$instance->logOn($input);
-        $this->assertTrue($output->logOnResult);
-        $input = new getServiceAttributes($input);
-        $output = self::$instance->getServiceAttributes($input);
-        $this->assertInstanceOf('getServiceAttributesResponse', $output);
-        $input = new setReadingSystemAttributes(self::$rsa);
-        $output = self::$instance->setReadingSystemAttributes($input);
-        $this->assertTrue($output->setReadingSystemAttributesResult);
+        $this->assertInstanceOf('serviceAttributes', $output->serviceAttributes);
         $input = new getContentList('empty', 0, -1);
         $output = self::$instance->getContentList($input);
         $this->assertInstanceOf('getContentListResponse', $output);
@@ -315,42 +230,11 @@ class DaisyOnlineServiceSession extends PHPUnit_Framework_TestCase
      * @group daisyonlineservice
      * @group session
      */
-    public function testSessionDestroyedByLogOn()
-    {
-        $input = new logOn('valid', 'valid');
-        $output = self::$instance->logOn($input);
-        $this->assertTrue($output->logOnResult);
-        $input = new getServiceAttributes($input);
-        $output = self::$instance->getServiceAttributes($input);
-        $this->assertInstanceOf('getServiceAttributesResponse', $output);
-        $input = new setReadingSystemAttributes(self::$rsa);
-        $output = self::$instance->setReadingSystemAttributes($input);
-        $this->assertTrue($output->setReadingSystemAttributesResult);
-        $input = new getContentList('empty', 0, -1);
-        $output = self::$instance->getContentList($input);
-        $this->assertInstanceOf('getContentListResponse', $output);
-        $input = new logOn('valid', 'valid');
-        $output = self::$instance->logOn($input);
-        $this->assertTrue($output->logOnResult);
-        $input = new getContentList('empty', 0, -1);
-        $this->assertTrue($this->callOperation('getContentList', $input, 'invalidOperationFault'));
-    }
-
-    /**
-     * @group daisyonlineservice
-     * @group session
-     */
     public function testSessionDestroyedByAdapter()
     {
-        $input = new logOn('valid', 'valid');
+        $input = new logOn('valid', 'valid', self::$rsa);
         $output = self::$instance->logOn($input);
-        $this->assertTrue($output->logOnResult);
-        $input = new getServiceAttributes($input);
-        $output = self::$instance->getServiceAttributes($input);
-        $this->assertInstanceOf('getServiceAttributesResponse', $output);
-        $input = new setReadingSystemAttributes(self::$rsa);
-        $output = self::$instance->setReadingSystemAttributes($input);
-        $this->assertTrue($output->setReadingSystemAttributesResult);
+        $this->assertInstanceOf('serviceAttributes', $output->serviceAttributes);
         $input = new getContentList('stop-backend-session', 0, -1);
         $output = self::$instance->getContentList($input);
         $this->assertInstanceOf('getContentListResponse', $output);

@@ -26,7 +26,7 @@ require_once('Adapter.class.php');
 class SystemTestAdapter extends Adapter
 {
     protected $sessionActive = true;
-    protected $contentLists = array('new' => array('id_1', 'id_2'), 'issued' => array('id_3'), 'expired' => array('id_4'), 'returned' => array());
+    protected $contentLists = array('bookshelf' => array('id_1','id_2'));
 
     public function startSession()
     {
@@ -87,13 +87,14 @@ class SystemTestAdapter extends Adapter
     public function contentLastModifiedDate($contentId)
     {
         // TODO: implement test cases
-        return false;
+        //return false;
+        return '2016-03-11T14:23:23+00:00';
     }
 
     public function contentAccessMethod($contentId)
     {
         // TODO: implement test cases
-        return ACCESS_STREAM_AND_DOWNLOAD_AUTOMATIC_ALLOWED;
+        return 'STREAM_AND_DOWNLOAD_AUTOMATIC_ALLOWED';
     }
 
     public function contentExists($contentId)
@@ -108,7 +109,7 @@ class SystemTestAdapter extends Adapter
 
     public function contentReturnDate($contentId)
     {
-        return '1970-01-01T00:00:00';
+        return '2016-03-11T14:23:23+00:00';
     }
 
     public function contentMetadata($contentId)
@@ -157,6 +158,7 @@ class SystemTestAdapter extends Adapter
         $resource['mimeType'] = 'mimeType';
         $resource['size'] = 1;
         $resource['localURI'] = 'localURI';
+        $resource['lastModifiedDate'] = '2016-03-11T14:23:23+00:00';
         array_push($resources, $resource);
         return $resources;
     }
@@ -165,20 +167,14 @@ class SystemTestAdapter extends Adapter
     {
         return true;
     }
-
     public function contentReturn($contentId)
     {
-        if (in_array($contentId, $this->contentLists['issued']))
-        {
-            $this->contentLists['issued'] = array_diff($this->contentLists['issued'], array($contentId));
-            array_push($this->contentLists['returned'], $contentId);
+        $key = array_search($contentId, $this->contentLists['bookshelf']);
+        if($key!==false){
+            unset($this->contentLists['bookshelf'][$key]);
+            return true;
         }
-        else if (in_array($contentId, $this->contentLists['expired']))
-        {
-            $this->contentLists['expired'] = array_diff($this->contentLists['expired'], array($contentId));
-            array_push($this->contentLists['returned'], $contentId);
-        }
-        return true;
+        return false;
     }
 }
 

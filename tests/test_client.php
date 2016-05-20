@@ -59,14 +59,49 @@ class TestClient
     private $password = null;
     private $client = null;
     private $logEnable = true;
+    private $config = null;
+    private $readingSystemAttributes = null;
+    private $manufacturer = null;
+    private $model = null;
+    private $serialnumber = null;
+    private $version = null;
 
     public function __construct($_serviceUrl, $_username, $_password)
     {
         $this->serviceUrl = $_serviceUrl;
         $this->username = $_username;
         $this->password = $_password;
-
+        $this->manufacturer = 'Kolibre';
+        $this->model = 'PHP SoapClient';
+        $this->serialnumber = 'NA';
+        $this->version = '0.1';
+        $this->config = $this->setupConfig();
+        $this->readingSystemAttributes = new readingSystemAttributes($this->manufacturer, $this->model, $this->serialnumber, $this->version, $this->config);
         $this->client = new DaisyOnlineClient($this->serviceUrl);
+    }
+
+    private function setupConfig()
+    {
+        $config = new config();
+        $config->setAccessConfig("STREAM_ONLY");
+        $config->setSupportsMultipleSelections(false);
+        $config->setSupportsAdvancedDynamicMenus(false);
+        $config->setPreferredUILanguage('en');
+        $config->setBandwidth('8000000');
+        $scf = new supportedContentFormats(array('DAISY 2.02', 'ANSI/NISO Z39.86-2005'));
+        $config->setSupportedContentFormats($scf);
+        $scpf = new supportedContentProtectionFormats();
+        $config->setSupportedContentProtectionFormats($scpf);
+        $keyRing = new keyRing();
+        $config->setKeyRing($keyRing);
+        $smt = new supportedMimeTypes();
+        $config->setSupportedMimeTypes($smt);
+        $sit = new supportedInputTypes(array(new input('TEXT_ALPHANUMERIC')));
+        $config->setSupportedInputTypes($sit);
+        $config->setRequiresAudioLabels(false);
+        $additionalTransferProtocols = new additionalTransferProtocols(array('protocol'));
+        $config->setAdditionalTransferProtocols($additionalTransferProtocols);
+        return $config;
     }
 
     private function log($msg)
@@ -88,7 +123,7 @@ class TestClient
     {
         $this->log('invoking operation ' . __FUNCTION__);
 
-        $result = $this->client->logOn($this->username, $this->password);
+        $result = $this->client->logOn($this->username, $this->password,$this->readingSystemAttributes);
         if ($this->client->operationFailed())
         {
             $this->log(__FUNCTION__ . ' failed');
@@ -103,34 +138,6 @@ class TestClient
         $this->log('invoking operation ' . __FUNCTION__);
 
         $result = $this->client->logOff();
-        if ($this->client->operationFailed())
-        {
-            $this->log(__FUNCTION__ . ' failed');
-            exit(1);
-        }
-        $this->log(__FUNCTION__ . ' successful');
-        return $result;
-    }
-
-    public function getServiceAttributes()
-    {
-        $this->log('invoking operation ' . __FUNCTION__);
-
-        $result = $this->client->getServiceAttributes();
-        if ($this->client->operationFailed())
-        {
-            $this->log(__FUNCTION__ . ' failed');
-            exit(1);
-        }
-        $this->log(__FUNCTION__ . ' successful');
-        return $result;
-    }
-
-    public function setReadingSystemAttributes()
-    {
-        $this->log('invoking operation ' . __FUNCTION__);
-
-        $result = $this->client->setReadingSystemAttributes();
         if ($this->client->operationFailed())
         {
             $this->log(__FUNCTION__ . ' failed');
@@ -217,44 +224,26 @@ $testClient = new TestClient($serviceUrl, $username, $password);
 
 // establish session
 $result = $testClient->logOn();
-//$result = $testClient->getServiceAttributes();
-//$result = $testClient->setReadingSystemAttributes();
 
-// issue new content
-$contentList = $testClient->getContentList('new');
+// get contentList for bookshelf
+$contentList = $testClient->getContentList('bookshelf');
 $contentItems = array();
-if (is_array($contentList->contentItem)) $contentItems = $contentList->contentItem;
-foreach ($contentItems as $contentItem)
-{
-    // get metadata
-    $result = $testClient->getContentMetadata($contentItem->getId());
+if (is_array($contentList->contentItem)) 
+    $contentItems = $contentList->contentItem;
 
-    // issue content
-    $result = $testClient->issueContent($contentItem->getId());
-}
-
-// get resources for issued content
-$contentList = $testClient->getContentList('issued');
-$contentItems = array();
-if (is_array($contentList->contentItem)) $contentItems = $contentList->contentItem;
+//get resources for content items
 foreach ($contentItems as $contentItem)
 {
     $result = $testClient->getContentResources($contentItem->getId());
 }
 
-// return expired content
-$contentList = $testClient->getContentList('expired');
-$contentItems = array();
-if (is_array($contentList->contentItem)) $contentItems = $contentList->contentItem;
+//return content
 foreach ($contentItems as $contentItem)
 {
     $result = $testClient->returnContent($contentItem->getId());
 }
 
-// return issued content
-$contentList = $testClient->getContentList('issued');
-$contentItems = array();
-if (is_array($contentList->contentItem)) $contentItems = $contentList->contentItem;
+//return content again
 foreach ($contentItems as $contentItem)
 {
     $result = $testClient->returnContent($contentItem->getId());

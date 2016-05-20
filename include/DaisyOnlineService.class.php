@@ -694,7 +694,7 @@ class DaisyOnlineService
         }
 
         $output = new getContentResourcesResponse($resources);
-
+    
         if ($output->validate() === false)
         {
             $msg = "failed to build response " . $output->getError();

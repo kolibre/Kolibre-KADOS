@@ -95,7 +95,7 @@ class config extends AbstractType {
     /**
      * constructor for class config
      */
-    function __construct($_accessConfig = NULL, $_supportsMultipleSelections = NULL, $_supportsAdvancedDynamicMenus, $_preferredUILanguage = NULL, $_bandwidth = NULL, $_supportedContentFormats = NULL, $_supportedContentProtectionFormats = NULL, $_keyRing = NULL, $_supportedMimeTypes = NULL, $_supportedInputTypes = NULL, $_requiresAudioLabels = NULL, $_additionalTransferProtocols = NULL) {
+    function __construct($_accessConfig = NULL, $_supportsMultipleSelections = NULL, $_supportsAdvancedDynamicMenus = Null, $_preferredUILanguage = NULL, $_bandwidth = NULL, $_supportedContentFormats = NULL, $_supportedContentProtectionFormats = NULL, $_keyRing = NULL, $_supportedMimeTypes = NULL, $_supportedInputTypes = NULL, $_requiresAudioLabels = NULL, $_additionalTransferProtocols = NULL) {
         if (is_string($_accessConfig)) $this->setAccessConfig($_accessConfig);
         if (is_bool($_supportsMultipleSelections)) $this->setSupportsMultipleSelections($_supportsMultipleSelections);                
         if (is_bool($_supportsAdvancedDynamicMenus)) $this->setSupportsAdvancedDynamicMenus($_supportsAdvancedDynamicMenus);

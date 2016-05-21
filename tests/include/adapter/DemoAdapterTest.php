@@ -130,14 +130,14 @@ class DemoAdapterTest extends PHPUnit_Framework_TestCase
         $this->assertFalse(self::$adapter->isValidDate(''));
         $this->assertFalse(self::$adapter->isValidDate('YYYY-MM-DD hh:mm:ss'));
         $this->assertFalse(self::$adapter->isValidDate('0000-00-00 00:00:00'));
-        $this->assertTrue(self::$adapter->isValidDate('1970-01-01 00:00:00+00:00'));
+        $this->assertTrue(self::$adapter->isValidDate('1970-01-01T00:00:00+00:00'));
     }
 
     public function testContentReturnDate()
     {
         $this->assertFalse(self::$adapter->contentReturnDate(10));
         $this->assertFalse(self::$adapter->contentReturnDate('con_10'));
-        $pattern = '/\d{4}-\d{2}-\d{2}[ T]\d{2}:\d{2}:\d{2}\+\d{2}:\d{2}/';
+        $pattern = '/\d{4}\-\d{2}\-\d{2}T\d{2}:\d{2}:\d{2}(\+\d{2}:\d{2}|Z)/';
         $this->assertRegExp($pattern, self::$adapter->contentReturnDate(1));
         $this->assertRegExp($pattern, self::$adapter->contentReturnDate('con_1'));
         $this->assertRegExp($pattern, self::$adapter->contentReturnDate(2));

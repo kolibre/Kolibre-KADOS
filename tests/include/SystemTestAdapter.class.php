@@ -94,7 +94,7 @@ class SystemTestAdapter extends Adapter
     public function contentAccessMethod($contentId)
     {
         // TODO: implement test cases
-        return 'STREAM_AND_DOWNLOAD_AUTOMATIC_ALLOWED';
+        return Adapter::ACCESS_STREAM_AND_DOWNLOAD_AUTOMATIC_ALLOWED;
     }
 
     public function contentExists($contentId)
@@ -170,7 +170,8 @@ class SystemTestAdapter extends Adapter
     public function contentReturn($contentId)
     {
         $key = array_search($contentId, $this->contentLists['bookshelf']);
-        if($key!==false){
+        if ($key !== false)
+        {
             unset($this->contentLists['bookshelf'][$key]);
             return true;
         }

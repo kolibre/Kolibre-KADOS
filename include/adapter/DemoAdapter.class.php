@@ -539,7 +539,7 @@ class DemoAdapter extends Adapter
     public function isValidDate($date)
     {
         if (is_null($date)) return false;
-        $pattern = '/\d{4}-\d{2}-\d{2}[ T]\d{2}:\d{2}:\d{2}\+\d{2}:\d{2}/';
+        $pattern = '/\d{4}\-\d{2}\-\d{2}T\d{2}:\d{2}:\d{2}(\+\d{2}:\d{2}|Z)/';
         if (preg_match($pattern, $date) == 0) return false;
         if ($date == '0000-00-00 00:00:00') return false;
         return true;
@@ -574,7 +574,7 @@ class DemoAdapter extends Adapter
         if ($this->isValidDate($returnDate) === false)
         {
             $timestamp = time() + $this->loanDuration;
-            $returnDate = date('Y-m-d\TH:i:s+00:00', $timestamp);
+            $returnDate = date('Y-m-d\TH:i:sP', $timestamp);
             // mark content as not returned and set return date if content has been issued
             if ($this->contentInList($contentId, 'issued') === true)
             {
@@ -681,41 +681,12 @@ class DemoAdapter extends Adapter
 
     public function contentIssue($contentId)
     {
-        $contentId = $this->extractId($contentId);
+        // This adapter function was desinged for the first DaisyOnline specification
+        // and not needed in in version 2.x of the speification, but it's not remove
+        // from the adapter API to maintain backwards compatibility.
 
-        if ($this->contentInList($contentId, 'expired') || $this->contentInList($contentId, 'returned'))
-            return false;
-
-        if ($this->contentInList($contentId, 'issued'))
-            return true;
-
-        if ($this->contentInList($contentId, 'new'))
-        {
-            try
-            {
-                $query = 'UPDATE usercontent SET contentlist_id = :listId, updated_at = :timestamp
-                    WHERE user_id = :userId AND content_id = :contentId';
-                $sth = $this->dbh->prepare($query);
-                $values = array();
-                $values[':listId'] = $this->contentListId('issued');
-                $values[':timestamp'] = date('Y-m-d H:i:s');
-                $values[':userId'] = $this->user;
-                $values[':contentId'] = $contentId;
-                if ($sth->execute($values) === false)
-                {
-                    $this->logger->error("Issuing content with id '$contentId' for user with id '$this->user' failed");
-                    return false;
-                }
-                return true;
-            }
-            catch (PDOException $e)
-            {
-                $this->logger->fatal($e->getMessage());
-                throw new AdapterException('Issuing content failed');
-            }
-        }
-
-        return false;
+        // Hence we always return true
+        return true;
     }
 
     public function contentResources($contentId, $accessMethod = null)

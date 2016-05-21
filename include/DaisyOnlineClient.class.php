@@ -173,12 +173,12 @@ class DaisyOnlineClient
         return $getContentListResponse->getContentList();
     }
 
-    public function getContentResources($contentId)
+    public function getContentResources($contentId, $accessType = "STREAM")
     {
         $this->operationFailed = false;
         try
         {
-            $input = new getContentResources($contentId, "STREAM");
+            $input = new getContentResources($contentId, $accessType);
             $getContentResourcesResponse = $this->soapClient->getContentResources($input);
         }
         catch (SoapFault $f)

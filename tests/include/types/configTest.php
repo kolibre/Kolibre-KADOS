@@ -28,7 +28,7 @@ class configTest extends PHPUnit_Framework_TestCase
     protected $config;
 
     public function setUp()
-    {   
+    {
         $accessConfig = "STREAM_ONLY";
         $supportsMultipleSelections = false;
         $supportsAdvancedDynamicMenus = false;

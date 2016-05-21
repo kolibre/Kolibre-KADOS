@@ -101,7 +101,7 @@ class getContentResources extends AbstractType {
 
         if ($this->isString($this->accessType, 'accessType', array("STREAM", "DOWNLOAD","AUTOMATIC_DOWNLOAD")) === false)
             return false;
-        
+
         return true;
     }
 }

@@ -59,7 +59,7 @@ class resourcesTest extends PHPUnit_Framework_TestCase
      * @group validate
      */
     public function testPackage()
-    {   
+    {
         $instance = new resources();
         $resource = array(new resource('uri', 'mimeType', 1, 'localURI','2016-03-11T14:23:23+00:00'));
         $this->assertTrue($resource[0]->validate());
@@ -84,7 +84,7 @@ class resourcesTest extends PHPUnit_Framework_TestCase
         $package_array = array(new package(array($resourceRef), 'uri', 'mimetype', 1234, '2016-03-11T14:23:23Z'));
         $instance->package = $package_array;
         $this->assertTrue($instance->validate());
-        
+
     }
 
     /**

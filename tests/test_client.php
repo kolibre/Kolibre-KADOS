@@ -228,7 +228,7 @@ $result = $testClient->logOn();
 // get contentList for bookshelf
 $contentList = $testClient->getContentList('bookshelf');
 $contentItems = array();
-if (is_array($contentList->contentItem)) 
+if (is_array($contentList->contentItem))
     $contentItems = $contentList->contentItem;
 
 //get resources for content items

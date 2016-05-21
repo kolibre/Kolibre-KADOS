@@ -32,7 +32,7 @@ class subCategoryLabelTest extends PHPUnit_Framework_TestCase
      * @group validate
      */
     public function testLabel()
-    {   
+    {
         $subCategoryLabel = new subCategoryLabel(null);
         $this->assertFalse($subCategoryLabel->validate());
         $this->assertContains('subCategoryLabel.label', $subCategoryLabel->getError());
@@ -46,10 +46,10 @@ class subCategoryLabelTest extends PHPUnit_Framework_TestCase
 
         $subCategoryLabel = new subCategoryLabel($label);
         $this->assertTrue($subCategoryLabel->validate());
-        
+
     }
 
-    
+
 }
 
 ?>

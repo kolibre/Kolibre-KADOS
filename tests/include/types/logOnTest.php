@@ -26,7 +26,7 @@ require_once('config.class.php');
 require_once('readingSystemAttributes.class.php');
 
 class logOnTest extends PHPUnit_Framework_TestCase
-{    
+{
 
     protected $config;
     protected $readingSystemAttributes;
@@ -78,7 +78,7 @@ class logOnTest extends PHPUnit_Framework_TestCase
      * @group validate
      */
     public function testUsername()
-    {   
+    {
         $readingSystemAttributes = $this->readingSystemAttributes;
         $instance = new logOn(NULL, 'password', $readingSystemAttributes);
         $this->assertFalse($instance->validate());
@@ -98,7 +98,7 @@ class logOnTest extends PHPUnit_Framework_TestCase
      * @group validate
      */
     public function testPassword()
-    {   
+    {
         $readingSystemAttributes = $this->readingSystemAttributes;
         $instance = new logOn('username',NULL, $readingSystemAttributes);
         $this->assertFalse($instance->validate());
@@ -114,7 +114,7 @@ class logOnTest extends PHPUnit_Framework_TestCase
     }
 
     public function testReadingSystemAttributes()
-    {   
+    {
         $readingSystemAttributes = $this->readingSystemAttributes;
         $instance = new logOn('username','password', NULL);
         $this->assertFalse($instance->validate());

@@ -144,7 +144,7 @@ class DaisyOnlineServiceSystem extends PHPUnit_Framework_TestCase
         $output = self::$instance->logOn($input);
         $this->assertTrue($output->validate());
     }
-   
+
     /**
      * @group daisyonlineservice
      * @group system
@@ -166,14 +166,14 @@ class DaisyOnlineServiceSystem extends PHPUnit_Framework_TestCase
             $this->assertInstanceOf('label', $contentItem->label);
             $this->assertInstanceOf('metadata', $contentItem->metadata);
             $this->assertTrue($contentItem->accessPermission == "STREAM_AND_DOWNLOAD_AUTOMATIC_ALLOWED");
-            $this->assertTrue($contentItem->lastModifiedDate == "2016-03-11T14:23:23+00:00"); 
-            $this->assertTrue($contentItem->returnBy == "2016-03-11T14:23:23+00:00"); 
+            $this->assertTrue($contentItem->lastModifiedDate == "2016-03-11T14:23:23+00:00");
+            $this->assertTrue($contentItem->returnBy == "2016-03-11T14:23:23+00:00");
             foreach($contentItem->metadata as $metadata)
             {
                 $this->assertTrue(is_string($contentItem->metadata->title));
                 $this->assertTrue(is_string($contentItem->metadata->identifier));
             }
-        } 
+        }
     }
 
     /**

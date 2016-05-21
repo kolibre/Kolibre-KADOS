@@ -694,7 +694,7 @@ class DaisyOnlineService
         }
 
         $output = new getContentResourcesResponse($resources);
-    
+
         if ($output->validate() === false)
         {
             $msg = "failed to build response " . $output->getError();
@@ -1176,7 +1176,7 @@ class DaisyOnlineService
 
     private function createMetaData($contentId, $metadataValues)
     {
-        // build metadata        
+        // build metadata
         $metadata = new metadata();
         $metadata->setIdentifier($contentId);
         foreach ($metadataValues as $key => $value)

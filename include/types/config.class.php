@@ -97,7 +97,7 @@ class config extends AbstractType {
      */
     function __construct($_accessConfig = NULL, $_supportsMultipleSelections = NULL, $_supportsAdvancedDynamicMenus = Null, $_preferredUILanguage = NULL, $_bandwidth = NULL, $_supportedContentFormats = NULL, $_supportedContentProtectionFormats = NULL, $_keyRing = NULL, $_supportedMimeTypes = NULL, $_supportedInputTypes = NULL, $_requiresAudioLabels = NULL, $_additionalTransferProtocols = NULL) {
         if (is_string($_accessConfig)) $this->setAccessConfig($_accessConfig);
-        if (is_bool($_supportsMultipleSelections)) $this->setSupportsMultipleSelections($_supportsMultipleSelections);                
+        if (is_bool($_supportsMultipleSelections)) $this->setSupportsMultipleSelections($_supportsMultipleSelections);
         if (is_bool($_supportsAdvancedDynamicMenus)) $this->setSupportsAdvancedDynamicMenus($_supportsAdvancedDynamicMenus);
         if (is_string($_preferredUILanguage)) $this->setPreferredUILanguage($_preferredUILanguage);
         if (is_int($_bandwidth)) $this->setBandwidth($_bandwidth);
@@ -380,8 +380,8 @@ class config extends AbstractType {
         $allowedValues =  array("STREAM_ONLY", "DOWNLOAD_ONLY", "STREAM_AND_DOWNLOAD", "STREAM_AND_RESTRICTED_DOWNLOAD", "RESTRICTED_DOWNLOAD_ONLY");
         if ($this->isString($this->accessConfig, 'accessConfig', $allowedValues) === false)
             return false;
-            
-        
+
+
 
         // supportsMultipleSelections must occur exactly once
         if ($this->isBoolean($this->supportsMultipleSelections, 'supportsMultipleSelections') === false)

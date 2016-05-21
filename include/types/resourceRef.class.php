@@ -27,7 +27,7 @@ class resourceRef extends AbstractType {
      */
     public $localURI;
 
-   
+
 
     /******************** public functions ********************/
 
@@ -36,7 +36,7 @@ class resourceRef extends AbstractType {
      */
     function __construct($_localURI = NULL) {
         if (is_string($_localURI)) $this->setlocalURI($_localURI);
-        
+
     }
 
 

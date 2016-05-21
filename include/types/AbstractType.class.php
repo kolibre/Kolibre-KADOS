@@ -71,7 +71,7 @@ abstract class AbstractType {
         if (preg_match('/\d{4}\-\d{2}\-\d{2}T\d{2}:\d{2}:\d{2}(\+\d{2}:\d{2}|Z)/', $var) != 1) {
             $this->error = $this->className(get_class($this)) . ".$name is not a valid date time string";
             return false;
-        }    
+        }
     }
 
     public function isInteger($var, $name, $max = null, $min = null)

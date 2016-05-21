@@ -221,8 +221,8 @@ class resource extends AbstractType {
         //lastModifiedDate must occur exactly once
         if ($this->isDateTimeString($this->lastModifiedDate, 'lastModifiedDate') === false) {
             return false;
-        } 
-  
+        }
+
         // attribute serverSideHash is optional
         if (!is_null($this->serverSideHash)) {
             if ($this->isNoneEmptyString($this->serverSideHash, 'serverSideHash') === false)

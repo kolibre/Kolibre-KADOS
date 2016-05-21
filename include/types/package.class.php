@@ -106,7 +106,7 @@ class package extends AbstractType {
     function resetUri() {
         $this->uri = NULL;
     }
-    
+
     /**
      * getter for mimeType
      */
@@ -237,11 +237,11 @@ class package extends AbstractType {
         // uri must occur exactly once
         if ($this->isNoneEmptyString($this->uri, 'uri') === false)
             return false;
-        
+
         // mimeType must occur exactly once
         if ($this->isNoneEmptyString($this->mimeType, 'mimeType') === false)
             return false;
-        
+
         // size can not be NULL
         if(is_null($this->size))
             return false;
@@ -249,14 +249,14 @@ class package extends AbstractType {
         // size must be specified and positive integer
         if ($this->isPositiveInteger($this->size, 'size') === false)
             return false;
-            
-           
+
+
         // lastModifiedDate must include timezone if set
         if ($this->isDateTimeString($this->lastModifiedDate, 'lastModifiedDate') === false) {
             return false;
-        }    
-        
-        
+        }
+
+
         return true;
     }
 }

@@ -288,7 +288,7 @@ class serviceAttributes extends AbstractType {
     function resetAnnouncementsPullFrequency() {
         $this->announcementsPullFrequency = NULL;
     }
-    
+
 
 
     /**
@@ -372,7 +372,7 @@ class serviceAttributes extends AbstractType {
         $allowedValues =  array("STREAM_ONLY", "DOWNLOAD_ONLY", "STREAM_AND_DOWNLOAD", "STREAM_AND_RESTRICTED_DOWNLOAD", "RESTRICTED_DOWNLOAD_ONLY");
         if ($this->isString($this->accessConfig, 'accessConfig', $allowedValues) === false)
             return false;
-                    
+
         // announcementsPullFrequency must be positive integer
         if ($this->isPositiveInteger($this->announcementsPullFrequency, 'announcementsPullFrequency') === false)
                 return false;

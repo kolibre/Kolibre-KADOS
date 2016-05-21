@@ -30,7 +30,7 @@ class getUserCredentialsResponseTest extends PHPUnit_Framework_TestCase
      * @group validate
      */
     public function testCredentials()
-    {   
+    {
         $credentials = new credentials('username','password','RSAES-OAEP');
         $this->assertTrue($credentials->validate());
 

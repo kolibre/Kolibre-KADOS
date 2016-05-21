@@ -24,7 +24,7 @@ require_once('bookmarkSet.class.php');
 
 class bookmarkObject extends AbstractType {
 
-   
+
 
     /**
      * @var (object)bookmarkSet
@@ -44,7 +44,7 @@ class bookmarkObject extends AbstractType {
     function __construct($_bookmarkSet = NULL,$_lastModifiedDate = NULL) {
         if(is_a($_bookmarkSet, 'bookmarkSet')) $this->setBookmarkSet($_bookmarkSet);
         if (is_string($_lastModifiedDate)) $this->setLastModifiedDate($_lastModifiedDate);
-        
+
     }
 
 
@@ -99,7 +99,7 @@ class bookmarkObject extends AbstractType {
      * validator for class bookmarkObject
      */
     function validate() {
-                  
+
         //bookmarkSet must be of type bookmarkSet and correct
         if ($this->isInstanceOf($this->bookmarkSet, 'bookmarkSet') === false){
             return false;
@@ -108,13 +108,13 @@ class bookmarkObject extends AbstractType {
             $this->error = __CLASS__ . '.' . $this->bookmarkSet->getError();
             return false;
         }
-     
+
         //lastModifiedDate must occur exactly once
         if ($this->isDateTimeString($this->lastModifiedDate, 'lastModifiedDate') === false) {
             return false;
-        } 
-        
-            
+        }
+
+
 
         return true;
     }

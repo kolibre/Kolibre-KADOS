@@ -85,7 +85,7 @@ class DaisyOnlineClient
         // create soap client in WSDL mode
         $this->soapClient = new SoapClient($wsdl_url, $options);
     }
-    
+
     private function extractFaultType($fault)
     {
         $type = '';
@@ -153,7 +153,7 @@ class DaisyOnlineClient
 
         return $logOffResponse->logOffResult;
     }
-  
+
     public function getContentList($name, $firstItem = 0, $lastItem = -1)
     {
         $this->operationFailed = false;
@@ -172,7 +172,7 @@ class DaisyOnlineClient
 
         return $getContentListResponse->getContentList();
     }
-    
+
     public function getContentResources($contentId)
     {
         $this->operationFailed = false;
@@ -248,7 +248,7 @@ class DaisyOnlineClient
 
         return $markAnnouncementsAsReadResponse->markAnnouncementsAsReadResult;
     }
-    
+
     public function updateBookmarks($contentId, $action, $bookmarkObject)
     {
         $this->operationFailed = false;
@@ -361,7 +361,7 @@ class DaisyOnlineClient
 
         return $getUserCredentialsResponse->$credentials;
     }
-    
+
     public function getTermsOfService()
     {
         $this->operationFailed = false;
@@ -380,7 +380,7 @@ class DaisyOnlineClient
 
         return $getTermsOfServiceResponse->$label;
     }
-   
+
     public function acceptTermsOfService()
     {
         $this->operationFailed = false;
@@ -399,7 +399,7 @@ class DaisyOnlineClient
 
         return $acceptTermsOfServiceResponse->$acceptTermsOfServiceResult;
     }
-    
+
     public function setProgressState($contentId, $state)
     {
         $this->operationFailed = false;

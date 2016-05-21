@@ -181,10 +181,10 @@ class announcement extends AbstractType {
                 return false;
         }
 
-        // attribute priority is required  
+        // attribute priority is required
         if ($this->isString($this->priority, 'priority', array("HIGH","MEDIUM","LOW")) === false)
             return false;
-        
+
         return true;
     }
 }

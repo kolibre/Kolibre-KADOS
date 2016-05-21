@@ -59,7 +59,7 @@ class contentItem extends AbstractType {
      * @var string accessPermission
      */
     public $accessPermission;
-    
+
     /**
      * @var optional (object) lastmark
      */
@@ -69,7 +69,7 @@ class contentItem extends AbstractType {
      * @var optional (object) multiplChoiceQuestion
      */
     public $multipleChoiceQuestion;
-    
+
     /**
      * @var string
      */
@@ -533,12 +533,12 @@ class contentItem extends AbstractType {
         // accessPermissions is required
         if ($this->isNoneEmptyString($this->accessPermission, 'accessPermission') === false)
             return false;
-        if ($this->isString($this->accessPermission, 'accessPermission', array("STREAM_ONLY","DOWNLOAD_ONLY","STREAM_AND_DOWNLOAD","STREAM_AND_RESTRICTED_DOWNLOAD", 
+        if ($this->isString($this->accessPermission, 'accessPermission', array("STREAM_ONLY","DOWNLOAD_ONLY","STREAM_AND_DOWNLOAD","STREAM_AND_RESTRICTED_DOWNLOAD",
             "RESTRICTED_DOWNLOAD_ONLY","DOWNLOAD_ONLY_AUTOMATIC_ALLOWED",
-            "STREAM_AND_DOWNLOAD_AUTOMATIC_ALLOWED","STREAM_AND_RESTRICTED_DOWNLOAD_AUTOMATIC_ALLOWED", 
+            "STREAM_AND_DOWNLOAD_AUTOMATIC_ALLOWED","STREAM_AND_RESTRICTED_DOWNLOAD_AUTOMATIC_ALLOWED",
             "RESTRICTED_DOWNLOAD_ONLY_AUTOMATIC_ALLOWED")) === false)
             return false;
-        
+
 
         // lastmark is optional
         if (!is_null($this->lastmark)) {
@@ -560,45 +560,45 @@ class contentItem extends AbstractType {
                 $this->error = __CLASS__ . '.' . $this->multipleChoiceQuestion->getError();
                 return false;
             }
-        } 
+        }
         // attribute id is required
         if ($this->isNoneEmptyString($this->id, 'id') === false)
             return false;
 
         // attribute firstAccessedDate is optional
         if (!is_null($this->firstAccessedDate))
-            if ($this->isDateTimeString($this->firstAccessedDate, 'firstAccessedDate') === false) 
+            if ($this->isDateTimeString($this->firstAccessedDate, 'firstAccessedDate') === false)
                 return false;
-        
+
         // attribute lastAccessedDate is optional
         if (!is_null($this->lastAccessedDate))
-            if ($this->isDateTimeString($this->lastAccessedDate, 'lastAccessedDate') === false) 
+            if ($this->isDateTimeString($this->lastAccessedDate, 'lastAccessedDate') === false)
                 return false;
 
         // attribute lastModifiedDate is required
-        if (!is_null($this->lastModifiedDate)) 
+        if (!is_null($this->lastModifiedDate))
             if ($this->isDateTimeString($this->lastModifiedDate, 'lastModifiedDate') === false)
                 return false;
 
         // attribute category is optional
-        if (!is_null($this->category)) 
+        if (!is_null($this->category))
             if ($this->isNoneEmptyString($this->category, 'category') === false)
                 return false;
 
         // attribute subCategory is optional
-        if (!is_null($this->subCategory)) 
+        if (!is_null($this->subCategory))
             if ($this->isNoneEmptyString($this->subCategory, 'subCategory') === false)
                 return false;
 
         // attribute returnBy is optional
         if (!is_null($this->returnBy))
-            if ($this->isDateTimeString($this->returnBy, 'returnBy') === false) 
+            if ($this->isDateTimeString($this->returnBy, 'returnBy') === false)
                 return false;
-        
+
         // attribute hasBookmarks is required
-        if ($this->isBoolean($this->hasBookmarks, 'hasBookmarks') === false) 
+        if ($this->isBoolean($this->hasBookmarks, 'hasBookmarks') === false)
             return false;
-        
+
         return true;
     }
 }

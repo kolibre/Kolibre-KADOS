@@ -27,7 +27,7 @@ class getUserCredentials extends AbstractType {
      */
     public $readingSystemAttributes;
 
-    
+
 
     /******************** public functions ********************/
 
@@ -61,7 +61,7 @@ class getUserCredentials extends AbstractType {
     function resetReadingSystemAttributes() {
         $this->readingSystemAttributes = NULL;
     }
-    
+
 
     /******************** validator methods ********************/
 

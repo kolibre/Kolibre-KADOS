@@ -51,14 +51,14 @@ class DemoAdapterTest extends PHPUnit_Framework_TestCase
         $this->assertTrue(self::$adapter->authenticate('kolibre', 'kolibre'));
     }
 
-    
+
     public function testContentListExists()
-    {   
+    {
         $this->assertTrue(self::$adapter->contentListExists('bookshelf'));
     }
-    
+
     public function testContentListId()
-    {   
+    {
         $this->assertGreaterThan(0, self::$adapter->contentListId('bookshelf'));
     }
 
@@ -74,15 +74,15 @@ class DemoAdapterTest extends PHPUnit_Framework_TestCase
         $this->assertEquals(1, self::$adapter->contentFormatId('con_1'));
         $this->assertEquals(2, self::$adapter->contentFormatId('con_2'));
     }
-    
+
     public function testContentList()
     {
         // unfiltered
         $this->assertCount(3, self::$adapter->contentList('bookshelf'));
-       
+
         // filtered
         $this->assertCount(2, self::$adapter->contentList('bookshelf', array('Daisy 2.02')));
-        
+
     }
 
     public function testLabelContentItem()
@@ -181,7 +181,7 @@ class DemoAdapterTest extends PHPUnit_Framework_TestCase
         $this->assertTrue(self::$adapter->contentInList(2, 'bookshelf'));
         $this->assertTrue(self::$adapter->contentInList('con_2', 'bookshelf'));
     }
-    
+
     public function testContentResources()
     {
         $this->assertEmpty(self::$adapter->contentResources(10));

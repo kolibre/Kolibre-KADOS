@@ -34,7 +34,7 @@ class resourceRefTest extends PHPUnit_Framework_TestCase
         $resourceRef = new resourceRef(NULL);
         $this->assertFalse($resourceRef->validate());
         $this->assertContains('resourceRef.localURI', $resourceRef->getError());
-        
+
         $resourceRef = new resourceRef(1);
         $this->assertFalse($resourceRef->validate());
         $this->assertContains('resourceRef.localURI', $resourceRef->getError());
@@ -46,12 +46,12 @@ class resourceRefTest extends PHPUnit_Framework_TestCase
         $resourceRef->localURI = '';
         $this->assertFalse($resourceRef->validate());
         $this->assertContains('resourceRef.localURI', $resourceRef->getError());
-        
+
         $resourceRef->localURI = 'localURI';
         $this->assertTrue($resourceRef->validate());
     }
 
-    
+
 }
 
 ?>

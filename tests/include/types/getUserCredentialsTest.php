@@ -25,7 +25,7 @@ require_once('getUserCredentials.class.php');
 require_once('readingSystemAttributes.class.php');
 
 class getUserCredentialsTest extends PHPUnit_Framework_TestCase
-{   
+{
     protected $config;
     protected $readingSystemAttributes;
 
@@ -75,7 +75,7 @@ class getUserCredentialsTest extends PHPUnit_Framework_TestCase
      * @group validate
      */
     public function testReadingSystemAttributes()
-    {       
+    {
 
         $readingSystemAttributes = $this->readingSystemAttributes;
         $this->assertTrue($readingSystemAttributes->validate());

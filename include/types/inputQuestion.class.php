@@ -170,7 +170,7 @@ class inputQuestion extends AbstractType {
         // attribute id is required
         if ($this->isNoneEmptyString($this->id, 'id') === false)
             return false;
-        
+
         //defaultValue is optinal
         if(!is_null($this->defaultValue) === false)
             if ($this->isNoneEmptyString($this->defaultValue, 'defaultValue') === false)

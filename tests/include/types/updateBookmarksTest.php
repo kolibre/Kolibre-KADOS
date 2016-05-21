@@ -24,14 +24,14 @@ set_include_path(get_include_path() . PATH_SEPARATOR . $includePath);
 require_once('updateBookmarks.class.php');
 
 class updateBookmarksTest extends PHPUnit_Framework_TestCase
-{   
+{
 
     protected $bookmarkObject;
     /**
      * @before
      */
      public function setUp()
-     {  
+     {
         $bookmarkAudio = new bookmarkAudio('src','clipBegin','ClipEnd');
         $title = new title('title',$bookmarkAudio);
         $lastmark = new lastMark('uri','uri','time', 1234);
@@ -47,7 +47,7 @@ class updateBookmarksTest extends PHPUnit_Framework_TestCase
      * @group validate
      */
     public function testContentID()
-    {   
+    {
         $bookmarkObjectInstance = $this->bookmarkObject;
         $instance = new updateBookmarks(NULL, 'REPLACE_ALL',$bookmarkObjectInstance);
         $this->assertFalse($instance->validate());
@@ -88,7 +88,7 @@ class updateBookmarksTest extends PHPUnit_Framework_TestCase
      */
     public function testBookmarkObject()
     {
-        
+
         $instance = new updateBookmarks('contentID','REPLACE_ALL', NULL);
         $this->assertFalse($instance->validate());
         $this->assertContains('updateBookmarks.bookmarkObject', $instance->getError());

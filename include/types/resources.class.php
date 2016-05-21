@@ -246,7 +246,7 @@ class resources extends AbstractType {
         // attribute lastModifiedDate must occur exactly once
         if ($this->isDateTimeString($this->lastModifiedDate, 'lastModifiedDate') === false) {
             return false;
-        } 
+        }
 
         return true;
     }

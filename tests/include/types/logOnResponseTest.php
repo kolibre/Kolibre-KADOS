@@ -24,7 +24,7 @@ set_include_path(get_include_path() . PATH_SEPARATOR . $includePath);
 require_once('logOnResponse.class.php');
 
 class logOnResponseTest extends PHPUnit_Framework_TestCase
-{   
+{
     protected $serviceAttributes;
 
     public function setUp()

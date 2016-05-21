@@ -27,7 +27,7 @@ class addContentToBookshelf extends AbstractType {
      */
     public $contentID;
 
-    
+
 
     /******************** public functions ********************/
 
@@ -61,7 +61,7 @@ class addContentToBookshelf extends AbstractType {
     function resetContentID() {
         $this->contentID = NULL;
     }
-    
+
 
     /******************** validator methods ********************/
 

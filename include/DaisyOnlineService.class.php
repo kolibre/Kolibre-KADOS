@@ -962,7 +962,7 @@ class DaisyOnlineService
         if (array_key_exists('accessConfig', $settings))
         {
             $allowedValues = array('STREAM_ONLY', 'DOWNLOAD_ONLY', 'STREAM_AND_DOWNLOAD', 'STREAM_AND_RESTRICTED_DOWNLOAD', 'RESTRICTED_DOWNLOAD_ONLY');
-            if (in_array($allowedValues, $settings['accessConfig']))
+            if (in_array($settings['accessConfig'], $allowedValues))
                 $this->serviceAttributes['accessConfig'] = $settings['accessConfig'];
             else
             {
@@ -1176,7 +1176,7 @@ class DaisyOnlineService
 
     private function createMetaData($contentId, $metadataValues)
     {
-        // build metadata        
+        // build metadata
         $metadata = new metadata();
         $metadata->setIdentifier($contentId);
         foreach ($metadataValues as $key => $value)

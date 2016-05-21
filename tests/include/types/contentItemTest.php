@@ -24,19 +24,19 @@ set_include_path(get_include_path() . PATH_SEPARATOR . $includePath);
 require_once('contentItem.class.php');
 
 class contentItemTest extends PHPUnit_Framework_TestCase
-{   
+{
 
     protected $contentItem;
     /**
      * @before
      */
      public function setUp()
-     {  
+     {
         $this->audio = new audio('localuri',1,15,1234);
-        
+
         $this->valid_label = new label('text',$this->audio,'lang','ltr');
         $this->assertTrue($this->valid_label->validate());
-        
+
         $this->invalid_label = new label(NULL, $this->audio, 'lang','ltr');
                 $this->assertFalse($this->invalid_label->validate());
 
@@ -67,7 +67,7 @@ class contentItemTest extends PHPUnit_Framework_TestCase
             $description,$creator,$coverage,$contributor,$narrator,$size,
             $meta);
         $this->assertTrue($this->valid_metadata->validate());
-        
+
         $this->invalid_metadata = new metadata(NULL,$identifier,$publisher, $format,$date,$source,$type,$subject,$rights,$relation,$language,
             $description,$creator,$coverage,$contributor,$narrator,$size,
             $meta);
@@ -75,7 +75,7 @@ class contentItemTest extends PHPUnit_Framework_TestCase
 
         $this->valid_categoryLabel = new categoryLabel($this->valid_label);
         $this->assertTrue($this->valid_categoryLabel->validate());
-        
+
         $this->invalid_categoryLabel = new categoryLabel(NULL);
         $this->assertFalse($this->invalid_categoryLabel->validate());
 
@@ -130,19 +130,19 @@ class contentItemTest extends PHPUnit_Framework_TestCase
         $this->contentItem = new contentItem(
             $this->valid_label,
             $this->valid_sample,
-            $this->valid_metadata, 
-            $this->valid_categoryLabel, 
-            $this->valid_subCategoryLabel, 
-            $this->valid_accessPermission, 
-            $this->valid_lastmark, 
+            $this->valid_metadata,
+            $this->valid_categoryLabel,
+            $this->valid_subCategoryLabel,
+            $this->valid_accessPermission,
+            $this->valid_lastmark,
             $this->valid_multipleChoiceQuestion,
             $this->valid_Id,
             $this->valid_FirstAccessDate,
-            $this->valid_LastAccessDate, 
-            $this->valid_LastAccessDate, 
-            $this->valid_Category, 
-            $this->valid_SubCategory, 
-            $this->valid_ReturnBy, 
+            $this->valid_LastAccessDate,
+            $this->valid_LastAccessDate,
+            $this->valid_Category,
+            $this->valid_SubCategory,
+            $this->valid_ReturnBy,
             $this->valid_HasBookmarks);
      }
 
@@ -152,7 +152,7 @@ class contentItemTest extends PHPUnit_Framework_TestCase
      */
     public function testLabel()
     {
-        $instance = $this->contentItem; 
+        $instance = $this->contentItem;
         $this->assertTrue($instance->validate());
 
         $instance->label = $this->invalid_label;
@@ -166,7 +166,7 @@ class contentItemTest extends PHPUnit_Framework_TestCase
      */
     public function testSample()
     {
-        $instance = $this->contentItem; 
+        $instance = $this->contentItem;
         $this->assertTrue($instance->validate());
 
         $instance->sample = $this->invalid_sample;
@@ -180,7 +180,7 @@ class contentItemTest extends PHPUnit_Framework_TestCase
      */
     public function testMetadata()
     {
-        $instance = $this->contentItem; 
+        $instance = $this->contentItem;
         $this->assertTrue($instance->validate());
 
         $instance->metadata = $this->invalid_metadata;
@@ -194,7 +194,7 @@ class contentItemTest extends PHPUnit_Framework_TestCase
      */
     public function testCategotyLabel()
     {
-        $instance = $this->contentItem; 
+        $instance = $this->contentItem;
         $this->assertTrue($instance->validate());
 
         $instance->categoryLabel = $this->invalid_categoryLabel;
@@ -208,7 +208,7 @@ class contentItemTest extends PHPUnit_Framework_TestCase
      */
     public function testSubCategotyLabel()
     {
-        $instance = $this->contentItem; 
+        $instance = $this->contentItem;
         $this->assertTrue($instance->validate());
 
         $instance->subCategoryLabel = $this->invalid_subCategoryLabel;
@@ -222,7 +222,7 @@ class contentItemTest extends PHPUnit_Framework_TestCase
      */
     public function testAccessPermission()
     {
-        $instance = $this->contentItem; 
+        $instance = $this->contentItem;
         $this->assertTrue($instance->validate());
 
         $instance->accessPermission = $this->invalid_accessPermission;
@@ -233,7 +233,7 @@ class contentItemTest extends PHPUnit_Framework_TestCase
         $this->assertFalse($instance->validate());
         $this->assertContains('contentItem.accessPermission', $instance->getError());
     }
-    
+
 
     /**
      * @group contentItem
@@ -241,7 +241,7 @@ class contentItemTest extends PHPUnit_Framework_TestCase
      */
     public function testLastmark()
     {
-        $instance = $this->contentItem; 
+        $instance = $this->contentItem;
         $this->assertTrue($instance->validate());
 
         $instance->lastmark = $this->invalid_lastmark;
@@ -255,7 +255,7 @@ class contentItemTest extends PHPUnit_Framework_TestCase
      */
     public function testMultipleChoiceQuestion()
     {
-        $instance = $this->contentItem; 
+        $instance = $this->contentItem;
         $this->assertTrue($instance->validate());
 
         $instance->multipleChoiceQuestion = $this->invalid_multipleChoiceQuestion;
@@ -269,7 +269,7 @@ class contentItemTest extends PHPUnit_Framework_TestCase
      */
     public function testId()
     {
-        $instance = $this->contentItem; 
+        $instance = $this->contentItem;
         $this->assertTrue($instance->validate());
 
         $instance->id = $this->invalid_Id;
@@ -283,7 +283,7 @@ class contentItemTest extends PHPUnit_Framework_TestCase
      */
     public function testFirstAccessedDate()
     {
-        $instance = $this->contentItem; 
+        $instance = $this->contentItem;
         $this->assertTrue($instance->validate());
 
         $instance->firstAccessedDate = $this->invalid_FirstAccessDate;
@@ -297,7 +297,7 @@ class contentItemTest extends PHPUnit_Framework_TestCase
      */
     public function testLastAccessedDate()
     {
-        $instance = $this->contentItem; 
+        $instance = $this->contentItem;
         $this->assertTrue($instance->validate());
 
         $instance->lastAccessedDate = $this->invalid_LastAccessDate;
@@ -311,7 +311,7 @@ class contentItemTest extends PHPUnit_Framework_TestCase
      */
     public function testLastModifiedDate()
     {
-        $instance = $this->contentItem; 
+        $instance = $this->contentItem;
         $this->assertTrue($instance->validate());
 
         $instance->lastModifiedDate = $this->invalid_LastModifiedDate;
@@ -326,7 +326,7 @@ class contentItemTest extends PHPUnit_Framework_TestCase
      */
     public function testCategory()
     {
-        $instance = $this->contentItem; 
+        $instance = $this->contentItem;
         $this->assertTrue($instance->validate());
 
         $instance->category = $this->invalid_Category;
@@ -341,7 +341,7 @@ class contentItemTest extends PHPUnit_Framework_TestCase
      */
     public function testSubCategory()
     {
-        $instance = $this->contentItem; 
+        $instance = $this->contentItem;
         $this->assertTrue($instance->validate());
 
         $instance->subCategory = $this->invalid_SubCategory;
@@ -356,7 +356,7 @@ class contentItemTest extends PHPUnit_Framework_TestCase
      */
     public function testReturnBy()
     {
-        $instance = $this->contentItem; 
+        $instance = $this->contentItem;
         $this->assertTrue($instance->validate());
 
         $instance->returnBy = $this->invalid_ReturnBy;
@@ -369,17 +369,17 @@ class contentItemTest extends PHPUnit_Framework_TestCase
      * @group contentItem
      * @group validate
      */
-    
+
     public function testHasBookmark()
     {
-        $instance = $this->contentItem; 
+        $instance = $this->contentItem;
         $this->assertTrue($instance->validate());
 
         $instance->hasBookmark = $this->invalid_HasBookmarks;
         $this->assertTrue($instance->validate());
 
     }
-    
+
 }
 
 ?>

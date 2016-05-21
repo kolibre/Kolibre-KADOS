@@ -23,24 +23,16 @@ require_once('logOn.class.php');
 require_once('logOnResponse.class.php');
 require_once('logOff.class.php');
 require_once('logOffResponse.class.php');
-require_once('getServiceAttributes.class.php');
-require_once('getServiceAttributesResponse.class.php');
-require_once('setReadingSystemAttributes.class.php');
-require_once('setReadingSystemAttributesResponse.class.php');
 require_once('getContentList.class.php');
 require_once('getContentListResponse.class.php');
-require_once('getContentMetadata.class.php');
-require_once('getContentMetadataResponse.class.php');
-require_once('issueContent.class.php');
-require_once('issueContentResponse.class.php');
 require_once('getContentResources.class.php');
 require_once('getContentResourcesResponse.class.php');
 require_once('getServiceAnnouncements.class.php');
 require_once('getServiceAnnouncementsResponse.class.php');
 require_once('markAnnouncementsAsRead.class.php');
 require_once('markAnnouncementsAsReadResponse.class.php');
-require_once('setBookmarks.class.php');
-require_once('setBookmarksResponse.class.php');
+require_once('updateBookmarks.class.php');
+require_once('updateBookmarksResponse.class.php');
 require_once('getBookmarks.class.php');
 require_once('getBookmarksResponse.class.php');
 require_once('returnContent.class.php');
@@ -49,6 +41,17 @@ require_once('getQuestions.class.php');
 require_once('getQuestionsResponse.class.php');
 require_once('getKeyExchangeObject.class.php');
 require_once('getKeyExchangeObjectResponse.class.php');
+require_once('addContentToBookshelf.class.php');
+require_once('addContentToBookshelfResponse.class.php');
+require_once('getUserCredentials.class.php');
+require_once('getUserCredentialsResponse.class.php');
+require_once('getTermsOfService.class.php');
+require_once('getTermsOfServiceResponse.class.php');
+require_once('acceptTermsOfService.class.php');
+require_once('acceptTermsOfServiceResponse.class.php');
+require_once('setProgressState.class.php');
+require_once('setProgressStateResponse.class.php');
+
 
 // include class map
 require_once('classmap.php');
@@ -81,31 +84,6 @@ class DaisyOnlineClient
 
         // create soap client in WSDL mode
         $this->soapClient = new SoapClient($wsdl_url, $options);
-
-        // setup reading system attributes
-        $this->setupReadingSystemAttributes();
-    }
-
-    private function setupReadingSystemAttributes()
-    {
-        $manufacturer = 'Kolibre';
-        $model = 'PHP SoapClient';
-        $serialnumber = 'NA';
-        $version = '0.1';
-        $config = new config();
-        $config->setSupportsMultipleSelections(false);
-        $config->setPreferredUILanguage('en');
-        $config->setBandwidth('8000000');
-        $scf = new supportedContentFormats(array('DAISY 2.02', 'ANSI/NISO Z39.86-2005'));
-        $config->setSupportedContentFormats($scf);
-        $scpf = new supportedContentProtectionFormats();
-        $config->setSupportedContentProtectionFormats($scpf);
-        $smt = new supportedMimeTypes();
-        $config->setSupportedMimeTypes($smt);
-        $sit = new supportedInputTypes(array(new input('TEXT_ALPHANUMERIC')));
-        $config->setSupportedInputTypes($sit);
-        $config->setRequiresAudioLabels(false);
-        $this->readingSystemAttributes = new readingSystemAttributes($manufacturer, $model, $serialnumber, $version, $config);
     }
 
     private function extractFaultType($fault)
@@ -138,12 +116,12 @@ class DaisyOnlineClient
         return $this->faultString;
     }
 
-    public function logOn($username, $password)
+    public function logOn($username, $password, $readingSystemAttributes)
     {
         $this->operationFailed = false;
         try
         {
-            $input = new logOn($username, $password);
+            $input = new logOn($username, $password, $readingSystemAttributes);
             $logOnResponse = $this->soapClient->logOn($input);
         }
         catch (SoapFault $f)
@@ -154,7 +132,7 @@ class DaisyOnlineClient
             return null;
         }
 
-        return $logOnResponse->logOnResult;
+        return $logOnResponse->serviceAttributes;
     }
 
     public function logOff()
@@ -176,45 +154,6 @@ class DaisyOnlineClient
         return $logOffResponse->logOffResult;
     }
 
-    public function getServiceAttributes()
-    {
-        $this->operationFailed = false;
-        try
-        {
-            $input = new getServiceAttributes();
-            $getServiceAttributesResponse = $this->soapClient->getServiceAttributes($input);
-        }
-        catch (SoapFault $f)
-        {
-            $this->operationFailed = true;
-            $this->faultType = $this->extractFaultType($f);
-            $this->faultString = $f->faultstring;
-            return null;
-        }
-
-        $this->serviceAttributes = $getServiceAttributesResponse->getServiceAttributes();
-        return $getServiceAttributesResponse->getServiceAttributes();
-    }
-
-    public function setReadingSystemAttributes()
-    {
-        $this->operationFailed = false;
-        try
-        {
-            $input = new setReadingSystemAttributes($this->readingSystemAttributes);
-            $setReadingSystemAttributesResponse = $this->soapClient->setReadingSystemAttributes($input);
-        }
-        catch (SoapFault $f)
-        {
-            $this->operationFailed = true;
-            $this->faultType = $this->extractFaultType($f);
-            $this->faultString = $f->faultstring;
-            return null;
-        }
-
-        return $setReadingSystemAttributesResponse->setReadingSystemAttributesResult;
-    }
-
     public function getContentList($name, $firstItem = 0, $lastItem = -1)
     {
         $this->operationFailed = false;
@@ -234,50 +173,12 @@ class DaisyOnlineClient
         return $getContentListResponse->getContentList();
     }
 
-    public function getContentMetadata($contentId)
+    public function getContentResources($contentId, $accessType = "STREAM")
     {
         $this->operationFailed = false;
         try
         {
-            $input = new getContentMetadata($contentId);
-            $getContentMetadataResponse = $this->soapClient->getContentMetadata($input);
-        }
-        catch (SoapFault $f)
-        {
-            $this->operationFailed = true;
-            $this->faultType = $this->extractFaultType($f);
-            $this->faultString = $f->faultstring;
-            return null;
-        }
-
-        return $getContentMetadataResponse->getContentMetadata();
-    }
-
-    public function issueContent($contentId)
-    {
-        $this->operationFailed = false;
-        try
-        {
-            $input = new issueContent($contentId);
-            $issueContentResponse = $this->soapClient->issueContent($input);
-        }
-        catch (SoapFault $f)
-        {
-            $this->operationFailed = true;
-            $this->faultType = $this->extractFaultType($f);
-            $this->faultString = $f->faultstring;
-            return null;
-        }
-
-        return $issueContentResponse->issueContentResult;
-    }
-
-    public function getContentResources($contentId)
-    {
-        $this->operationFailed = false;
-        try
-        {
-            $input = new getContentResources($contentId);
+            $input = new getContentResources($contentId, $accessType);
             $getContentResourcesResponse = $this->soapClient->getContentResources($input);
         }
         catch (SoapFault $f)
@@ -348,13 +249,13 @@ class DaisyOnlineClient
         return $markAnnouncementsAsReadResponse->markAnnouncementsAsReadResult;
     }
 
-    public function setBookmarks($contentId, $bookmarkSet)
+    public function updateBookmarks($contentId, $action, $bookmarkObject)
     {
         $this->operationFailed = false;
         try
         {
-            $input = new setBookmarks($contentId, $bookmarkSet);
-            $setBookmarksResponse = $this->soapClient->setBookmarks($input);
+            $input = new updateBookmarks($contentId, $action, $bookmarkObject);
+            $updateBookmarksResponse = $this->soapClient->updateBookmarks($input);
         }
         catch (SoapFault $f)
         {
@@ -363,8 +264,7 @@ class DaisyOnlineClient
             $this->faultString = $f->faultstring;
             return null;
         }
-
-        return $setBookmarksResponse->setBookmarksResult;
+        return $updateBookmarksResponse->updateBookmarksResult;
     }
 
     public function getBookmarks($contentId)
@@ -422,6 +322,101 @@ class DaisyOnlineClient
         }
 
         return $getKeyExchangeObjectResponse->KeyExcahnge;
+    }
+
+    public function addContentToBookshelf($contentId)
+    {
+        $this->operationFailed = false;
+        try
+        {
+            $input = new addContentToBookshelf($contentId);
+            $addContentToBookshelfResponse = $this->soapClient->addContentToBookshelf($input);
+        }
+        catch (SoapFault $f)
+        {
+            $this->operationFailed = true;
+            $this->faultType = $this->extractFaultType($f);
+            $this->faultString = $f->faultstring;
+            return null;
+        }
+
+        return $addContentToBookshelfResponse->$addContentToBookshelfResult;
+    }
+
+    public function getUserCredentials($readingSystemAttributes)
+    {
+        $this->operationFailed = false;
+        try
+        {
+            $input = new getUserCredentials($readingSystemAttributes);
+            $getUserCredentialsResponse = $this->soapClient->getUserCredentials($input);
+        }
+        catch (SoapFault $f)
+        {
+            $this->operationFailed = true;
+            $this->faultType = $this->extractFaultType($f);
+            $this->faultString = $f->faultstring;
+            return null;
+        }
+
+        return $getUserCredentialsResponse->$credentials;
+    }
+
+    public function getTermsOfService()
+    {
+        $this->operationFailed = false;
+        try
+        {
+            $input = new getTermsOfService();
+            $getTermsOfServiceResponse = $this->soapClient->getTermsOfService($input);
+        }
+        catch (SoapFault $f)
+        {
+            $this->operationFailed = true;
+            $this->faultType = $this->extractFaultType($f);
+            $this->faultString = $f->faultstring;
+            return null;
+        }
+
+        return $getTermsOfServiceResponse->$label;
+    }
+
+    public function acceptTermsOfService()
+    {
+        $this->operationFailed = false;
+        try
+        {
+            $input = new acceptTermsOfService();
+            $acceptTermsOfServiceResponse = $this->soapClient->acceptTermsOfService($input);
+        }
+        catch (SoapFault $f)
+        {
+            $this->operationFailed = true;
+            $this->faultType = $this->extractFaultType($f);
+            $this->faultString = $f->faultstring;
+            return null;
+        }
+
+        return $acceptTermsOfServiceResponse->$acceptTermsOfServiceResult;
+    }
+
+    public function setProgressState($contentId, $state)
+    {
+        $this->operationFailed = false;
+        try
+        {
+            $input = new setProgressState($contentId, $state);
+            $setProgressStateResponse = $this->soapClient->setProgressState($input);
+        }
+        catch (SoapFault $f)
+        {
+            $this->operationFailed = true;
+            $this->faultType = $this->extractFaultType($f);
+            $this->faultString = $f->faultstring;
+            return null;
+        }
+
+        return $setProgressStateResponse->$progressStateResult;
     }
 }
 

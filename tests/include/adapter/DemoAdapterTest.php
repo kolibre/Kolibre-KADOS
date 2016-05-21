@@ -51,22 +51,15 @@ class DemoAdapterTest extends PHPUnit_Framework_TestCase
         $this->assertTrue(self::$adapter->authenticate('kolibre', 'kolibre'));
     }
 
+
     public function testContentListExists()
     {
-        $this->assertFalse(self::$adapter->contentListExists('old'));
-        $this->assertTrue(self::$adapter->contentListExists('new'));
-        $this->assertTrue(self::$adapter->contentListExists('issued'));
-        $this->assertTrue(self::$adapter->contentListExists('expired'));
-        $this->assertTrue(self::$adapter->contentListExists('returned'));
+        $this->assertTrue(self::$adapter->contentListExists('bookshelf'));
     }
 
     public function testContentListId()
     {
-        $this->assertLessThan(0, self::$adapter->contentListId('old'));
-        $this->assertGreaterThan(0, self::$adapter->contentListId('new'));
-        $this->assertGreaterThan(0, self::$adapter->contentListId('issued'));
-        $this->assertGreaterThan(0, self::$adapter->contentListId('expired'));
-        $this->assertGreaterThan(0, self::$adapter->contentListId('returned'));
+        $this->assertGreaterThan(0, self::$adapter->contentListId('bookshelf'));
     }
 
     public function testSupportedContentFormats()
@@ -85,16 +78,11 @@ class DemoAdapterTest extends PHPUnit_Framework_TestCase
     public function testContentList()
     {
         // unfiltered
-        $this->assertCount(3, self::$adapter->contentList('new'));
-        $this->assertEmpty(self::$adapter->contentList('issued'));
-        $this->assertEmpty(self::$adapter->contentList('expired'));
-        $this->assertEmpty(self::$adapter->contentList('returned'));
+        $this->assertCount(3, self::$adapter->contentList('bookshelf'));
 
         // filtered
-        $this->assertCount(2, self::$adapter->contentList('new', array('Daisy 2.02')));
-        $this->assertCount(2, self::$adapter->contentList('new', array('DAISY 2.02')));
-        $this->assertCount(1, self::$adapter->contentList('new', array('Ansi/Niso Z39.86-2005')));
-        $this->assertCount(1, self::$adapter->contentList('new', array('ANSI/NISO Z39.86-2005')));
+        $this->assertCount(2, self::$adapter->contentList('bookshelf', array('Daisy 2.02')));
+
     }
 
     public function testLabelContentItem()
@@ -142,14 +130,14 @@ class DemoAdapterTest extends PHPUnit_Framework_TestCase
         $this->assertFalse(self::$adapter->isValidDate(''));
         $this->assertFalse(self::$adapter->isValidDate('YYYY-MM-DD hh:mm:ss'));
         $this->assertFalse(self::$adapter->isValidDate('0000-00-00 00:00:00'));
-        $this->assertTrue(self::$adapter->isValidDate('1970-01-01 00:00:00'));
+        $this->assertTrue(self::$adapter->isValidDate('1970-01-01T00:00:00+00:00'));
     }
 
     public function testContentReturnDate()
     {
         $this->assertFalse(self::$adapter->contentReturnDate(10));
         $this->assertFalse(self::$adapter->contentReturnDate('con_10'));
-        $pattern = '/\d{4}-\d{2}-\d{2}[ T]\d{2}:\d{2}:\d{2}/';
+        $pattern = '/\d{4}\-\d{2}\-\d{2}T\d{2}:\d{2}:\d{2}(\+\d{2}:\d{2}|Z)/';
         $this->assertRegExp($pattern, self::$adapter->contentReturnDate(1));
         $this->assertRegExp($pattern, self::$adapter->contentReturnDate('con_1'));
         $this->assertRegExp($pattern, self::$adapter->contentReturnDate(2));
@@ -188,45 +176,10 @@ class DemoAdapterTest extends PHPUnit_Framework_TestCase
         $this->assertFalse(self::$adapter->contentInList('con_1', 'issued'));
         $this->assertFalse(self::$adapter->contentInList(2, 'issued'));
         $this->assertFalse(self::$adapter->contentInList('con_2', 'issued'));
-        $this->assertTrue(self::$adapter->contentInList(1, 'new'));
-        $this->assertTrue(self::$adapter->contentInList('con_1', 'new'));
-        $this->assertTrue(self::$adapter->contentInList(2, 'new'));
-        $this->assertTrue(self::$adapter->contentInList('con_2', 'new'));
-    }
-
-    public function testContentIssuable()
-    {
-        $this->assertFalse(self::$adapter->contentIssuable(10));
-        $this->assertFalse(self::$adapter->contentIssuable('con_10'));
-        $this->assertTrue(self::$adapter->contentIssuable(1));
-        $this->assertTrue(self::$adapter->contentIssuable('con_1'));
-        $this->assertTrue(self::$adapter->contentIssuable(2));
-        $this->assertTrue(self::$adapter->contentIssuable('con_2'));
-    }
-
-    public function testContentIssue()
-    {
-        $this->assertFalse(self::$adapter->contentIssue(10));
-        $this->assertFalse(self::$adapter->contentIssue('con_10'));
-        $this->assertTrue(self::$adapter->contentIssue(1));
-        $this->assertTrue(self::$adapter->contentIssue('con_1'));
-        $this->assertTrue(self::$adapter->contentIssue(2));
-        $this->assertTrue(self::$adapter->contentIssue('con_2'));
-    }
-
-    public function testContentReturnDateAfterIssued()
-    {
-        $this->assertFalse(self::$adapter->contentReturnDate(10));
-        $this->assertFalse(self::$adapter->contentReturnDate('con_10'));
-        $pattern = '/\d{4}-\d{2}-\d{2}[ T]\d{2}:\d{2}:\d{2}/';
-        $this->assertRegExp($pattern, self::$adapter->contentReturnDate(1));
-        $this->assertRegExp($pattern, self::$adapter->contentReturnDate('con_1'));
-        $this->assertRegExp($pattern, self::$adapter->contentReturnDate(2));
-        $this->assertRegExp($pattern, self::$adapter->contentReturnDate('con_2'));
-        $dateBefore = self::$adapter->contentReturnDate(1);
-        sleep(1);
-        $dateAfter = self::$adapter->contentReturnDate(1);
-        $this->assertEquals($dateBefore, $dateAfter);
+        $this->assertTrue(self::$adapter->contentInList(1, 'bookshelf'));
+        $this->assertTrue(self::$adapter->contentInList('con_1', 'bookshelf'));
+        $this->assertTrue(self::$adapter->contentInList(2, 'bookshelf'));
+        $this->assertTrue(self::$adapter->contentInList('con_2', 'bookshelf'));
     }
 
     public function testContentResources()

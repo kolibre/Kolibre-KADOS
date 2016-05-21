@@ -31,7 +31,7 @@ class packageTest extends PHPUnit_Framework_TestCase
      * @group validate
      */
     public function testResourceRef()
-    {   
+    {
         $package = new package(NULL, 'uri', 'mimetype', 1234, '2016-03-11T14:23:23+00:00');
         $this->assertFalse($package->validate());
         $this->assertContains('package.resourceRef', $package->getError());
@@ -60,7 +60,7 @@ class packageTest extends PHPUnit_Framework_TestCase
      * @group validate
      */
     public function testUri()
-    {   
+    {
         $resourceRef = new resourceRef('localURI');
         // check the resourceRef is correctly instantiated
         $this->assertTrue($resourceRef->validate());
@@ -86,7 +86,7 @@ class packageTest extends PHPUnit_Framework_TestCase
      * @group validate
      */
     public function testMimeType()
-    {   
+    {
         $resourceRef = new resourceRef('localURI');
         // check the resourceRef is correctly instantiated
         $this->assertTrue($resourceRef->validate());
@@ -112,7 +112,7 @@ class packageTest extends PHPUnit_Framework_TestCase
      * @group validate
      */
     public function testSize()
-    {   
+    {
         $resourceRef = new resourceRef('localURI');
         // check the resourceRef is correctly instantiated
         $this->assertTrue($resourceRef->validate());
@@ -123,7 +123,7 @@ class packageTest extends PHPUnit_Framework_TestCase
         $package->size = '';
         $this->assertFalse($package->validate());
         $this->assertContains('package.size', $package->getError());
-        
+
         $package->size = -14;
         $this->assertFalse($package->validate());
         $this->assertContains('package.size', $package->getError());
@@ -137,7 +137,7 @@ class packageTest extends PHPUnit_Framework_TestCase
      * @group validate
      */
     public function testLastModifiedDate()
-    {   
+    {
         $resourceRef = new resourceRef('localURI');
         // check the resourceRef is correctly instantiated
         $this->assertTrue($resourceRef->validate());
@@ -151,7 +151,7 @@ class packageTest extends PHPUnit_Framework_TestCase
 
         $package->lastModifiedDate = '2016-03-11T14:23:23Z';
         $this->assertTrue($package->validate());
-       
+
         $package->lastModifiedDate = '2016-03-11T14:23:23+00:00';
         $this->assertTrue($package->validate());
     }

@@ -41,10 +41,7 @@ CREATE TABLE "contentlist" (
   "id" INTEGER PRIMARY KEY AUTOINCREMENT,
   "name" TEXT NOT NULL
 );
-INSERT INTO "contentlist" VALUES(1,'new');
-INSERT INTO "contentlist" VALUES(2,'issued');
-INSERT INTO "contentlist" VALUES(3,'expired');
-INSERT INTO "contentlist" VALUES(4,'returned');
+INSERT INTO "contentlist" VALUES(1,'bookshelf');
 CREATE TABLE "contentmetadata" (
   "id" INTEGER PRIMARY KEY AUTOINCREMENT,
   "content_id" INTEGER  NOT NULL ,
@@ -293,9 +290,9 @@ CREATE TABLE "usercontent" (
   FOREIGN KEY("content_id") REFERENCES "content"("id") ON DELETE SET NULL ON UPDATE SET NULL,
   FOREIGN KEY("contentlist_id") REFERENCES "contentlist"("id") ON DELETE SET NULL ON UPDATE SET NULL
 );
-INSERT INTO "usercontent" VALUES(1,1,1,1,1,1,NULL,'0000-00-00 00:00:00');
-INSERT INTO "usercontent" VALUES(2,1,2,1,1,1,NULL,'0000-00-00 00:00:00');
-INSERT INTO "usercontent" VALUES(3,1,3,1,1,1,NULL,'0000-00-00 00:00:00');
+INSERT INTO "usercontent" VALUES(1,1,1,1,1,0,NULL,'0000-00-00 00:00:00');
+INSERT INTO "usercontent" VALUES(2,1,2,1,1,0,NULL,'0000-00-00 00:00:00');
+INSERT INTO "usercontent" VALUES(3,1,3,1,1,0,NULL,'0000-00-00 00:00:00');
 CREATE TABLE "userlog" (
   "id" INTEGER PRIMARY KEY AUTOINCREMENT,
   "user_id" INTEGER  NOT NULL,

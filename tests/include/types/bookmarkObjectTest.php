@@ -36,19 +36,19 @@ class bookmarkObjectTest extends PHPUnit_Framework_TestCase
 
     public function testBookmarkSet()
     {
-        
+
         $bookmarkObject = new bookmarkObject('test', '2016-03-11T14:23:23+00:00');
         $this->assertFalse($bookmarkObject->validate());
 
         $bookmarkAudio = new bookmarkAudio('src','clipBegin','ClipEnd');
         $title = new title('title',$bookmarkAudio);
         $lastmark = new lastMark('uri','uri','time', 1234);
-        
+
         $bookmarkSet = new bookmarkSet($title, 'uid', $lastmark);
         // check to see thast the bookmarkset is a valide object
         $this->assertTrue($bookmarkSet->validate());
 
-        
+
         $bookmarkObject = new bookmarkObject($bookmarkSet, '2016-03-11T14:23:23+00:00');
         $this->assertTrue($bookmarkObject->validate());
 
@@ -65,7 +65,7 @@ class bookmarkObjectTest extends PHPUnit_Framework_TestCase
         $bookmarkAudio = new bookmarkAudio('src','clipBegin','ClipEnd');
         $title = new title('title',$bookmarkAudio);
         $lastmark = new lastMark('uri','uri','time', 1234);
-        
+
         $bookmarkSet = new bookmarkSet($title, 'uid', $lastmark);
 
         $bookmarkObject = new bookmarkObject($bookmarkSet);
@@ -85,7 +85,7 @@ class bookmarkObjectTest extends PHPUnit_Framework_TestCase
         $this->assertTrue($bookmarkObject->validate());
 
     }
-    
+
 }
 
 ?>

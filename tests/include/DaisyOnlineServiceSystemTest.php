@@ -46,7 +46,9 @@ class DaisyOnlineServiceSystem extends PHPUnit_Framework_TestCase
         self::$instance->disableCookieCheckInSessionHandle();
 
         // build readingSystemAttributes object
+        $accessConfig = 'STREAM_ONLY';
         $supportsMultipleSelections = false;
+        $supportsAdvancedDynamicMenus = false;
         $preferredUILanguage = 'preferredUILanguage';
         $bandwidth = null;
         $supportedContentFormats = new supportedContentFormats();
@@ -57,7 +59,9 @@ class DaisyOnlineServiceSystem extends PHPUnit_Framework_TestCase
         $requiresAudioLabels = false;
         $additionalTransferProtocols = null;
         $config = new config(
+            $accessConfig,
             $supportsMultipleSelections,
+            $supportsAdvancedDynamicMenus,
             $preferredUILanguage,
             $bandwidth,
             $supportedContentFormats,
@@ -136,15 +140,9 @@ class DaisyOnlineServiceSystem extends PHPUnit_Framework_TestCase
      */
     public function testSessionEstablishment()
     {
-        $input = new logOn('valid', 'valid');
+        $input = new logOn('valid', 'valid', self::$rsa);
         $output = self::$instance->logOn($input);
-        $this->assertTrue($output->logOnResult);
-        $input = new getServiceAttributes($input);
-        $output = self::$instance->getServiceAttributes($input);
-        $this->assertInstanceOf('getServiceAttributesResponse', $output);
-        $input = new setReadingSystemAttributes(self::$rsa);
-        $output = self::$instance->setReadingSystemAttributes($input);
-        $this->assertTrue($output->setReadingSystemAttributesResult);
+        $this->assertTrue($output->validate());
     }
 
     /**
@@ -152,71 +150,73 @@ class DaisyOnlineServiceSystem extends PHPUnit_Framework_TestCase
      * @group system
      * @depends testSessionEstablishment
      */
-    public function testIssueNewContent()
+    public function testGetContentList()
     {
-        $issuedItemsBefore = 1;
-        $newItemsBefore = 2;
+        $bookshelfItems = 2;
 
-        $input = new getContentList('issued', 0, -1);
+        $input = new getContentList('bookshelf', 0, -1);
         $output = self::$instance->getContentList($input);
-        $this->assertCount($issuedItemsBefore, $output->contentList->contentItem);
+        $this->assertCount($bookshelfItems, $output->contentList->contentItem);
 
-        $input = new getContentList('new', 0, -1);
-        $output = self::$instance->getContentList($input);
-        $this->assertCount($newItemsBefore, $output->contentList->contentItem);
-        $contentItems = $output->contentList->contentItem;
-
-        // trying to issue content before retrieving metadata should fail
-        foreach ($contentItems as $contentItem)
+        // check that all content items are set correctly
+        $this->assertTrue($output->contentList->id == 'bookshelf');
+        $this->assertTrue($output->contentList->totalItems == 2);
+        foreach($output->contentList->contentItem as $contentItem)
         {
-            $input = new issueContent($contentItem->id);
-            $this->assertTrue($this->callOperation('issueContent', $input, 'invalidOperationFault'));
+            $this->assertInstanceOf('label', $contentItem->label);
+            $this->assertInstanceOf('metadata', $contentItem->metadata);
+            $this->assertTrue($contentItem->accessPermission == "STREAM_AND_DOWNLOAD_AUTOMATIC_ALLOWED");
+            $this->assertTrue($contentItem->lastModifiedDate == "2016-03-11T14:23:23+00:00");
+            $this->assertTrue($contentItem->returnBy == "2016-03-11T14:23:23+00:00");
+            foreach($contentItem->metadata as $metadata)
+            {
+                $this->assertTrue(is_string($contentItem->metadata->title));
+                $this->assertTrue(is_string($contentItem->metadata->identifier));
+            }
         }
+    }
 
-        // retrieve metadata for all items before issueing
-        foreach ($contentItems as $contentItem)
+    /**
+     * @group daisyonlineservice
+     * @group system
+     * @depends testGetContentList
+     */
+    public function testGetContentResources()
+    {
+        $input = new getContentResources('id_1', 'STREAM');
+        $output = self::$instance->getContentResources($input);
+        $this->assertInstanceOf('getContentResourcesResponse', $output);
+
+        // check that all resource properties are set correctly
+        $this->assertTrue($output->resources->lastModifiedDate == "2016-03-11T14:23:23+00:00");
+        foreach($output->resources->resource as $resource)
         {
-            $input = new getContentMetadata($contentItem->id);
-            $output = self::$instance->getContentMetadata($input);
-            $this->assertInstanceOf('getContentMetadataResponse', $output);
+            $this->assertInstanceOf('resource', $resource);
+            $this->assertTrue($resource->uri == 'uri');
+            $this->assertTrue($resource->mimeType == 'mimeType');
+            $this->assertTrue($resource->localURI == 'localURI');
+            $this->assertTrue($resource->uri == 'uri');
+            $this->assertTrue($resource->lastModifiedDate == "2016-03-11T14:23:23+00:00");
         }
-
-        foreach ($contentItems as $contentItem)
-        {
-            $input = new issueContent($contentItem->id);
-            $output = self::$instance->issueContent($input);
-            $this->assertTrue($output->issueContentResult);
-        }
-
-        $input = new getContentList('issued', 0, -1);
-        $output = self::$instance->getContentList($input);
-        $this->assertCount($issuedItemsBefore+$newItemsBefore, $output->contentList->contentItem);
-
-        $input = new getContentList('new', 0, -1);
-        $output = self::$instance->getContentList($input);
-        $this->assertNull($output->contentList->contentItem);
     }
 
     /**
      * @group daisyonlineservice
      * @group system
      * @depends testSessionEstablishment
-     * @depends testIssueNewContent
      */
-    public function testReturnIssuedContent()
+    public function testReturnContent()
     {
-        $returnedItemsBefore = 0;
-        $issuedItemsBefore = 3;
+        $bookshelfItemsBefore = 2;
+        $bookshelfItemsAfter = 0;
 
-        $input = new getContentList('returned', 0, -1);
+        //Check number of items in bookshelf
+        $input = new getContentList('bookshelf', 0, -1);
         $output = self::$instance->getContentList($input);
-        $this->assertNull($output->contentList->contentItem);
+        $this->assertCount($bookshelfItemsBefore, $output->contentList->contentItem);
 
-        $input = new getContentList('issued', 0, -1);
-        $output = self::$instance->getContentList($input);
-        $this->assertCount($issuedItemsBefore, $output->contentList->contentItem);
+        //return all items
         $contentItems = $output->contentList->contentItem;
-
         foreach ($contentItems as $contentItem)
         {
             $input = new returnContent($contentItem->id);
@@ -224,47 +224,8 @@ class DaisyOnlineServiceSystem extends PHPUnit_Framework_TestCase
             $this->assertTrue($output->returnContentResult);
         }
 
-        $input = new getContentList('returned', 0, -1);
-        $output = self::$instance->getContentList($input);
-        $this->assertCount($issuedItemsBefore, $output->contentList->contentItem);
-
-        $input = new getContentList('issued', 0, -1);
-        $output = self::$instance->getContentList($input);
-        $this->assertNull($output->contentList->contentItem);
-    }
-
-    /**
-     * @group daisyonlineservice
-     * @group system
-     * @depends testSessionEstablishment
-     * @depends testReturnIssuedContent
-     */
-    public function testReturnExpiredContent()
-    {
-        $returnedItemsBefore = 3;
-        $expiredItemsBefore = 1;
-
-        $input = new getContentList('returned', 0, -1);
-        $output = self::$instance->getContentList($input);
-        $this->assertCount($returnedItemsBefore, $output->contentList->contentItem);
-
-        $input = new getContentList('expired', 0, -1);
-        $output = self::$instance->getContentList($input);
-        $this->assertCount($expiredItemsBefore, $output->contentList->contentItem);
-        $contentItems = $output->contentList->contentItem;
-
-        foreach ($contentItems as $contentItem)
-        {
-            $input = new returnContent($contentItem->id);
-            $output = self::$instance->returnContent($input);
-            $this->assertTrue($output->returnContentResult);
-        }
-
-        $input = new getContentList('returned', 0, -1);
-        $output = self::$instance->getContentList($input);
-        $this->assertCount($returnedItemsBefore+$expiredItemsBefore, $output->contentList->contentItem);
-
-        $input = new getContentList('expired', 0, -1);
+        // check that bookshelf is empty
+        $input = new getContentList('bookshelf', 0, -1);
         $output = self::$instance->getContentList($input);
         $this->assertNull($output->contentList->contentItem);
     }

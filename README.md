@@ -46,6 +46,10 @@ Major dependencies for Kolibre-KADOS:
 * php5-sqlite (for use with demo adapter only)
 * phpunit
 
+Install using composer:
+
+    $ php composer.phar install
+
 
 Licensing
 ---------------------------------

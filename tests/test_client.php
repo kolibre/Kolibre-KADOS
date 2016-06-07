@@ -239,7 +239,20 @@ $contentItems = array();
 if (is_array($contentList->contentItem)) $contentItems = $contentList->contentItem;
 foreach ($contentItems as $contentItem)
 {
-    $result = $testClient->getContentResources($contentItem->getId());
+    $resources = $testClient->getContentResources($contentItem->getId());
+    echo "Dowloading resources for content " . $contentItem->getId() . "\n";
+    $tmpFolder = '/tmp/' . $contentItem->getId();
+    if (!file_exists($tmpFolder))
+    {
+        mkdir($tmpFolder);
+    }
+    foreach ($resources->resource as $resource)
+    {
+        $tmpFile = $tmpFolder . '/' . $resource->getLocalURI();
+        echo "Downloading file '" . $resource->getUri() . "' to " . $tmpFile . "\n";
+        $content = file_get_contents($resource->getUri());
+        file_put_contents($tmpFile, $content);
+    }
 }
 
 // return expired content

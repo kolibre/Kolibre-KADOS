@@ -75,7 +75,7 @@ if ($_SERVER['REQUEST_METHOD'] != 'POST')
 </head>
 <body>
 <p class="heading">&nbsp;&nbsp;DAISYOnlineService&nbsp;&nbsp;v<?php echo DaisyOnlineService::getVersion();?></p>
-This service implements the DAISY Online Delivery protocol version 2 as specified in the specification issued in October 26th, 2016.
+This service implements the DAISY Online Delivery protocol version 2 as specified in the specification issued in October 26th, 2015.
 <h3>Supported operations</h3>
 <p class="operations">Required operations</p>
 <ul>

@@ -102,9 +102,11 @@ class note extends AbstractType {
      * validator for class note
      */
     function validate() {
-        // text must occur exactly once
-        if ($this->isNoneEmptyString($this->text, 'text') === false)
-            return false;
+        // text must occur zero or one times
+        if (!is_null($this->text)) {
+            if ($this->isNoneEmptyString($this->text, 'text') === false)
+                return false;
+        }
 
         // audio must occur zero or one times
         if (!is_null($this->audio)) {

@@ -905,8 +905,56 @@ class DaisyOnlineService
     public function setProgressState($input)
     {
         $this->sessionHandle(__FUNCTION__);
-        throw new SoapFault ('Client', 'setProgressState not supported', '', '', 'setProgressState_operationNotSupportedFault');
+        // TODO: detect from config is operation is supported
+        // throw new SoapFault ('Client', 'setProgressState not supported', '', '', 'setProgressState_operationNotSupportedFault');
 
+        if ($input->validate() === false)
+        {
+            $msg = "request is not valid " . $input->getError();
+            $this->logger->warn($msg);
+            throw new SoapFault ('Client', $input->getError(), '', '', 'setProgressState_invalidParameterFault');
+        }
+
+        // parameters
+        $contentId = $input->getContentID();
+        $state = $this->adapterProgressState($input->getState());
+
+        // set progress state
+        $result = false;
+        try
+        {
+            $result = $this->adapter->contentAccessState($contentId, $state);
+        }
+        catch (AdapterException $e)
+        {
+            $this->logger->fatal($e->getMessage());
+            throw new SoapFault('Server', 'Internal Server Error', '', '', 'setProgressState_internalServerErrorFault');
+        }
+
+        return new setProgressStateResponse($result);
+    }
+
+    /**
+     * Returns the state enum defined in Adatapter for the string representation
+     * @param string $state human readable state string
+     * @return string
+     */
+    private function adapterProgressState($state)
+    {
+        switch ($state)
+        {
+            case 'START':
+                return Adapter::STATE_START;
+            case 'PAUSE':
+                return Adapter::STATE_PAUSE;
+            case 'RESUME':
+                return Adapter::STATE_RESUME;
+            case 'FINISH':
+                return Adapter::STATE_FINISH;
+        }
+
+        // not possible
+        return 0;
     }
 
     /**

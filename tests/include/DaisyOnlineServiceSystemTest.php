@@ -229,6 +229,19 @@ class DaisyOnlineServiceSystem extends PHPUnit_Framework_TestCase
         $output = self::$instance->getContentList($input);
         $this->assertNull($output->contentList->contentItem);
     }
+
+    /**
+     * @group daisyonlineservice
+     * @group system
+     * @depends testSessionEstablishment
+     */
+    public function testSetProgressState()
+    {
+        // valid state
+        $input = new setProgressState('id_1', 'START');
+        $output = self::$instance->setProgressState($input);
+        $this->assertTrue($output->progressStateResult);
+    }
 }
 
 ?>

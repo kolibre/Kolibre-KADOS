@@ -419,6 +419,31 @@ class DaisyOnlineServiceTest extends PHPUnit_Framework_TestCase
         $output = self::$instance->returnContent($input);
         $this->assertTrue($output->returnContentResult);
     }
+
+    /**
+     * @group daisyonlineservice
+     * @group operation
+     */
+    public function testSetProgressState()
+    {
+        // request is not valid
+        $input = new setProgressState();
+        $this->assertTrue($this->callOperation('setProgressState', $input, 'invalidParameterFault'));
+
+        // adapter throws exception on contentExists
+        $input = new setProgressState('exception-content-state', 'START');
+        $this->assertTrue($this->callOperation('setProgressState', $input, 'internalServerErrorFault'));
+
+        // adapter returns false
+        $input = new setProgressState('invalid-content-id', 'START');
+        $output = self::$instance->setProgressState($input);
+        $this->assertFalse($output->progressStateResult);
+
+        // adapter returns true
+        $input = new setProgressState('valid-content-id', 'START');
+        $output = self::$instance->setProgressState($input);
+        $this->assertTrue($output->progressStateResult);
+    }
 }
 
 ?>

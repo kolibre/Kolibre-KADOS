@@ -321,7 +321,7 @@ class DaisyOnlineClient
             return null;
         }
 
-        return $getKeyExchangeObjectResponse->KeyExcahnge;
+        return $getKeyExchangeObjectResponse->KeyExchange;
     }
 
     public function addContentToBookshelf($contentId)

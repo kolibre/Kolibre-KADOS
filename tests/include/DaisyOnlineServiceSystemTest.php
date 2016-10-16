@@ -240,7 +240,7 @@ class DaisyOnlineServiceSystem extends PHPUnit_Framework_TestCase
         // valid state
         $input = new setProgressState('id_1', 'START');
         $output = self::$instance->setProgressState($input);
-        $this->assertTrue($output->progressStateResult);
+        $this->assertTrue($output->setProgressStateResult);
     }
 }
 

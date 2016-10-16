@@ -437,12 +437,12 @@ class DaisyOnlineServiceTest extends PHPUnit_Framework_TestCase
         // adapter returns false
         $input = new setProgressState('invalid-content-id', 'START');
         $output = self::$instance->setProgressState($input);
-        $this->assertFalse($output->progressStateResult);
+        $this->assertFalse($output->setProgressStateResult);
 
         // adapter returns true
         $input = new setProgressState('valid-content-id', 'START');
         $output = self::$instance->setProgressState($input);
-        $this->assertTrue($output->progressStateResult);
+        $this->assertTrue($output->setProgressStateResult);
     }
 }
 

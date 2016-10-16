@@ -26,18 +26,18 @@ require_once('setProgressStateResponse.class.php');
 class setProgressStateResponseTest extends PHPUnit_Framework_TestCase
 {
     /**
-     * @group setProgressStateResponse
+     * @group setSetProgressStateResponse
      * @group validate
      */
-    public function testProgressStateResult()
+    public function testSetProgressStateResult()
     {
         $instance = new setProgressStateResponse();
         $this->assertFalse($instance->validate());
-        $this->assertContains('setProgressStateResponse.progressStateResult', $instance->getError());
-        $instance->progressStateResult = 'progressStateResult';
+        $this->assertContains('setProgressStateResponse.setProgressStateResult', $instance->getError());
+        $instance->setProgressStateResult = 'setProgressStateResult';
         $this->assertFalse($instance->validate());
-        $this->assertContains('setProgressStateResponse.progressStateResult', $instance->getError());
-        $instance->progressStateResult = true;
+        $this->assertContains('setProgressStateResponse.setProgressStateResult', $instance->getError());
+        $instance->setProgressStateResult = true;
         $this->assertTrue($instance->validate());
     }
 }

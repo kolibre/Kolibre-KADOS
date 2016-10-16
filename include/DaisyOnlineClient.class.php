@@ -416,7 +416,7 @@ class DaisyOnlineClient
             return null;
         }
 
-        return $setProgressStateResponse->$progressStateResult;
+        return $setProgressStateResponse->setProgressStateResult;
     }
 }
 

@@ -340,7 +340,7 @@ class DaisyOnlineClient
             return null;
         }
 
-        return $addContentToBookshelfResponse->$addContentToBookshelfResult;
+        return $addContentToBookshelfResponse->addContentToBookshelfResult;
     }
 
     public function getUserCredentials($readingSystemAttributes)
@@ -359,7 +359,7 @@ class DaisyOnlineClient
             return null;
         }
 
-        return $getUserCredentialsResponse->$credentials;
+        return $getUserCredentialsResponse->credentials;
     }
 
     public function getTermsOfService()
@@ -378,7 +378,7 @@ class DaisyOnlineClient
             return null;
         }
 
-        return $getTermsOfServiceResponse->$label;
+        return $getTermsOfServiceResponse->label;
     }
 
     public function acceptTermsOfService()
@@ -397,7 +397,7 @@ class DaisyOnlineClient
             return null;
         }
 
-        return $acceptTermsOfServiceResponse->$acceptTermsOfServiceResult;
+        return $acceptTermsOfServiceResponse->acceptTermsOfServiceResult;
     }
 
     public function setProgressState($contentId, $state)

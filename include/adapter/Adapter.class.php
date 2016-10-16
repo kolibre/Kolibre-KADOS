@@ -380,7 +380,7 @@ abstract class Adapter
      *
      * This method is optional and does not require implementation.
      * It is invoked by the service when setProgressState operation is called.
-     * If the service supports setting progress state (PROCESS_STATE), this method must be implemented.
+     * If the service supports setting progress state (PROGRESS_STATE), this method must be implemented.
      *
      * @param string $contentId The identifier of the content
      * @param int $state The current state. Must be one of the defined STATE_ values.

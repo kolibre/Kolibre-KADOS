@@ -473,7 +473,7 @@ class DemoAdapter extends Adapter
         try
         {
             // update state
-            $query = "UPDATE usercontent SET state = :state WHERE user_id = :userId AND content_id = :contentId";
+            $query = "UPDATE usercontent SET state_id = :state WHERE user_id = :userId AND content_id = :contentId";
             $sth = $this->dbh->prepare($query);
             $values = array();
             $values[':state'] = $state;

@@ -180,6 +180,17 @@ class DaisyOnlineService
     }
 
     /**
+     * Returns supportedOptionalOperations not listed in service attributes
+     */
+    public function getServiceSupportedOptionalOperationsExtra()
+    {
+        if (is_null($this->optionalOperations) === false && is_array($this->optionalOperations))
+            return $this->optionalOperations;
+
+        return array();
+    }
+
+    /**
      * Disables the internal session handling.
      *
      * Warning! Do not invoke this function unless your are testing or debugging this class.

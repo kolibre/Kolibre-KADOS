@@ -123,6 +123,8 @@ $classmap = array(
 		"EncryptedKeyType" => "EncryptedKeyType",
 		"ReferenceList" => "ReferenceList",
 		"ReferenceType" => "ReferenceType",
-		"UAKType" => "UAKType"
+		"UAKType" => "UAKType",
+		"setProgressState" => "setProgressState",
+		"setProgressStateResponse" => "setProgressStateResponse"
 		);
 ?>

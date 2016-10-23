@@ -65,6 +65,7 @@ class TestClient
     private $model = null;
     private $serialnumber = null;
     private $version = null;
+    private $termsAccepted = false;
 
     public function __construct($_serviceUrl, $_username, $_password)
     {
@@ -107,6 +108,46 @@ class TestClient
     private function log($msg)
     {
         if ($this->logEnable) echo "$msg\n";
+    }
+
+    private function acceptTermsOfServiceIfFaultReturned()
+    {
+        if ($this->termsAccepted) {
+            return false;
+        }
+
+        if ($this->client->operationFailed() && $this->client->getFaultType() != "termsOfServiceNotAcceptedFault")
+        {
+            return false;
+        }
+
+        $this->log('terms of service not accepted, initializing accept sequence');
+
+        $this->log('invoking operation getTermsOfService');
+        $result = $this->client->getTermsOfService();
+        if ($this->client->operationFailed())
+        {
+            $this->log('getTermsOfService failed');
+            exit(1);
+        }
+        $this->log('getTermsOfService successful');
+
+        $this->log("accepting terms: \n---\n" . $result->text. "\n---");
+
+        $this->log('invoking operation acceptTermsOfService');
+        $result = $this->client->acceptTermsOfService();
+        if ($this->client->operationFailed())
+        {
+            $this->log('acceptTermsOfService failed');
+            exit(1);
+        }
+        $this->log('acceptTermsOfService successful');
+        if ($result === true)
+        {
+            $this->termsAccepted = true;
+        }
+
+        return $result;
     }
 
     public function setUsername($_username)
@@ -152,6 +193,12 @@ class TestClient
         $this->log('invoking operation ' . __FUNCTION__);
 
         $result = $this->client->getContentList($id, $firstItem, $lastItem);
+        if ($this->acceptTermsOfServiceIfFaultReturned())
+        {
+            // retry operation
+            $this->log('retrying ' . __FUNCTION__);
+            $result = $this->client->getContentList($id, $firstItem, $lastItem);
+        }
         if ($this->client->operationFailed())
         {
             $this->log(__FUNCTION__ . ' failed');
@@ -194,6 +241,12 @@ class TestClient
         $this->log('invoking operation ' . __FUNCTION__);
 
         $result = $this->client->getContentResources($contentID);
+        if ($this->acceptTermsOfServiceIfFaultReturned())
+        {
+            // retry operation
+            $this->log('retrying ' . __FUNCTION__);
+            $result = $this->client->getContentResources($contentID);
+        }
         if ($this->client->operationFailed())
         {
             $this->log(__FUNCTION__ . ' failed');
@@ -208,6 +261,12 @@ class TestClient
         $this->log('invoking operation ' . __FUNCTION__);
 
         $result = $this->client->returnContent($contentID);
+        if ($this->acceptTermsOfServiceIfFaultReturned())
+        {
+            // retry operation
+            $this->log('retrying ' . __FUNCTION__);
+            $result = $this->client->returnContent($contentID);
+        }
         if ($this->client->operationFailed())
         {
             $this->log(__FUNCTION__ . ' failed');
@@ -222,6 +281,12 @@ class TestClient
         $this->log('invoking operation ' . __FUNCTION__);
 
         $result = $this->client->setProgressState($contentID, $state);
+        if ($this->acceptTermsOfServiceIfFaultReturned())
+        {
+            // retry operation
+            $this->log('retrying ' . __FUNCTION__);
+            $result = $this->client->setProgressState($contentID, $state);
+        }
         if ($this->client->operationFailed())
         {
             if ($this->client->getFaultType() == 'operationNotSupportedFault')

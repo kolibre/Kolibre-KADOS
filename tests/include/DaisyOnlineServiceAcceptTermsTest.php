@@ -23,7 +23,7 @@ set_include_path(get_include_path() . PATH_SEPARATOR . $includePath);
 
 require_once('DaisyOnlineService.class.php');
 
-class DaisyOnlineServiceSystem extends PHPUnit_Framework_TestCase
+class DaisyOnlineServiceAcceptTerms extends PHPUnit_Framework_TestCase
 {
     protected static $rsa;
     protected static $inifile;
@@ -37,10 +37,9 @@ class DaisyOnlineServiceSystem extends PHPUnit_Framework_TestCase
         $settings = array();
         $settings['Service'] = array();
         $settings['Service']['supportedOptionalOperationsExtra'] = array();
-        $settings['Service']['supportedOptionalOperationsExtra'][] = 'PROGRESS_STATE';
         $settings['Service']['supportedOptionalOperationsExtra'][] = 'TERMS_OF_SERVICE';
         $settings['Adapter'] = array();
-        $settings['Adapter']['name'] = 'SystemTestAdapter';
+        $settings['Adapter']['name'] = 'AcceptTermsTestAdapter';
         $settings['Adapter']['path'] = realpath(dirname(__FILE__));
 
         self::write_ini_file($settings, self::$inifile);
@@ -139,138 +138,29 @@ class DaisyOnlineServiceSystem extends PHPUnit_Framework_TestCase
 
     /**
      * @group daisyonlineservice
-     * @group system
+     * @group session
      */
-    public function testSessionEstablishment()
-    {
-        $input = new logOn('valid', 'valid', self::$rsa);
-        $output = self::$instance->logOn($input);
-        $this->assertTrue($output->validate());
-    }
-
-    /**
-     * @group daisyonlineservice
-     * @group system
-     * @depends testSessionEstablishment
-     */
-    public function testGetContentList()
+    public function testAcceptTermsOfServiceBeforeGetContentList()
     {
         $bookshelfItems = 2;
 
+        $input = new logOn('valid','valid', self::$rsa);
+        $output = self::$instance->logOn($input);
+        $this->assertInstanceOf('serviceAttributes', $output->serviceAttributes);
         $input = new getContentList('bookshelf', 0, -1);
-        $output = self::$instance->getContentList($input);
-        $this->assertCount($bookshelfItems, $output->contentList->contentItem);
-
-        // check that all content items are set correctly
-        $this->assertTrue($output->contentList->id == 'bookshelf');
-        $this->assertTrue($output->contentList->totalItems == 2);
-        foreach($output->contentList->contentItem as $contentItem)
-        {
-            $this->assertInstanceOf('label', $contentItem->label);
-            $this->assertInstanceOf('metadata', $contentItem->metadata);
-            $this->assertTrue($contentItem->accessPermission == "STREAM_AND_DOWNLOAD_AUTOMATIC_ALLOWED");
-            $this->assertTrue($contentItem->lastModifiedDate == "2016-03-11T14:23:23+00:00");
-            $this->assertTrue($contentItem->returnBy == "2016-03-11T14:23:23+00:00");
-            foreach($contentItem->metadata as $metadata)
-            {
-                $this->assertTrue(is_string($contentItem->metadata->title));
-                $this->assertTrue(is_string($contentItem->metadata->identifier));
-            }
-        }
-    }
-
-    /**
-     * @group daisyonlineservice
-     * @group system
-     * @depends testGetContentList
-     */
-    public function testGetContentResources()
-    {
-        $input = new getContentResources('id_1', 'STREAM');
-        $output = self::$instance->getContentResources($input);
-        $this->assertInstanceOf('getContentResourcesResponse', $output);
-
-        // check that all resource properties are set correctly
-        $this->assertTrue($output->resources->lastModifiedDate == "2016-03-11T14:23:23+00:00");
-        foreach($output->resources->resource as $resource)
-        {
-            $this->assertInstanceOf('resource', $resource);
-            $this->assertTrue($resource->uri == 'uri');
-            $this->assertTrue($resource->mimeType == 'mimeType');
-            $this->assertTrue($resource->localURI == 'localURI');
-            $this->assertTrue($resource->uri == 'uri');
-            $this->assertTrue($resource->lastModifiedDate == "2016-03-11T14:23:23+00:00");
-        }
-    }
-
-    /**
-     * @group daisyonlineservice
-     * @group system
-     * @depends testGetContentResources
-     */
-    public function testReturnContent()
-    {
-        $bookshelfItemsBefore = 2;
-        $bookshelfItemsAfter = 0;
-
-        //Check number of items in bookshelf
-        $input = new getContentList('bookshelf', 0, -1);
-        $output = self::$instance->getContentList($input);
-        $this->assertCount($bookshelfItemsBefore, $output->contentList->contentItem);
-
-        //return all items
-        $contentItems = $output->contentList->contentItem;
-        foreach ($contentItems as $contentItem)
-        {
-            $input = new returnContent($contentItem->id);
-            $output = self::$instance->returnContent($input);
-            $this->assertTrue($output->returnContentResult);
-        }
-
-        // check that bookshelf is empty
-        $input = new getContentList('bookshelf', 0, -1);
-        $output = self::$instance->getContentList($input);
-        $this->assertNull($output->contentList->contentItem);
-    }
-
-    /**
-     * @group daisyonlineservice
-     * @group system
-     * @depends testGetContentResources
-     */
-    public function testSetProgressState()
-    {
-        // valid state
-        $input = new setProgressState('id_1', 'START');
-        $output = self::$instance->setProgressState($input);
-        $this->assertTrue($output->setProgressStateResult);
-    }
-
-    /**
-     * @group daisyonlineservice
-     * @group system
-     * @depends testSessionEstablishment
-     */
-    public function testGetTermsOfService()
-    {
+        $this->assertTrue($this->callOperation('getContentList', $input, 'termsOfServiceNotAcceptedFault'));
         $input = new getTermsOfService();
         $output = self::$instance->getTermsOfService($input);
         $this->assertEquals($output->label->text, "No Terms");
         $this->assertNull($output->label->audio);
         $this->assertEquals($output->label->lang, "en");
         $this->assertNull($output->label->dir);
-    }
-
-    /**
-     * @group daisyonlineservice
-     * @group system
-     * @depends testSessionEstablishment
-     */
-    public function testAcceptTermsOfService()
-    {
         $input = new acceptTermsOfService();
         $output = self::$instance->acceptTermsOfService($input);
         $this->assertTrue($output->acceptTermsOfServiceResult);
+        $input = new getContentList('bookshelf', 0, -1);
+        $output = self::$instance->getContentList($input);
+        $this->assertCount($bookshelfItems, $output->contentList->contentItem);
     }
 }
 

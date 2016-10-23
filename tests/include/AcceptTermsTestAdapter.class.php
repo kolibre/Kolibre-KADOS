@@ -23,10 +23,11 @@ set_include_path(get_include_path() . PATH_SEPARATOR . $includePath);
 
 require_once('Adapter.class.php');
 
-class SystemTestAdapter extends Adapter
+class AcceptTermsTestAdapter extends Adapter
 {
     protected $sessionActive = true;
     protected $contentLists = array('bookshelf' => array('id_1','id_2'));
+    protected $sessionTermsOfServiceAccepted = false;
 
     public function startSession()
     {
@@ -58,9 +59,6 @@ class SystemTestAdapter extends Adapter
 
     public function authenticate($username, $password)
     {
-        if ($username == 'invalid' && $password == 'invalid')
-            return false;
-
         if ($username == 'valid' && $password == 'valid')
             return true;
 
@@ -193,12 +191,13 @@ class SystemTestAdapter extends Adapter
 
     public function termsOfServiceAccept()
     {
+        $this->sessionTermsOfServiceAccepted = true;
         return true;
     }
 
     public function termsOfServiceAccepted()
     {
-        return true;
+        return $this->sessionTermsOfServiceAccepted;
     }
 }
 

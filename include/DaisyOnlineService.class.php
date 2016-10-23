@@ -59,7 +59,7 @@ require_once('setProgressStateResponse.class.php');
 
 class DaisyOnlineService
 {
-    const VERSION = '0.2';
+    const VERSION = '0.2.1';
 
     private $optionalOperations = array();
     private $serviceAttributes = array();

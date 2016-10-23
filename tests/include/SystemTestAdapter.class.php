@@ -177,6 +177,11 @@ class SystemTestAdapter extends Adapter
         }
         return false;
     }
+
+    public function contentAccessState($contentId, $state)
+    {
+        return true;
+    }
 }
 
 ?>

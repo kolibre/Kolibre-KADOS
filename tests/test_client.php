@@ -216,6 +216,25 @@ class TestClient
         $this->log(__FUNCTION__ . ' successful');
         return $result;
     }
+
+    public function setProgressState($contentID, $state)
+    {
+        $this->log('invoking operation ' . __FUNCTION__);
+
+        $result = $this->client->setProgressState($contentID, $state);
+        if ($this->client->operationFailed())
+        {
+            if ($this->client->getFaultType() == 'operationNotSupportedFault')
+            {
+                $this->log(__FUNCTION__ . ' is not supported');
+                return 'operationNotSupportedFault';
+            }
+            $this->log(__FUNCTION__ . ' failed');
+            exit(1);
+        }
+        $this->log(__FUNCTION__ . ' successful');
+        return $result;
+    }
 }
 
 # SOAP requests
@@ -235,6 +254,27 @@ if (is_array($contentList->contentItem))
 foreach ($contentItems as $contentItem)
 {
     $result = $testClient->getContentResources($contentItem->getId());
+}
+
+// set progress state for each countent item
+foreach ($contentItems as $contentItem)
+{
+
+    $result = $testClient->setProgressState($contentItem->getId(), 'START');
+    if (is_string($result) && $result == 'operationNotSupportedFault')
+    {
+        // $this->log('setProgressState operation is not supported, not trying anymore');
+        break;
+    }
+
+    // this is where downloading should take place
+
+    $result = $testClient->setProgressState($contentItem->getId(), 'FINISH');
+    if (is_string($result) && $result == 'operationNotSupportedFault')
+    {
+        // $this->log('setProgressState operation is not supported, not trying anymore');
+        break;
+    }
 }
 
 //return content

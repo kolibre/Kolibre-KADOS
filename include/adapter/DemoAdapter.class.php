@@ -466,6 +466,37 @@ class DemoAdapter extends Adapter
         return Adapter::ACCESS_STREAM_AND_DOWNLOAD_AUTOMATIC_ALLOWED;
     }
 
+    public function contentAccessState($contentId, $state)
+    {
+        $contentId = $this->extractId($contentId);
+
+        try
+        {
+            // update state
+            $query = "UPDATE usercontent SET state_id = :state WHERE user_id = :userId AND content_id = :contentId";
+            $sth = $this->dbh->prepare($query);
+            $values = array();
+            $values[':state'] = $state;
+            $values[':userId'] = $this->user;
+            $values[':contentId'] = $contentId;
+            if ($sth->execute($values) === false)
+            {
+                $this->logger->error("Updating progress state to '$state' with id '$contentId' for user with id '$this->user' failed");
+                return false;
+            }
+            if ($sth->rowCount() != 1) return false;
+            return true;
+        }
+        catch (PDOException $e)
+        {
+            $this->logger->fatal($e->getMessage());
+            throw new AdapterException('Updating progress failed');
+        }
+
+        return false;
+
+    }
+
     public function contentExists($contentId)
     {
         $contentId = $this->extractId($contentId);

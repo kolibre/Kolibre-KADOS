@@ -61,6 +61,7 @@ class DaisyOnlineService
 {
     const VERSION = '0.2';
 
+    private $optionalOperations = array();
     private $serviceAttributes = array();
     private $readingSystemAttributes = null;
 
@@ -145,6 +146,7 @@ class DaisyOnlineService
     {
         $this->adapter = serialize($this->adapter);
         $instance_variables_to_serialize = array();
+        array_push($instance_variables_to_serialize, 'optionalOperations');
         array_push($instance_variables_to_serialize, 'serviceAttributes');
         array_push($instance_variables_to_serialize, 'readingSystemAttributes');
         array_push($instance_variables_to_serialize, 'sessionCurrentOperation');
@@ -173,6 +175,17 @@ class DaisyOnlineService
     {
         if (is_null($this->serviceAttributes) === false && array_key_exists('supportedOptionalOperations', $this->serviceAttributes))
             return $this->serviceAttributes['supportedOptionalOperations'];
+
+        return array();
+    }
+
+    /**
+     * Returns supportedOptionalOperations not listed in service attributes
+     */
+    public function getServiceSupportedOptionalOperationsExtra()
+    {
+        if (is_null($this->optionalOperations) === false && is_array($this->optionalOperations))
+            return $this->optionalOperations;
 
         return array();
     }
@@ -905,8 +918,56 @@ class DaisyOnlineService
     public function setProgressState($input)
     {
         $this->sessionHandle(__FUNCTION__);
-        throw new SoapFault ('Client', 'setProgressState not supported', '', '', 'setProgressState_operationNotSupportedFault');
+        if (!in_array('PROGRESS_STATE', $this->optionalOperations))
+            throw new SoapFault ('Client', 'setProgressState not supported', '', '', 'setProgressState_operationNotSupportedFault');
 
+        if ($input->validate() === false)
+        {
+            $msg = "request is not valid " . $input->getError();
+            $this->logger->warn($msg);
+            throw new SoapFault ('Client', $input->getError(), '', '', 'setProgressState_invalidParameterFault');
+        }
+
+        // parameters
+        $contentId = $input->getContentID();
+        $state = $this->adapterProgressState($input->getState());
+
+        // set progress state
+        $result = false;
+        try
+        {
+            $result = $this->adapter->contentAccessState($contentId, $state);
+        }
+        catch (AdapterException $e)
+        {
+            $this->logger->fatal($e->getMessage());
+            throw new SoapFault('Server', 'Internal Server Error', '', '', 'setProgressState_internalServerErrorFault');
+        }
+
+        return new setProgressStateResponse($result);
+    }
+
+    /**
+     * Returns the state enum defined in Adatapter for the string representation
+     * @param string $state human readable state string
+     * @return string
+     */
+    private function adapterProgressState($state)
+    {
+        switch ($state)
+        {
+            case 'START':
+                return Adapter::STATE_START;
+            case 'PAUSE':
+                return Adapter::STATE_PAUSE;
+            case 'RESUME':
+                return Adapter::STATE_RESUME;
+            case 'FINISH':
+                return Adapter::STATE_FINISH;
+        }
+
+        // not possible
+        return 0;
     }
 
     /**
@@ -935,6 +996,18 @@ class DaisyOnlineService
                 array_push($this->serviceAttributes['supportedOptionalOperations'], 'DYNAMIC_MENUS');
             if (in_array('PDTB2_KEY_PROVISION', $settings['supportedOptionalOperations']))
                 array_push($this->serviceAttributes['supportedOptionalOperations'], 'PDTB2_KEY_PROVISION');
+        }
+        // list of optional operation which should be listed in service attributes
+        if (array_key_exists('supportedOptionalOperationsExtra', $settings))
+        {
+            if (in_array('PROGRESS_STATE', $settings['supportedOptionalOperationsExtra']))
+                array_push($this->optionalOperations, 'PROGRESS_STATE');
+            if (in_array('TERMS_OF_SERVICE', $settings['supportedOptionalOperationsExtra']))
+                array_push($this->optionalOperations, 'TERMS_OF_SERVICE');
+            if (in_array('USER_CREDENTIALS', $settings['supportedOptionalOperationsExtra']))
+                array_push($this->optionalOperations, 'USER_CREDENTIALS');
+            if (in_array('ADD_CONTENT', $settings['supportedOptionalOperationsExtra']))
+                array_push($this->optionalOperations, 'ADD_CONTENT');
         }
         $this->serviceAttributes['supportsServerSideBack'] = false;
         if (array_key_exists('supportsServerSideBack', $settings))

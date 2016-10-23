@@ -36,6 +36,8 @@ class DaisyOnlineServiceSystem extends PHPUnit_Framework_TestCase
 
         $settings = array();
         $settings['Service'] = array();
+        $settings['Service']['supportedOptionalOperationsExtra'] = array();
+        $settings['Service']['supportedOptionalOperationsExtra'][] = 'PROGRESS_STATE';
         $settings['Adapter'] = array();
         $settings['Adapter']['name'] = 'SystemTestAdapter';
         $settings['Adapter']['path'] = realpath(dirname(__FILE__));
@@ -228,6 +230,19 @@ class DaisyOnlineServiceSystem extends PHPUnit_Framework_TestCase
         $input = new getContentList('bookshelf', 0, -1);
         $output = self::$instance->getContentList($input);
         $this->assertNull($output->contentList->contentItem);
+    }
+
+    /**
+     * @group daisyonlineservice
+     * @group system
+     * @depends testSessionEstablishment
+     */
+    public function testSetProgressState()
+    {
+        // valid state
+        $input = new setProgressState('id_1', 'START');
+        $output = self::$instance->setProgressState($input);
+        $this->assertTrue($output->setProgressStateResult);
     }
 }
 

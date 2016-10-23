@@ -282,9 +282,10 @@ CREATE TABLE "user" (
   "id" INTEGER PRIMARY KEY AUTOINCREMENT,
   "username" TEXT NOT NULL,
   "password" TEXT NOT NULL,
+  "terms_accepted" INTEGER NOL NULL DEFAULT '0',
   "log" INTEGER NOT NULL DEFAULT '0'
 );
-INSERT INTO "user" VALUES(1,'kolibre','kolibre',1);
+INSERT INTO "user" VALUES(1,'kolibre','kolibre',0,1);
 CREATE TABLE "usercontent" (
   "id" INTEGER PRIMARY KEY AUTOINCREMENT,
   "user_id" INTEGER  NOT NULL,

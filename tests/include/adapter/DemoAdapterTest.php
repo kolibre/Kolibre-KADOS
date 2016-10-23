@@ -245,6 +245,20 @@ class DemoAdapterTest extends PHPUnit_Framework_TestCase
         $this->assertTrue(self::$adapter->contentAccessState(2, 'START'));
         $this->assertTrue(self::$adapter->contentAccessState('con_2', 'START'));
     }
+
+    public function testTermsOfService()
+    {
+        $this->user = 1;
+        $this->assertFalse(self::$adapter->termsOfServiceAccepted());
+        $this->assertTrue(self::$adapter->termsOfServiceAccept());
+        $this->assertTrue(self::$adapter->termsOfServiceAccepted());
+        $label = self::$adapter->termsOfService();
+        $this->assertArrayHasKey('text', $label);
+        $this->assertArrayHasKey('lang', $label);
+        $this->assertArrayHasKey('audio', $label);
+        $this->assertArrayHasKey('uri', $label['audio']);
+        $this->assertArrayHasKey('size', $label['audio']);
+    }
 }
 
 ?>

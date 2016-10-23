@@ -982,20 +982,20 @@ abstract class Adapter
      * It is invoked by the service when getTermsOfService operation in called.
      * If the service supports terms of service (TERMS_OF_SERVICE), this method must be implemented.
      *
-     * @return mixed Returns False if opertion not supported, True is terms already accepted. Otherwise an associative array representing a label object.
+     * @return array Returns an associative array representing a label object.
      *
      * @throws AdapterException
      */
     public function termsOfService()
     {
-        return false;
+        return array();
     }
 
     /**
      * Accept Terms of Service
      *
      * This method is optional and does not require implementation.
-     * It is invoked by the service when getTermsOfService operation in called.
+     * It is invoked by the service when accpetTermsOfService operation in called.
      * If the service supports terms of service (TERMS_OF_SERVICE), this method must be implemented.
      *
      * @return bool Returns True if terms accepted. Otherwise False.
@@ -1003,6 +1003,22 @@ abstract class Adapter
      * @throws AdapterException
      */
     public function termsOfServiceAccept()
+    {
+        return false;
+    }
+
+    /**
+     * Check if Terms of Service are accepted
+     *
+     * This method is optional and does not require implementation.
+     * It is invoked by the service when session initialization.
+     * If the service supports terms of service (TERMS_OF_SERVICE), this method must be implemented.
+     *
+     * @return bool Returns True if terms accepted. Otherwise False.
+     *
+     * @throws AdapterException
+     */
+    public function termsOfServiceAccepted()
     {
         return false;
     }

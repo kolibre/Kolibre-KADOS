@@ -38,6 +38,7 @@ class DaisyOnlineServiceSystem extends PHPUnit_Framework_TestCase
         $settings['Service'] = array();
         $settings['Service']['supportedOptionalOperationsExtra'] = array();
         $settings['Service']['supportedOptionalOperationsExtra'][] = 'PROGRESS_STATE';
+        $settings['Service']['supportedOptionalOperationsExtra'][] = 'TERMS_OF_SERVICE';
         $settings['Adapter'] = array();
         $settings['Adapter']['name'] = 'SystemTestAdapter';
         $settings['Adapter']['path'] = realpath(dirname(__FILE__));
@@ -205,7 +206,7 @@ class DaisyOnlineServiceSystem extends PHPUnit_Framework_TestCase
     /**
      * @group daisyonlineservice
      * @group system
-     * @depends testSessionEstablishment
+     * @depends testGetContentResources
      */
     public function testReturnContent()
     {
@@ -235,7 +236,7 @@ class DaisyOnlineServiceSystem extends PHPUnit_Framework_TestCase
     /**
      * @group daisyonlineservice
      * @group system
-     * @depends testSessionEstablishment
+     * @depends testGetContentResources
      */
     public function testSetProgressState()
     {
@@ -243,6 +244,33 @@ class DaisyOnlineServiceSystem extends PHPUnit_Framework_TestCase
         $input = new setProgressState('id_1', 'START');
         $output = self::$instance->setProgressState($input);
         $this->assertTrue($output->setProgressStateResult);
+    }
+
+    /**
+     * @group daisyonlineservice
+     * @group system
+     * @depends testSessionEstablishment
+     */
+    public function testGetTermsOfService()
+    {
+        $input = new getTermsOfService();
+        $output = self::$instance->getTermsOfService($input);
+        $this->assertEquals($output->label->text, "No Terms");
+        $this->assertNull($output->label->audio);
+        $this->assertEquals($output->label->lang, "en");
+        $this->assertNull($output->label->dir);
+    }
+
+    /**
+     * @group daisyonlineservice
+     * @group system
+     * @depends testSessionEstablishment
+     */
+    public function testAcceptTermsOfService()
+    {
+        $input = new acceptTermsOfService();
+        $output = self::$instance->acceptTermsOfService($input);
+        $this->assertTrue($output->acceptTermsOfServiceResult);
     }
 }
 

@@ -89,6 +89,9 @@ class DaisyOnlineService
     // boolean indicating if cookie check is disabled in session handling, use with debugging and testing only
     private $sessionHandleCookieDisabled = false;
 
+    // boolean indicating if terms of service are accepted
+    private $sessionTermsOfServiceAccepted = null;
+
     // logger instance
     private $logger = null;
 
@@ -155,6 +158,7 @@ class DaisyOnlineService
         array_push($instance_variables_to_serialize, 'sessionUserLoggedOn');
         array_push($instance_variables_to_serialize, 'sessionEstablished');
         array_push($instance_variables_to_serialize, 'sessionUsername');
+        array_push($instance_variables_to_serialize, 'sessionTermsOfServiceAccepted');
         array_push($instance_variables_to_serialize, 'adapter');
         array_push($instance_variables_to_serialize, 'adapterIncludeFile');
         return $instance_variables_to_serialize;
@@ -894,8 +898,33 @@ class DaisyOnlineService
     public function getTermsOfService($input)
     {
         $this->sessionHandle(__FUNCTION__);
-        throw new SoapFault ('Client', 'getTermsOfService not supported', '', '', 'getTermsOfService_operationNotSupportedFault');
+        if (!in_array('TERMS_OF_SERVICE', $this->optionalOperations))
+            throw new SoapFault ('Client', 'getTermsOfService not supported', '', '', 'getTermsOfService_operationNotSupportedFault');
 
+        // get terms
+        try
+        {
+            $result = $this->adapter->termsOfService();
+        }
+        catch (AdapterException $e)
+        {
+            $this->logger->fatal($e->getMessage());
+            throw new SoapFault('Server', 'Internal Server Error', '', '', 'getTermsOfService_internalServerErrorFault');
+        }
+
+        // build response
+        $label = $this->createLabel($result);
+        $output = new getTermsOfServiceResponse($label);
+
+        if ($output->validate() === false)
+        {
+            $msg = "failed to build response " . $output->getError();
+            $this->logger->error($msg);
+            $faultString = 'getTermsOfServiceResponse could not be built';
+            throw new SoapFault('Server', $faultString, '', '', 'getTermsOfService_internalServerErrorFault');
+        }
+
+        return $output;
     }
 
     /**
@@ -906,8 +935,26 @@ class DaisyOnlineService
     public function acceptTermsOfService($input)
     {
         $this->sessionHandle(__FUNCTION__);
-        throw new SoapFault ('Client', 'acceptTermsOfService not supported', '', '', 'acceptTermsOfService_operationNotSupportedFault');
+        if (!in_array('TERMS_OF_SERVICE', $this->optionalOperations))
+            throw new SoapFault ('Client', 'acceptTermsOfService not supported', '', '', 'acceptTermsOfService_operationNotSupportedFault');
 
+        // accept terms
+        $result = false;
+        try
+        {
+            $result = $this->adapter->termsOfServiceAccept();
+        }
+        catch (AdapterException $e)
+        {
+            $this->logger->fatal($e->getMessage());
+            throw new SoapFault('Server', 'Internal Server Error', '', '', 'acceptTermsOfService_internalServerErrorFault');
+        }
+        if ($result === true)
+        {
+            $this->sessionTermsOfServiceAccepted = true;
+        }
+
+        return new acceptTermsOfServiceResponse($result);
     }
 
     /**
@@ -1192,9 +1239,39 @@ class DaisyOnlineService
             if ($this->adapter->startSession() === false)
             {
                 $this->logger->warn("Backend session not active anymore");
-                $faultString = "Session has expired, try initialization as session again";
+                $faultString = "Session has expired, try initializing session again";
                 $this->sessionDestroy();
                 throw new SoapFault ('Client', $faultString, '', '', $operation.'_noActiveSessionFault');
+            }
+        }
+
+        // if terms of service are accepted
+        if (in_array('TERMS_OF_SERVICE', $this->optionalOperations))
+        {
+            if (is_null($this->sessionTermsOfServiceAccepted))
+            {
+                try
+                {
+                    $this->sessionTermsOfServiceAccepted = $this->adapter->termsOfServiceAccepted();
+                }
+                catch (AdapterException $e)
+                {
+                    $this->logger->fatal($e->getMessage());
+                    throw new SoapFault('Server', 'Internal Server Error', '', '', $operation.'_internalServerErrorFault');
+                }
+            }
+
+            if ($operation == 'getTermsOfService' || $operation == 'acceptTermsOfService')
+            {
+                // we don't want to return a soap fault if terms of service operations
+                // are invoked
+                return;
+            }
+
+            if ($this->sessionTermsOfServiceAccepted != true) {
+                $this->logger->warn("Terms of Service not accepted");
+                $faultString = "Terms of Service have not been accepted";
+                throw new SoapFault ('Client', $faultString, '', '', $operation.'_termsOfServiceNotAcceptedFault');
             }
         }
     }

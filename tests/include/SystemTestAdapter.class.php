@@ -182,6 +182,24 @@ class SystemTestAdapter extends Adapter
     {
         return true;
     }
+
+    public function termsOfService()
+    {
+        $label = array();
+        $label['text'] = "No Terms";
+        $label['lang'] = "en";
+        return $label;
+    }
+
+    public function termsOfServiceAccept()
+    {
+        return true;
+    }
+
+    public function termsOfServiceAccepted()
+    {
+        return true;
+    }
 }
 
 ?>

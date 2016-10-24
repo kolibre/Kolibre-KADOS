@@ -270,13 +270,22 @@ INSERT INTO "contentresource" VALUES(143,3,'bagw001C.mp3',451552,'audio/mpeg');
 INSERT INTO "contentresource" VALUES(144,3,'bagw0001.smil',1728,'application/xml');
 INSERT INTO "contentresource" VALUES(145,3,'bagw001D.mp3',335882,'audio/mpeg');
 INSERT INTO "contentresource" VALUES(146,3,'bagw0004.smil',3047,'application/xml');
+CREATE TABLE "state" (
+  "id" INTEGER PRIMARY KEY AUTOINCREMENT,
+  "state" TEXT NOT NULL
+);
+INSERT INTO "state" VALUES(1,'START');
+INSERT INTO "state" VALUES(2,'PAUSE');
+INSERT INTO "state" VALUES(3,'RESUME');
+INSERT INTO "state" VALUES(4,'FINISH');
 CREATE TABLE "user" (
   "id" INTEGER PRIMARY KEY AUTOINCREMENT,
   "username" TEXT NOT NULL,
   "password" TEXT NOT NULL,
+  "terms_accepted" INTEGER NOL NULL DEFAULT '0',
   "log" INTEGER NOT NULL DEFAULT '0'
 );
-INSERT INTO "user" VALUES(1,'kolibre','kolibre',1);
+INSERT INTO "user" VALUES(1,'kolibre','kolibre',0,1);
 CREATE TABLE "usercontent" (
   "id" INTEGER PRIMARY KEY AUTOINCREMENT,
   "user_id" INTEGER  NOT NULL,
@@ -285,14 +294,16 @@ CREATE TABLE "usercontent" (
   "return" INTEGER NOT NULL,
   "returned" INTEGER NOT NULL DEFAULT '1',
   "return_at" NUMERIC DEFAULT NULL,
+  "state_id" INTEGER DEFAULT NULL,
   "updated_at" NUMERIC NOT NULL DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY("user_id") REFERENCES "user"("id") ON DELETE SET NULL ON UPDATE SET NULL,
   FOREIGN KEY("content_id") REFERENCES "content"("id") ON DELETE SET NULL ON UPDATE SET NULL,
-  FOREIGN KEY("contentlist_id") REFERENCES "contentlist"("id") ON DELETE SET NULL ON UPDATE SET NULL
+  FOREIGN KEY("contentlist_id") REFERENCES "contentlist"("id") ON DELETE SET NULL ON UPDATE SET NULL,
+  FOREIGN KEY("state_id") REFERENCES "state"("id") ON DELETE SET NULL ON UPDATE SET NULL
 );
-INSERT INTO "usercontent" VALUES(1,1,1,1,1,0,NULL,'0000-00-00 00:00:00');
-INSERT INTO "usercontent" VALUES(2,1,2,1,1,0,NULL,'0000-00-00 00:00:00');
-INSERT INTO "usercontent" VALUES(3,1,3,1,1,0,NULL,'0000-00-00 00:00:00');
+INSERT INTO "usercontent" VALUES(1,1,1,1,1,0,NULL,NULL,'0000-00-00 00:00:00');
+INSERT INTO "usercontent" VALUES(2,1,2,1,1,0,NULL,NULL,'0000-00-00 00:00:00');
+INSERT INTO "usercontent" VALUES(3,1,3,1,1,0,NULL,NULL,'0000-00-00 00:00:00');
 CREATE TABLE "userlog" (
   "id" INTEGER PRIMARY KEY AUTOINCREMENT,
   "user_id" INTEGER  NOT NULL,

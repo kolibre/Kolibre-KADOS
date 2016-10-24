@@ -19,13 +19,13 @@
  */
 
 // set include paths
-set_include_path(get_include_path() . PATH_SEPARATOR . '..');
-set_include_path(get_include_path() . PATH_SEPARATOR . '../include');
-set_include_path(get_include_path() . PATH_SEPARATOR . '../include/types');
+set_include_path(get_include_path() . PATH_SEPARATOR . dirname(__FILE__) . '/..');
+set_include_path(get_include_path() . PATH_SEPARATOR . dirname(__FILE__) . '/../include');
+set_include_path(get_include_path() . PATH_SEPARATOR . dirname(__FILE__) . '/../include/types');
 
 // Setup logging
 require_once('vendor/autoload.php');
-Logger::configure('../log4php.xml');
+Logger::configure(dirname(__FILE__) . '/../log4php.xml');
 $serviceLogger = Logger::getLogger('kolibre.daisyonline.service');
 
 // Include DaisyOnlineService class

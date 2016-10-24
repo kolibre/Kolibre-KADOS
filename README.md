@@ -1,9 +1,10 @@
 What is Kolibre?
 ---------------------------------
 Kolibre is a Finnish non-profit association whose purpose is to promote
-information systems that aid people with reading disabilities. The software
-which Kolibre develops is published under open source and made available to all
-stakeholders at github.com/kolibre.
+information systems that aid people with reading disabilities, focusing on 
+the distribution and playback of digital accessible talking books such as Daisy. 
+The software which Kolibre develops is published under open source and made available 
+to all stakeholders at github.com/kolibre.
 
 Kolibre is committed to broad cooperation between organizations, businesses and
 individuals around the innovative development of custom information systems for
@@ -13,9 +14,13 @@ embership and contact information can be found at http://www.kolibre.org/
 
 What is Kolibre-KADOS?
 ---------------------------------
+
+[![Build Status](https://travis-ci.org/kolibre/Kolibre-KADOS.svg?branch=master)](https://travis-ci.org/kolibre/Kolibre-KADOS)
+
 Kolibre-KADOS is a PHP module for deploying a Daisy Online service onto an existing
 user management and content delivery backend. It is fully compatible with the
-DAISY Online Delivery Protocol and provides and adapter API for backend communication.
+DAISY Online Delivery Protocol v1 and provides and adapter API for backend communication.
+The DOD-protocol is to be found at http://www.daisy.org/projects/daisy-online-delivery/
 
 
 Documentation

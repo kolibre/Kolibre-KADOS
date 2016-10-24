@@ -329,6 +329,16 @@ class TestAdapter extends Adapter
 
         return true;
     }
+
+    public function contentAccessState($contentId, $state)
+    {
+        if ($contentId == 'exception-content-state')
+            throw new AdapterException('Error in adapter');
+        if ($contentId == 'invalid-content-id')
+            return false;
+
+        return true;
+    }
 }
 
 ?>

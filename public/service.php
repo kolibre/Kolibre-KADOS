@@ -106,6 +106,15 @@ This service implements the DAISY Online Delivery protocol version 2 as specifie
         echo "<li>getQuestions</li>\n";
     if (in_array('PDTB2_KEY_PROVISION', $operations))
         echo "<li>getKeyExchangeObject</li>\n";
+    $operationsExtra = $DaisyOnlineService->getServiceSupportedOptionalOperationsExtra();
+    if (in_array('PROGRESS_STATE', $operationsExtra))
+        echo "<li>setProgressState</li>\n";
+    if (in_array('TERMS_OF_SERVICE', $operationsExtra))
+        echo "<li>getTermsOfService</li>\n<li>acceptTermsOfService</li>";
+    if (in_array('USER_CREDENTIALS', $operationsExtra))
+        echo "<li>getUserCredentials</li>\n";
+    if (in_array('ADD_CONTENT', $operationsExtra))
+        echo "<li>addContentToBookshelf</li>\n";
 ?>
 </ul>
 <div class="note">

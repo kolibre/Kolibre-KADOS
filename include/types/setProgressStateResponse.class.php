@@ -25,7 +25,7 @@ class setProgressStateResponse extends AbstractType {
     /**
      * @var boolean
      */
-    public $progressStateResult;
+    public $setProgressStateResult;
 
 
     /******************** public functions ********************/
@@ -33,32 +33,32 @@ class setProgressStateResponse extends AbstractType {
     /**
      * constructor for class setProgressStateResponse
      */
-    function __construct($_progressStateResult = NULL) {
-        if (is_bool($_progressStateResult)) $this->setProgressStateResult($_progressStateResult);
+    function __construct($_setProgressStateResult = NULL) {
+        if (is_bool($_setProgressStateResult)) $this->setProgressStateResult($_setProgressStateResult);
     }
 
 
     /******************** class get set methods ********************/
 
     /**
-     * getter for progressStateResult
+     * getter for setProgressStateResult
      */
     function getProgressStateResult() {
-        return $this->progressStateResult;
+        return $this->setProgressStateResult;
     }
 
     /**
-     * setter for progressStateResult
+     * setter for setProgressStateResult
      */
-    function setProgressStateResult($_progressStateResult) {
-        $this->progressStateResult = $_progressStateResult;
+    function setProgressStateResult($_setProgressStateResult) {
+        $this->setProgressStateResult = $_setProgressStateResult;
     }
 
     /**
-     * resetter for progressStateResult
+     * resetter for setProgressStateResult
      */
     function resetProgressStateResult() {
-        $this->progressStateResult = NULL;
+        $this->setProgressStateResult = NULL;
     }
 
 
@@ -69,8 +69,8 @@ class setProgressStateResponse extends AbstractType {
      * validator for class setProgressStateResponse
      */
     function validate() {
-        // progressStateResult must occur exactly once
-        if ($this->isBoolean($this->progressStateResult, 'progressStateResult') === false)
+        // setProgressStateResult must occur exactly once
+        if ($this->isBoolean($this->setProgressStateResult, 'setProgressStateResult') === false)
             return false;
 
         return true;

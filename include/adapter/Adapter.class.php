@@ -380,7 +380,7 @@ abstract class Adapter
      *
      * This method is optional and does not require implementation.
      * It is invoked by the service when setProgressState operation is called.
-     * If the service supports setting progress state (PROCESS_STATE), this method must be implemented.
+     * If the service supports setting progress state (PROGRESS_STATE), this method must be implemented.
      *
      * @param string $contentId The identifier of the content
      * @param int $state The current state. Must be one of the defined STATE_ values.
@@ -982,20 +982,20 @@ abstract class Adapter
      * It is invoked by the service when getTermsOfService operation in called.
      * If the service supports terms of service (TERMS_OF_SERVICE), this method must be implemented.
      *
-     * @return mixed Returns False if opertion not supported, True is terms already accepted. Otherwise an associative array representing a label object.
+     * @return array Returns an associative array representing a label object.
      *
      * @throws AdapterException
      */
     public function termsOfService()
     {
-        return false;
+        return array();
     }
 
     /**
      * Accept Terms of Service
      *
      * This method is optional and does not require implementation.
-     * It is invoked by the service when getTermsOfService operation in called.
+     * It is invoked by the service when accpetTermsOfService operation in called.
      * If the service supports terms of service (TERMS_OF_SERVICE), this method must be implemented.
      *
      * @return bool Returns True if terms accepted. Otherwise False.
@@ -1003,6 +1003,22 @@ abstract class Adapter
      * @throws AdapterException
      */
     public function termsOfServiceAccept()
+    {
+        return false;
+    }
+
+    /**
+     * Check if Terms of Service are accepted
+     *
+     * This method is optional and does not require implementation.
+     * It is invoked by the service when session initialization.
+     * If the service supports terms of service (TERMS_OF_SERVICE), this method must be implemented.
+     *
+     * @return bool Returns True if terms accepted. Otherwise False.
+     *
+     * @throws AdapterException
+     */
+    public function termsOfServiceAccepted()
     {
         return false;
     }

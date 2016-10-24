@@ -19,9 +19,11 @@ What is Kolibre-KADOS?
 
 Kolibre-KADOS is a PHP module for deploying a Daisy Online service onto an existing
 user management and content delivery backend. It is fully compatible with the
-DAISY Online Delivery Protocol v1 and provides and adapter API for backend communication.
-The DOD-protocol is to be found at http://www.daisy.org/projects/daisy-online-delivery/
+DAISY Online Delivery Protocol v1 (required operations) and v2 (required operations)
+and provides an adapter API for backend communication. The DODP v1 is to be found at http://www.daisy.org/projects/daisy-online-delivery/drafts/20100402/do-spec-20100402.html
+and v2 at http://www.daisy.org/projects/daisy-online-delivery/2-0/DODP2-0-2.html
 
+Read our wish list at https://github.com/kolibre/Kolibre-KADOS/wiki/KADOS-wish-list
 
 Documentation
 ---------------------------------

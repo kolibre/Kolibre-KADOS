@@ -241,7 +241,7 @@ foreach ($contentItems as $contentItem)
 {
     $resources = $testClient->getContentResources($contentItem->getId());
     echo "Dowloading resources for content " . $contentItem->getId() . "\n";
-    $tmpFolder = '/tmp/' . $contentItem->getId();
+    $tmpFolder = sys_get_temp_dir() . '/' . $contentItem->getId();
     if (!file_exists($tmpFolder))
     {
         mkdir($tmpFolder);

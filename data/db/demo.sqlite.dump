@@ -1,5 +1,25 @@
 PRAGMA foreign_keys=OFF;
 BEGIN TRANSACTION;
+CREATE TABLE "announcement" (
+  "id" INTEGER PRIMARY KEY AUTOINCREMENT,
+  "type" TEXT DEFAULT NULL,
+  "priority" TEXT NOT NULL DEFAULT 'LOW'
+);
+CREATE TABLE "announcementtext" (
+  "id" INTEGER PRIMARY KEY AUTOINCREMENT,
+  "announcement_id" INTEGER NOT NULL,
+  "text" INTEGER NOT NULL,
+  "language_id" INTEGER NOT NULL,
+  FOREIGN KEY("announcement_id") REFERENCES "announcement"("id") ON DELETE SET NULL ON UPDATE SET NULL,
+  FOREIGN KEY("language_id") REFERENCES "language"("id") ON DELETE SET NULL ON UPDATE SET NULL
+);
+CREATE TABLE "announcementaudio" (
+  "id" INTEGER PRIMARY KEY AUTOINCREMENT,
+  "announcementtext_id" INTEGER NOT NULL,
+  "size" INTEGER NOT NULL,
+  "length" INTEGER NOT NULL,
+  FOREIGN KEY("announcementtext_id") REFERENCES "announcementtext"("id") ON DELETE SET NULL ON UPDATE SET NULL
+);
 CREATE TABLE "category" (
   "id" INTEGER PRIMARY KEY AUTOINCREMENT,
   "name" TEXT NOT NULL
@@ -270,6 +290,13 @@ INSERT INTO "contentresource" VALUES(143,3,'bagw001C.mp3',451552,'audio/mpeg');
 INSERT INTO "contentresource" VALUES(144,3,'bagw0001.smil',1728,'application/xml');
 INSERT INTO "contentresource" VALUES(145,3,'bagw001D.mp3',335882,'audio/mpeg');
 INSERT INTO "contentresource" VALUES(146,3,'bagw0004.smil',3047,'application/xml');
+CREATE TABLE "language" (
+  "id" INTEGER PRIMARY KEY AUTOINCREMENT,
+  "lang" TEXT NOT NULL
+);
+INSERT INTO "language" VALUES(1,'en');
+INSERT INTO "language" VALUES(2,'sv');
+INSERT INTO "language" VALUES(3,'fi');
 CREATE TABLE "state" (
   "id" INTEGER PRIMARY KEY AUTOINCREMENT,
   "state" TEXT NOT NULL
@@ -286,6 +313,15 @@ CREATE TABLE "user" (
   "log" INTEGER NOT NULL DEFAULT '0'
 );
 INSERT INTO "user" VALUES(1,'kolibre','kolibre',0,1);
+CREATE TABLE "userannouncement" (
+  "id" INTEGER PRIMARY KEY AUTOINCREMENT,
+  "user_id" INTEGER NOT NULL,
+  "announcement_id" INTEGER NOT NULL,
+  "read_at" NUMERIC DEFAULT NULL,
+  "updated_at" NUMERIC NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY("user_id") REFERENCES "user"("id") ON DELETE SET NULL ON UPDATE SET NULL,
+  FOREIGN KEY("announcement_id") REFERENCES "announcement"("id") ON DELETE SET NULL ON UPDATE SET NULL
+);
 CREATE TABLE "usercontent" (
   "id" INTEGER PRIMARY KEY AUTOINCREMENT,
   "user_id" INTEGER  NOT NULL,

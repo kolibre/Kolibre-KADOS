@@ -71,6 +71,8 @@ class TestAdapter extends Adapter
                 throw new AdapterException('Error in adapter');
             return $label;
             break;
+        case Adapter::LABEL_ANNOUNCEMENT:
+            return $label;
         default:
             return false;
         }
@@ -275,6 +277,32 @@ class TestAdapter extends Adapter
         if ($contentId == 'invalid-content-return')
             return false;
 
+        return true;
+    }
+
+    public function announcements()
+    {
+        return array('valid-identifier-1', 'valid-identifier-2');
+    }
+
+    public function announcementInfo($announcementId)
+    {
+        return array('type' => 'INFORMATION', 'priority' => 'LOW');
+    }
+
+    public function announcementExists($announcementId)
+    {
+        if ($announcementId == 'exception-mark-as-read')
+            throw new AdapterException('Error in adapter');
+        if ($announcementId == 'nonexisting-announcement-id')
+            return false;
+        return true;
+    }
+
+    public function announcementRead($announcementId)
+    {
+        if ($announcementId == 'invalid-announcement-id')
+            return false;
         return true;
     }
 }

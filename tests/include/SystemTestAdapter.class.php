@@ -27,6 +27,7 @@ class SystemTestAdapter extends Adapter
 {
     protected $sessionActive = true;
     protected $contentLists = array('new' => array('id_1', 'id_2'), 'issued' => array('id_3'), 'expired' => array('id_4'), 'returned' => array());
+    protected $announcements = array('ann_1','ann_2','ann_3');
 
     public function startSession()
     {
@@ -50,6 +51,8 @@ class SystemTestAdapter extends Adapter
         switch ($type)
         {
         case Adapter::LABEL_CONTENTITEM:
+            return $label;
+        case Adapter::LABEL_ANNOUNCEMENT:
             return $label;
         }
 
@@ -165,6 +168,35 @@ class SystemTestAdapter extends Adapter
         {
             $this->contentLists['expired'] = array_diff($this->contentLists['expired'], array($contentId));
             array_push($this->contentLists['returned'], $contentId);
+        }
+
+        return true;
+    }
+
+    public function announcements()
+    {
+        return $this->announcements;
+    }
+
+    public function announcementInfo($announcementId)
+    {
+        return array('type' => 'INFORMATION', 'priority' => 'LOW');
+    }
+
+    public function announcementExists($announcementId)
+    {
+        if (in_array($announcementId, $this->announcements)) {
+            return true;
+        }
+        return false;
+    }
+
+    public function announcementRead($announcementId)
+    {
+        $key = array_search($announcementId, $this->announcements);
+        if ($key !== false)
+        {
+            unset($this->announcements[$key]);
         }
         return true;
     }

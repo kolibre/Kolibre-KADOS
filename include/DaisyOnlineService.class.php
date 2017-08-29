@@ -953,7 +953,7 @@ class DaisyOnlineService
             throw new SoapFault ('Client', 'markAnnouncementsAsRead not supported', '', '', 'markAnnouncementsAsRead_operationNotSupportedFault');
 
         // check if a prior call to getServiceAnnouncements has been made
-        if (!$this->sessionHandleDisabled && $this->sessionGetServiceAnnouncementsInvoked === true)
+        if (!$this->sessionHandleDisabled && $this->sessionGetServiceAnnouncementsInvoked === false)
         {
             $this->logger->warn("No prior call to getServiceAnnouncements");
             $faultString = "No previous call to getServiceAnnouncements operation within this session";

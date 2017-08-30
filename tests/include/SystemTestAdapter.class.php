@@ -180,7 +180,7 @@ class SystemTestAdapter extends Adapter
 
     public function announcementInfo($announcementId)
     {
-        return array('type' => 'INFORMATION', 'priority' => 'LOW');
+        return array('type' => 'INFORMATION', 'priority' => 1);
     }
 
     public function announcementExists($announcementId)

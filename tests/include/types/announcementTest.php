@@ -77,6 +77,10 @@ class announcementTest extends PHPUnit_Framework_TestCase
         $instance->type = 'type';
         $this->assertFalse($instance->validate());
         $this->assertContains('announcement.type', $instance->getError());
+        $instance->type = 'WARNING';
+        $this->assertTrue($instance->validate());
+        $instance->type = 'ERROR';
+        $this->assertTrue($instance->validate());
         $instance->type = 'INFORMATION';
         $this->assertTrue($instance->validate());
         $instance->type = 'SYSTEM';
@@ -90,23 +94,25 @@ class announcementTest extends PHPUnit_Framework_TestCase
     public function testPriority()
     {
         $instance = new announcement(new label('text', null, 'lang'), 'id', null, null);
-        $this->assertFalse($instance->validate());
-        $this->assertContains('announcement.priority', $instance->getError());
-        $instance->priority = 1;
+        $this->assertTrue($instance->validate());
+        $instance->priority = 'priority';
         $this->assertFalse($instance->validate());
         $this->assertContains('announcement.priority', $instance->getError());
         $instance->priority = '';
         $this->assertFalse($instance->validate());
         $this->assertContains('announcement.priority', $instance->getError());
-        $instance->priority = 'priority';
+        $instance->priority = 0;
         $this->assertFalse($instance->validate());
         $this->assertContains('announcement.priority', $instance->getError());
-        $instance->priority = 'LOW';
+        $instance->priority = 1;
         $this->assertTrue($instance->validate());
-        $instance->priority = 'MEDIUM';
+        $instance->priority = 2;
         $this->assertTrue($instance->validate());
-        $instance->priority = 'HIGH';
+        $instance->priority = 3;
         $this->assertTrue($instance->validate());
+        $instance->priority = 4;
+        $this->assertFalse($instance->validate());
+        $this->assertContains('announcement.priority', $instance->getError());
     }
 }
 

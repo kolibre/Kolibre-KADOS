@@ -150,7 +150,8 @@ class DaisyOnlineServiceTest extends PHPUnit_Framework_TestCase
         $this->assertFalse($output->serviceAttributes->supportsSearch);
         $this->assertNull($output->serviceAttributes->supportedUplinkAudioCodecs->codec);
         $this->assertFalse($output->serviceAttributes->supportsAudioLabels);
-        $this->assertNull($output->serviceAttributes->supportedOptionalOperations->operation);
+        $this->assertCount(1, $output->serviceAttributes->supportedOptionalOperations->operation);
+        $this->assertContains('SERVICE_ANNOUNCEMENTS', $output->serviceAttributes->supportedOptionalOperations->operation);
 
         // adapter throws exception on label
         $settings = array();
@@ -605,6 +606,9 @@ class DaisyOnlineServiceTest extends PHPUnit_Framework_TestCase
      */
     public function testGetServiceAnnouncements()
     {
+        // to ensure we are using announcment logic for protocol version 1
+        self::$instance->setProtocolVersion(1);
+
         // adapter throws exception
         // TODO: figure out how to trigger internal server error
         //  $input = new getServiceAnnouncements();
@@ -625,7 +629,7 @@ class DaisyOnlineServiceTest extends PHPUnit_Framework_TestCase
             $this->assertEquals($announcement->label->dir, 'ltr');
             $this->assertContains('valid-identifier', $announcement->id);
             $this->assertEquals($announcement->type, 'INFORMATION');
-            $this->assertEquals($announcement->priority, 'LOW');
+            $this->assertEquals($announcement->priority, 1);
         }
     }
 

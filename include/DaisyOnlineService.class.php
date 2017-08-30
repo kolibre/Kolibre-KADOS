@@ -92,6 +92,9 @@ class DaisyOnlineService
     // boolean indicating if a call to getServieAnnouncements has been made
     private $sessionGetServiceAnnouncementsInvoked = false;
 
+    // integer indicating protocol version (values are either 1 or 2)
+    private $sessionProtocolVersion = null;
+
     // logger instance
     private $logger = null;
 
@@ -159,6 +162,7 @@ class DaisyOnlineService
         array_push($instance_variables_to_serialize, 'sessionEstablished');
         array_push($instance_variables_to_serialize, 'sessionUsername');
         array_push($instance_variables_to_serialize, 'sessionGetServiceAnnouncementsInvoked');
+        array_push($instance_variables_to_serialize, 'sessionProtocolVersion');
         array_push($instance_variables_to_serialize, 'adapter');
         array_push($instance_variables_to_serialize, 'adapterIncludeFile');
         return $instance_variables_to_serialize;
@@ -181,6 +185,19 @@ class DaisyOnlineService
             return $this->serviceAttributes['supportedOptionalOperations'];
 
         return array();
+    }
+
+    /**
+     * Sets the protocol version to the user defined version.
+     *
+     * Warning! Do not invoke this function unless you are testing or debugging this class.
+     */
+    public function setProtocolVersion($version = 1)
+    {
+        if (is_int($version) && ($version == 1 || $version == 2))
+        {
+            $this->sessionProtocolVersion = $version;
+        }
     }
 
     /**
@@ -1390,11 +1407,32 @@ class DaisyOnlineService
         $this->sessionUserLoggedOn = false;
         $this->sessionEstablished = false;
         $this->sessionGetServiceAnnouncementsInvoked = false;
+        $this->sessionProtocolVersion = null;
 
         // The following variables must reamin untouched as they are use in logging messages,
         // otherwise some logging messages will be incomplete
         // sessionUsername
         // sessionCurrentOperation
+    }
+
+    /**
+     * Returns the current protocol version used by the client.
+     */
+    private function protocolVersion()
+    {
+        if (!is_null($this->sessionProtocolVersion))
+        {
+            return $this->sessionProtocolVersion;
+        }
+        else
+        {
+            if (in_array('getServiceAttributes', $this->sessionInvokedOperations))
+                return 1;
+            else
+                return 2;
+        }
+
+        return 2;
     }
 
     private function createLabel($labelArray)
@@ -1535,14 +1573,8 @@ class DaisyOnlineService
      */
     private function transformAnnouncementType($value)
     {
-        if (in_array('getServiceAttributes', $this->sessionInvokedOperations))
+        if ($this->protocolVersion() == 2)
         {
-            // protocol version 1
-            // no actions needed
-        }
-        else
-        {
-            // protocol version 2
             switch ($value)
             {
                 case 'WARNING':
@@ -1562,9 +1594,8 @@ class DaisyOnlineService
      */
      private function transformAnnouncementPriority($value)
      {
-        if (in_array('getServiceAttributes', $this->sessionInvokedOperations))
+        if ($this->protocolVersion() == 1)
         {
-            // protocol version 1
             if (is_string($value))
             {
                 switch ($value)
@@ -1576,12 +1607,10 @@ class DaisyOnlineService
                     case 'LOW':
                     return 3;
                 }
-
             }
         }
-        else
+        else if ($this->protocolVersion() == 2)
         {
-            // protocol version 2
             if (is_int($value))
             {
                 switch ($value)

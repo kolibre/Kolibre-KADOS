@@ -838,7 +838,7 @@ class DemoAdapter extends Adapter
     public function termsOfService()
     {
         $label = array();
-        $label['text'] = "Welcome to the Kolibre demo Daisy Online service. This service is free to use for for all.";
+        $label['text'] = "Welcome to the Kolibre demo Daisy Online service. This service is free to use for all.";
         $label['lang'] = "en";
         $audio = array();
         $audio['uri'] = $this->serviceBaseUri()."media/terms_of_service.ogg";

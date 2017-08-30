@@ -1662,19 +1662,90 @@ class DaisyOnlineService
             // type [optional]
             if (array_key_exists('type', $announcementArray) === true)
             {
-                $type = $announcementArray['type'];
+                $type = $this->transformAnnouncementType($announcementArray['type']);
             }
 
             // priority [mandatory]
             if (array_key_exists('priority', $announcementArray) === false)
                 $this->logger->error("Required field 'priority' is missing in announcement");
             else
-                $priority = $announcementArray['priority'];
+                $priority = $this->transformAnnouncementPriority($announcementArray['priority']);
         }
 
         $announcement = new announcement($label, $id, $type, $priority);
         return $announcement;
     }
+
+    /**
+     * Transforms the type value according to protocol version.
+     * Supported values in protocol version 1: [WARNING,ERROR,INFORMATION,SYSTEM]
+     * Supported values in protocol verison 2: [INFORMATION,SYSTEM]
+     */
+    private function transformAnnouncementType($value)
+    {
+        if (in_array('getServiceAttributes', $this->sessionInvokedOperations))
+        {
+            // protocol version 1
+            // no actions needed
+        }
+        else
+        {
+            // protocol version 2
+            switch ($value)
+            {
+                case 'WARNING':
+                return 'INFORMATION';
+                case 'ERROR':
+                return 'INFORMATION';
+            }
+        }
+
+        return $value;
+    }
+
+    /**
+     * Transforms the priority value according to protocol version.
+     * Supported values in protocol version 1: [1,2,3]
+     * Supported values in protocol verison 2: [HIGH,MEDIUM,LOW]
+     */
+     private function transformAnnouncementPriority($value)
+     {
+        if (in_array('getServiceAttributes', $this->sessionInvokedOperations))
+        {
+            // protocol version 1
+            if (is_string($value))
+            {
+                switch ($value)
+                {
+                    case 'HIGH':
+                    return 1;
+                    case 'MEDIUM':
+                    return 2;
+                    case 'LOW':
+                    return 3;
+                }
+
+            }
+        }
+        else
+        {
+            // protocol version 2
+            if (is_int($value))
+            {
+                switch ($value)
+                {
+                    case 1:
+                    return 'HIGH';
+                    case 2:
+                    return 'MEDIUM';
+                    case 3:
+                    return 'LOW';
+                }
+            }
+        }
+
+        return $value;
+     }
 
     /**
      * Client function getClientIP

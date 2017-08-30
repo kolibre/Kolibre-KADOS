@@ -393,24 +393,30 @@ foreach ($contentItems as $contentItem)
 }
 
 // request service announcements and mark them as read
-if (!is_null($serviceAttributes->getSupportedOptionalOperations()) && in_array('SERVICE_ANNOUNCEMENTS', $serviceAttributes->getSupportedOptionalOperations()->getOperation()))
+if (!is_null($serviceAttributes->getSupportedOptionalOperations()))
 {
-    $announcements = $testClient->getServiceAnnouncements();
+    // operation is a string in PHP if it only contains one item, and an array if it contains
+    // two or more items
+    $operations = $serviceAttributes->getSupportedOptionalOperations()->getOperation();
+    if ((is_string($operations) && $operations == 'SERVICE_ANNOUNCEMENTS') || (is_array($operations) && in_array('SERVICE_ANNOUNCEMENTS', $operations)))
+    {
+        $announcements = $testClient->getServiceAnnouncements();
 
-    $read = new read();
-    if (!is_null($announcements->getAnnouncement()))
-    {
-        foreach ($announcements->getAnnouncement() as $announcement)
+        $read = new read();
+        if (!is_null($announcements->getAnnouncement()))
         {
-            $read->addItem($announcement->getId());
+            foreach ($announcements->getAnnouncement() as $announcement)
+            {
+                $read->addItem($announcement->getId());
+            }
+            $numAnnouncements = count($read->getItem());
+            echo "marking $numAnnouncements announcement(s) as read...\n";
+            $ressult = $testClient->markAnnouncementsAsRead($read);
         }
-        $numAnnouncements = count($read->getItem());
-        echo "marking $numAnnouncements announcement(s) as read...\n";
-        $ressult = $testClient->markAnnouncementsAsRead($read);
-    }
-    else
-    {
-        echo "no unread announcements returned\n";
+        else
+        {
+            echo "no unread announcements returned\n";
+        }
     }
 }
 

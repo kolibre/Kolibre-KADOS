@@ -256,6 +256,62 @@ class DemoAdapter extends Adapter
         return $row['value'];
     }
 
+    public function announcementAudioUri($announcementId)
+    {
+        $announcementId = $this->extractId($announcementId);
+
+        $filename = "announcement_$announcementId.ogg";
+        return $this->serviceBaseUri()."media/$filename";
+    }
+
+    public function announcementLabel($announcementId, $language = 'en')
+    {
+        $announcementId = $this->extractId($announcementId);
+
+        try
+        {
+            $query = 'SELECT
+                        announcementtext.text as text,
+                        language.lang as lang,
+                        announcementaudio.size as size,
+                        announcementaudio.id as id
+                    FROM announcement
+                    JOIN announcementtext ON announcement.id = announcementtext.announcement_id
+                    JOIN language ON announcementtext.language_id = language.id
+                    JOIN announcementaudio ON announcementtext.id = announcementaudio.announcementtext_id
+                    WHERE announcement.id = :announcementId';
+            $sth = $this->dbh->prepare($query);
+            $sth->execute(array(':announcementId' => $announcementId));
+            $rows = $sth->fetchAll(PDO::FETCH_ASSOC);
+        }
+        catch (PDOException $e)
+        {
+            $this->logger->fatal($e->getMessage());
+            throw new AdapterException('Retrieving announcement label failed');
+        }
+
+        $label = null;
+        foreach ($rows as $row)
+        {
+            $tmpLabel = array();
+            $tmpLabel['text'] = $row['text'];
+            $tmpLabel['lang'] = $row['lang'];
+            $audio = array();
+            $audio['uri'] = $this->announcementAudioUri($announcementId);
+            $size = $row['size'];
+            if ($size > 0) $audio['size'] = $size;
+            $tmpLabel['audio'] = $audio;
+            if (is_null($label)) $label = $tmpLabel;
+            if ($row['lang'] == $language)
+            {
+                $label = $tmpLabel;
+                break;
+            }
+        }
+
+        return $label;
+    }
+
     public function label($id, $type, $language = null)
     {
         switch ($type)
@@ -269,6 +325,9 @@ class DemoAdapter extends Adapter
             $size = $this->contentAudioSize($id);
             if ($size > 0) $audio['size'] = $size;
             $label['audio'] = $audio;
+            return $label;
+        case Adapter::LABEL_ANNOUNCEMENT:
+            $label = $this->announcementLabel($id, $language);
             return $label;
         default:
             return false;
@@ -809,6 +868,126 @@ class DemoAdapter extends Adapter
             }
         }
 
+        return false;
+    }
+
+    public function announcements()
+    {
+        try
+        {
+            $query = 'SELECT * FROM userannouncement WHERE user_id = :userId AND read_at IS NULL ORDER BY updated_at DESC';
+            $sth = $this->dbh->prepare($query);
+            $sth->execute(array(':userId' => $this->user));
+            $rows = $sth->fetchAll(PDO::FETCH_ASSOC);
+        }
+        catch (PDOException $e)
+        {
+            $this->logger->fatal($e->getMessage());
+            throw new AdapterException('Retrieving user announcements failed');
+        }
+
+        $announcements = array();
+        foreach ($rows as $row)
+        {
+            $announcementId = "ann_" . $row['announcement_id'];
+            array_push($announcements, $announcementId);
+        }
+
+        return $announcements;
+    }
+
+    public function announcementInfo($announcementId)
+    {
+        $announcementId = $this->extractId($announcementId);
+
+        try
+        {
+            $query = 'SELECT type,priority FROM announcement WHERE id = :announcementId';
+            $sth = $this->dbh->prepare($query);
+            if ($sth->execute(array(':announcementId' => $announcementId)) === false)
+            {
+                $this->logger->error("Retriving info for announcement '$announcementId' for user with id '$this->user' failed");
+                return array();
+            }
+
+            $row = $sth->fetch(PDO::FETCH_ASSOC);
+            return $row;
+        }
+        catch (PDOException $e)
+        {
+            $this->logger->fatal($e->getMessage());
+            throw new AdapterException('Retrieving announcement info failed');
+        }
+        return false;
+    }
+
+    public function announcementExists($announcementId)
+    {
+        $announcementId = $this->extractId($announcementId);
+
+        try
+        {
+            $query = 'SELECT * FROM userannouncement WHERE user_id = :userId AND announcement_id = :announcementId';
+            $sth = $this->dbh->prepare($query);
+            $values = array();
+            $values[':userId'] = $this->user;
+            $values[':announcementId'] = $announcementId;
+            $sth->execute($values);
+            $row = $sth->fetch(PDO::FETCH_ASSOC);
+        }
+        catch (PDOException $e)
+        {
+            $this->logger->fatal($e->getMessage());
+            throw new AdapterException('Retrieving user announcements failed');
+        }
+
+        if ($row === false) return false;
+        return true;
+    }
+
+    public function announcementRead($announcementId)
+    {
+        $announcementId = $this->extractId($announcementId);
+
+        try
+        {
+            // check if announcement already marked as read
+            $query = "SELECT read_at FROM userannouncement WHERE user_id = :userId AND announcement_id = :announcementId";
+            $sth = $this->dbh->prepare($query);
+            $values = array();
+            $values[':userId'] = $this->user;
+            $values[':announcementId'] = $announcementId;
+            if ($sth->execute($values) === false)
+            {
+                $this->logger->error("Checking read status for announcement with id '$announcementId' for user with id '$this->user' failed");
+                return false;
+            }
+
+            $row = $sth->fetch(PDO::FETCH_ASSOC);
+            if (!is_null($row['read_at']))
+            {
+                return true;
+            }
+
+            // mark as read
+            $query = "UPDATE userannouncement SET read_at = :timeNow WHERE user_id = :userId AND announcement_id = :announcementId";
+            $sth = $this->dbh->prepare($query);
+            $values = array();
+            $values[':timeNow'] = date('c');
+            $values[':userId'] = $this->user;
+            $values[':announcementId'] = $announcementId;
+            if ($sth->execute($values) === false)
+            {
+                $this->logger->error("Marking announcement with id '$announcementId' as read for user with id '$this->user' failed");
+                return false;
+            }
+            return true;
+        }
+        catch (PDOException $e)
+        {
+            $this->logger->fatal($e->getMessage());
+            throw new AdapterException('Marking announcement as read failed');
+        }
         return false;
     }
 }

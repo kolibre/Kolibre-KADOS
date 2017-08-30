@@ -47,7 +47,7 @@ class updateBookmarks extends AbstractType {
     /**
      * constructor for class updateBookmark
      */
-    function __construct($_contentID = NULL, $_action = NULL, $_bookmarkObject) {
+    function __construct($_contentID = NULL, $_action = NULL, $_bookmarkObject = NULL) {
         if (is_string($_contentID)) $this->setContentID($_contentID);
         if (is_string($_action)) $this->setAction($_action);
         if(is_a($_bookmarkObject, 'bookmarkObject')) $this->setBookmarkObject($_bookmarkObject);

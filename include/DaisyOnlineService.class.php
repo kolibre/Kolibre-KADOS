@@ -1646,26 +1646,31 @@ class DaisyOnlineService
 
     private function createAnnouncement($announcementId, $announcementArray, $labelArray)
     {
+        $label = null;
+        $id = null;
         $type = null;
         $priority = null;
 
         // label [mandatory]
-        $label = $this->createLabel($labelArray);
+        if (is_array($labelArray))
+            $label = $this->createLabel($labelArray);
 
         // id [mandatory]
         $id = $announcementId;
 
-        // type [optional]
-        if (array_key_exists('type', $announcementArray) === true)
-        {
-            $type = $announcementArray['type'];
-        }
+        if (is_array($announcementArray)) {
+            // type [optional]
+            if (array_key_exists('type', $announcementArray) === true)
+            {
+                $type = $announcementArray['type'];
+            }
 
-        // priority [mandatory]
-        if (array_key_exists('priority', $announcementArray) === false)
-            $this->logger->error("Required field 'priority' is missing in announcement");
-        else
-            $priority = $announcementArray['priority'];
+            // priority [mandatory]
+            if (array_key_exists('priority', $announcementArray) === false)
+                $this->logger->error("Required field 'priority' is missing in announcement");
+            else
+                $priority = $announcementArray['priority'];
+        }
 
         $announcement = new announcement($label, $id, $type, $priority);
         return $announcement;

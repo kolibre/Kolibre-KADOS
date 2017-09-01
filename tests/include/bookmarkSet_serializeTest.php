@@ -122,5 +122,20 @@ class BookmarkSetSerialize extends PHPUnit_Framework_TestCase
         $this->assertEquals($obj, $bookmarkSet);
         $this->assertTrue($obj->validate());
     }
+
+    /**
+     * @depends testJsonEncodeDecodeMinimal
+     * @group bookmarkSet
+     * @group serialize
+     */
+     public function testJsonDecodeMimimalBookmarkSet()
+     {
+         $bookmarkSet = $this->minimalBookmarkSet();
+
+         $this->assertTrue($bookmarkSet->validate());
+         $obj = bookmarkSet_from_json('{"title":{"text":"title"}, "uid":"uid"}');
+         $this->assertEquals($obj, $bookmarkSet);
+         $this->assertTrue($obj->validate());
+     }
 }
 ?>

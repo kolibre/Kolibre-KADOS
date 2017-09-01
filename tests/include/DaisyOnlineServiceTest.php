@@ -37,6 +37,8 @@ class DaisyOnlineServiceTest extends PHPUnit_Framework_TestCase
         $settings['Service'] = array();
         $settings['Service']['supportedOptionalOperations'] = array();
         $settings['Service']['supportedOptionalOperations'][] = 'SERVICE_ANNOUNCEMENTS';
+        $settings['Service']['supportedOptionalOperations'][] = 'SET_BOOKMARKS';
+        $settings['Service']['supportedOptionalOperations'][] = 'GET_BOOKMARKS';
         $settings['Adapter'] = array();
         $settings['Adapter']['name'] = 'TestAdapter';
         $settings['Adapter']['path'] = realpath(dirname(__FILE__));
@@ -659,6 +661,62 @@ class DaisyOnlineServiceTest extends PHPUnit_Framework_TestCase
         $input = new markAnnouncementsAsRead(new read(array('valid-announcement-id-1', 'valid-announcement-id-2')));
         $output = self::$instance->markAnnouncementsAsRead($input);
         $this->assertTrue($output->markAnnouncementsAsReadResult);
+    }
+
+    /**
+     * @group daisyonlineservice
+     * @group operation
+     */
+    public function testSetBookmarks()
+    {
+        $bookmarkSet = new bookmarkSet(new title('text'),'uid');
+
+        // request is not valid
+        $input = new setBookmarks();
+        $this->assertTrue($this->callOperation('setBookmarks', $input, 'invalidParameterFault'));
+
+        // adapter throws exception
+        $input = new setBookmarks('exception-set-bookmarks', $bookmarkSet);
+        $this->assertTrue($this->callOperation('setBookmarks', $input, 'internalServerErrorFault'));
+
+        // update unsuccessful
+        $input = new setBookmarks('invalid-set-bookmarks', $bookmarkSet);
+        $output = self::$instance->setBookmarks($input);
+        $this->assertFalse($output->setBookmarksResult);
+
+        // update successful
+        $input = new setBookmarks('valid-set-bookmarks', $bookmarkSet);
+        $output = self::$instance->setBookmarks($input);
+        $this->assertTrue($output->setBookmarksResult);
+    }
+
+    /**
+     * @group daisyonlineservice
+     * @group operation
+     */
+    public function testGetBookmarks()
+    {
+        // request is not valid
+        $input = new getBookmarks();
+        $this->assertTrue($this->callOperation('getBookmarks', $input, 'invalidParameterFault'));
+
+        // adapter throws exception
+        $input = new getBookmarks('exception-get-bookmarks', 'ALL');
+        $this->assertTrue($this->callOperation('getBookmarks', $input, 'internalServerErrorFault'));
+
+        // no bookmarks found
+        $input = new getBookmarks('invalid-get-bookmarks', 'ALL');
+        $this->assertTrue($this->callOperation('getBookmarks', $input, 'invalidParameterFault'));
+
+        // update successful
+        $input = new getBookmarks('valid-get-bookmarks', 'ALL');
+        $output = self::$instance->getBookmarks($input);
+        $this->assertEquals($output->bookmarkSet->title->text, "text");
+        $this->assertEquals($output->bookmarkSet->uid, "uid");
+        $this->assertEquals($output->bookmarkSet->lastmark->ncxRef, "ncxRef");
+        $this->assertEquals($output->bookmarkSet->lastmark->URI, "uri");
+        $this->assertEquals($output->bookmarkSet->lastmark->timeOffset, "00:00");
+        $this->assertNull($output->bookmarkSet->lastmark->charOffset);
     }
 }
 

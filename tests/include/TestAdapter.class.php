@@ -305,6 +305,29 @@ class TestAdapter extends Adapter
             return false;
         return true;
     }
+
+    public function setBookmarks($contentId, $bookmark, $action = null, $lastModifiedDate = null)
+    {
+        if ($contentId == 'exception-set-bookmarks')
+            throw new AdapterException('Error in adapter');
+        if ($contentId == 'invalid-set-bookmarks')
+            return false;
+
+        return true;
+    }
+
+    public function getBookmarks($contentId, $action = null)
+    {
+        if ($contentId == 'exception-get-bookmarks')
+            throw new AdapterException('Error in adapter');
+        if ($contentId == 'invalid-get-bookmarks')
+            return false;
+        if ($contentId != 'valid-get-bookmarks')
+            return false;
+
+        $bookmarkSet = '{"title":{"text":"text"}, "uid":"uid", "lastmark":{"ncxRef":"ncxRef", "URI":"uri", "timeOffset":"00:00"}}';
+        return array('lastModifiedDate' => '2016-01-01T00:00:00Z', 'bookmarkSet' => $bookmarkSet);
+    }
 }
 
 ?>

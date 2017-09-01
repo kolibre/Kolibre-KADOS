@@ -623,9 +623,9 @@ class DaisyOnlineService
                         $contentItem->setHasBookmarks(false);
                         if (in_array('SET_BOOKMARKS', $this->serviceAttributes['supportedOptionalOperations']))
                         {
-                            $boomarks = $this->adapter->getBookmarks($contentId, Adapter::BMGET_ALL);
+                            $bookmarks = $this->adapter->getBookmarks($contentId, Adapter::BMGET_ALL);
                             if (is_array($bookmarks))
-                                $contentitem->setHasBookmarks(true);
+                                $contentItem->setHasBookmarks(true);
                         }
                     }
                     catch (AdapterException $e)
@@ -942,6 +942,36 @@ class DaisyOnlineService
         $this->sessionHandle(__FUNCTION__);
         if (!in_array('SET_BOOKMARKS', $this->serviceAttributes['supportedOptionalOperations']))
             throw new SoapFault ('Client', 'updateBookmarks not supported', '', '', 'updateBookmarks_operationNotSupportedFault');
+
+        if ($input->validate() === false)
+        {
+            $msg = "request is not valid " . $input->getError();
+            $this->logger->warn($msg);
+            throw new SoapFault ('Client', $input->getError(), '', '', 'updateBookmarks_invalidParameterFault');
+        }
+
+        // parameters
+        $contentId = $input->getContentID();
+        $action = $input->getAction();
+        $bookmarkObject = $input->getBookmarkObject();
+        $bookmarkSet = json_encode($bookmarkObject->bookmarkSet);
+
+        try
+        {
+            $result = $this->adapter->setBookmarks($contentId, $bookmarkSet, $action, $bookmarkObject->lastModifiedDate);
+            if ($result === false)
+            {
+                $msg = "User '$this->sessionUsername' could not set bookmarks for content '$contentId'";
+                $this->logger->warn($msg);
+            }
+        }
+        catch (AdapterException $e)
+        {
+            $this->logger->fatal($e->getMessage());
+            throw new SoapFault('Server', 'Internal Server Error', '', '', 'updateBookmarks_internalServerErrorFault');
+        }
+
+        return new updateBookmarksResponse($result);
     }
 
     /**
@@ -955,6 +985,58 @@ class DaisyOnlineService
         if (!in_array('GET_BOOKMARKS', $this->serviceAttributes['supportedOptionalOperations']))
             throw new SoapFault ('Client', 'getBookmarks not supported', '', '', 'getBookmarks_operationNotSupportedFault');
 
+        if ($input->validate() === false)
+        {
+            $msg = "request is not valid " . $input->getError();
+            $this->logger->warn($msg);
+            throw new SoapFault ('Client', $input->getError(), '', '', 'getBookmarks_invalidParameterFault');
+        }
+
+        // parameters
+        $contentId = $input->getContentID();
+        $action = null; // only available in protocol version 2
+        if ($this->protocolVersion() == 2) $action = $input->getAction();
+
+        try
+        {
+            $bookmarks = $this->adapter->getBookmarks($contentId, $action);
+            if ($bookmarks === false)
+            {
+                $msg = "No bookmarks found for user '$this->sessionUsername' and content '$contentId'";
+                $this->logger->warn($msg);
+                throw new SoapFault('Client', 'no bookmarks found for the given content id', '', '', 'getBookmarks_invalidParameterFault');
+            }
+        }
+        catch (AdapterException $e)
+        {
+            $this->logger->fatal($e->getMessage());
+            throw new SoapFault('Server', 'Internal Server Error', '', '', 'getBookmarks_internalServerErrorFault');
+        }
+
+        // build response according to protocol version
+        require_once('bookmarkSet_serialize.php');
+        $bookmarkSet = bookmarkSet_from_json($bookmarks['bookmarkSet']);
+        if ($this->protocolVersion() == 1)
+        {
+            $output = new getBookmarksResponse($bookmarkSet);
+        }
+        else if ($this->protocolVersion() == 2 )
+        {
+            $bookmarkObject = new bookmarkObject($bookmarkSet);
+            if (array_key_exists('lastModifiedDate', $bookmarks))
+                $bookmarkObject->setLastModifiedDate($bookmarks['lastModifiedDate']);
+            $output = new getBookmarksResponse($bookmarkObject);
+        }
+
+        if ($output->validate() === false)
+        {
+            $msg = "failed to build response " . $output->getError();
+            $this->logger->error($msg);
+            $faultString = 'getBookmarks could not be built';
+            throw new SoapFault('Server', $faultString, '', '', 'getBookmarks_internalServerErrorFault');
+        }
+
+        return $output;
     }
 
     /**

@@ -730,7 +730,7 @@ abstract class Adapter
      * Array
      * (
      *     [lastModifiedDate => "2016-01-01T00:00:00Z"
-     *     [bookmarkSet] => '{"title":"content title", "uid":"uniqe id", "lastmark":{"ncxRef":"ncxRef", "URI":"uri","timeOffset": "10"}}'
+     *     [bookmarkSet] => '{"title":{"text":"content title"}, "uid":"uniqe id", "lastmark":{"ncxRef":"ncxRef", "URI":"uri", "charOffset":10}}'
      * )
      * </pre>
      *

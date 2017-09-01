@@ -461,6 +461,10 @@ class DaisyOnlineServiceTest extends PHPUnit_Framework_TestCase
      */
     public function testMarkAnnouncementsAsRead()
     {
+        // request is not valid
+        $input = new markAnnouncementsAsRead();
+        $this->assertTrue($this->callOperation('markAnnouncementsAsRead', $input, 'invalidParameterFault'));
+
         // adapter throws exception
         $input = new markAnnouncementsAsRead(new read(array('exception-mark-as-read')));
         $this->assertTrue($this->callOperation('markAnnouncementsAsRead', $input, 'internalServerErrorFault'));

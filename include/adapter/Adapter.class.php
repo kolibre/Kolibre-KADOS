@@ -538,7 +538,19 @@ abstract class Adapter
      * If the service supports GET_BOOKMARKS, this method must be implemented.
      *
      * @param string $contentId The identifier for the content
-     * @return mixed Returns false if bookmark not found, otherwise a JSON encoded string of a bookmarkSet object.
+     * @param int $action Specifies which bookmarks to retreive. Must be one of the defined BMGET_ values.
+     * @return mixed Returns False if bookmark not found, otherwise an associative array.
+     *
+     * <p>Valid key names are 'lastModifiedDate' and 'bookmarkSet'. The value for key 'lastModifiedDate' must be a date string containing time zone. The value for key 'bookmarkSet' must be a JSON encoded string of bookmarkSet object.</p>
+     *
+     * <p>Example of an array.</p>
+     * <pre>
+     * Array
+     * (
+     *     [lastModifiedDate => "2016-01-01T00:00:00Z"
+     *     [bookmarkSet] => '{"title":{"text":"content title"}, "uid":"uniqe id", "lastmark":{"ncxRef":"ncxRef", "URI":"uri", "charOffset":10}}'
+     * )
+     * </pre>
      *
      * @throws AdapterException
      */

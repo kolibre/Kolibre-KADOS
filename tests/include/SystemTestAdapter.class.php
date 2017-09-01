@@ -28,6 +28,7 @@ class SystemTestAdapter extends Adapter
     protected $sessionActive = true;
     protected $contentLists = array('bookshelf' => array('id_1','id_2'));
     protected $announcements = array('ann_1','ann_2','ann_3');
+    protected $bookmarks = array();
 
     public function startSession()
     {
@@ -212,6 +213,21 @@ class SystemTestAdapter extends Adapter
     public function contentAccessState($contentId, $state)
     {
         return true;
+    }
+
+    public function setBookmarks($contentId, $bookmark, $action = null, $lastModifiedDate = null)
+    {
+        $this->bookmarks[$contentId] = $bookmark;
+
+        return true;
+    }
+
+    public function getBookmarks($contentId, $action = null)
+    {
+        if (array_key_exists($contentId, $this->bookmarks))
+            return array('bookmarkSet' => $this->bookmarks[$contentId]);
+
+        return false;
     }
 
     public function termsOfService()

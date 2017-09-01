@@ -38,6 +38,8 @@ class DaisyOnlineServiceSystem extends PHPUnit_Framework_TestCase
         $settings['Service'] = array();
         $settings['Service']['supportedOptionalOperations'] = array();
         $settings['Service']['supportedOptionalOperations'][] = 'SERVICE_ANNOUNCEMENTS';
+        $settings['Service']['supportedOptionalOperations'][] = 'SET_BOOKMARKS';
+        $settings['Service']['supportedOptionalOperations'][] = 'GET_BOOKMARKS';
         $settings['Adapter'] = array();
         $settings['Adapter']['name'] = 'SystemTestAdapter';
         $settings['Adapter']['path'] = realpath(dirname(__FILE__));
@@ -307,6 +309,32 @@ class DaisyOnlineServiceSystem extends PHPUnit_Framework_TestCase
         $input = new getServiceAnnouncements();
         $output = self::$instance->getServiceAnnouncements($input);
         $this->assertNull($output->announcements->announcement);
+    }
+
+    /**
+     * @group daisyonlineservice
+     * @group system
+     * @depends testSessionEstablishment
+     */
+    public function testGetBookmarks()
+    {
+        $bookmarkSet = new bookmarkSet(new title('text'),'uid', new lastmark('ncxRef','uri','timeOffset'));
+
+        $input = new getBookmarks('id-without-bookmarks', 'ALL');
+        $this->assertTrue($this->callOperation('getBookmarks', $input, 'invalidParameterFault'));
+
+        $input = new setBookmarks('id-with-bookmarks', $bookmarkSet);
+        $output = self::$instance->setBookmarks($input);
+        $this->assertTrue($output->setBookmarksResult);
+
+        $input = new getBookmarks('id-with-bookmarks', 'ALL');
+        $output = self::$instance->getBookmarks($input);
+        $this->assertEquals($output->bookmarkSet->title->text, "text");
+        $this->assertEquals($output->bookmarkSet->uid, "uid");
+        $this->assertEquals($output->bookmarkSet->lastmark->ncxRef, "ncxRef");
+        $this->assertEquals($output->bookmarkSet->lastmark->URI, "uri");
+        $this->assertEquals($output->bookmarkSet->lastmark->timeOffset, "timeOffset");
+        $this->assertNull($output->bookmarkSet->lastmark->charOffset);
     }
 }
 

@@ -101,6 +101,90 @@ class bookmarkSetTest extends PHPUnit_Framework_TestCase
         $instance->hilite = array(new hilite(new hiliteStart('ncxRef','URI','timeOffset'), new hiliteEnd('ncxRef','URI','timeOffset')));
         $this->assertTrue($instance->validate());
     }
+
+    /**
+     * @group bookmarkSet
+     * @group addBookmark
+     * @group addHilite
+     */
+    public function testAddBookmarkAndHilite()
+    {
+        $instance = new bookmarkSet(new title('text'),'uid');
+        $this->assertNull($instance->bookmark);
+        $this->assertNull($instance->hilite);
+        $bookmark = new bookmark('ncxRef','uri','timeOffset');
+        $hilite = new hilite(new hiliteStart('ncxRef','uri','timeOffset'),new hiliteEnd('ncxRef','uri','timeOffset'));
+        $instance->addBookmark($bookmark);
+        $this->assertCount(1, $instance->bookmark);
+        $this->assertArrayHasKey(1,$instance->bookmark);
+        $instance->addHilite($hilite);
+        $this->assertCount(1, $instance->hilite);
+        $this->assertArrayHasKey(2,$instance->hilite);
+        $instance->addBookmark($bookmark);
+        $instance->addBookmark($bookmark);
+        $this->assertCount(3, $instance->bookmark);
+        $this->assertArrayHasKey(3,$instance->bookmark);
+        $this->assertArrayHasKey(4,$instance->bookmark);
+        $instance->addHilite($hilite);
+        $this->assertCount(2, $instance->hilite);
+        $this->assertArrayHasKey(5,$instance->hilite);
+    }
+
+    /**
+     * @group bookmarkSet
+     * @group addBookmarkUnlessExists
+     * @group removeBookmarkIfExists
+     */
+    public function testAddRemoveBookmark()
+    {
+        $instance = new bookmarkSet(new title('text'),'uid');
+        $this->assertNull($instance->bookmark);
+        $bookmark1 = new bookmark('ncxRef','uri','timeOffset');
+        $this->assertTrue($instance->addBookmarkUnlessExist($bookmark1));
+        $this->assertFalse($instance->addBookmarkUnlessExist($bookmark1));
+        $this->assertCount(1, $instance->bookmark);
+        $this->assertArrayHasKey(1,$instance->bookmark);
+        $bookmark2 = new bookmark('ncxRef','uri','timeOffset',1);
+        $this->assertTrue($instance->addBookmarkUnlessExist($bookmark2));
+        $this->assertFalse($instance->addBookmarkUnlessExist($bookmark2));
+        $this->assertCount(2, $instance->bookmark);
+        $this->assertArrayHasKey(1,$instance->bookmark);
+        $this->assertArrayHasKey(2,$instance->bookmark);
+        $bookmark3 = new bookmark('ncxRef','uri',null,2);
+        $this->assertFalse($instance->removeBookmarkIfExist($bookmark3));
+        $this->assertCount(2, $instance->bookmark);
+        $this->assertTrue($instance->removeBookmarkIfExist($bookmark2));
+        $this->assertTrue($instance->removeBookmarkIfExist($bookmark1));
+        $this->assertCount(0, $instance->bookmark);
+    }
+
+    /**
+     * @group bookmarkSet
+     * @group addHilitekUnlessExists
+     * @group removeHilitekIfExists
+     */
+    public function testAddRemoveHilite()
+    {
+        $instance = new bookmarkSet(new title('text'),'uid');
+        $this->assertNull($instance->hilite);
+        $hilite1 = new hilite(new hiliteStart('ncxRef','uri','timeOffset'),new hiliteEnd('ncxRef','uri','timeOffset'));
+        $this->assertTrue($instance->addHiliteUnlessExist($hilite1));
+        $this->assertFalse($instance->addHiliteUnlessExist($hilite1));
+        $this->assertCount(1, $instance->hilite);
+        $this->assertArrayHasKey(1,$instance->hilite);
+        $hilite2 = new hilite(new hiliteStart('ncxRef','uri','timeOffset',1),new hiliteEnd('ncxRef','uri','timeOffset',1));
+        $this->assertTrue($instance->addHiliteUnlessExist($hilite2));
+        $this->assertFalse($instance->addHiliteUnlessExist($hilite2));
+        $this->assertCount(2, $instance->hilite);
+        $this->assertArrayHasKey(1,$instance->hilite);
+        $this->assertArrayHasKey(2,$instance->hilite);
+        $hilite3 = new hilite(new hiliteStart('ncxRef','uri',null,2),new hiliteEnd('ncxRef','uri',null,2));
+        $this->assertFalse($instance->removeHiliteIfExist($hilite3));
+        $this->assertCount(2, $instance->hilite);
+        $this->assertTrue($instance->removeHiliteIfExist($hilite2));
+        $this->assertTrue($instance->removeHiliteIfExist($hilite1));
+        $this->assertCount(0, $instance->hilite);
+    }
 }
 
 ?>

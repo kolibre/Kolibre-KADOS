@@ -952,7 +952,7 @@ class DaisyOnlineService
 
         // parameters
         $contentId = $input->getContentID();
-        $action = $input->getAction();
+        $action = $this->adapterSetBookmarksAction($input->getAction());
         $bookmarkObject = $input->getBookmarkObject();
         $bookmarkSet = json_encode($bookmarkObject->bookmarkSet);
 
@@ -995,7 +995,7 @@ class DaisyOnlineService
         // parameters
         $contentId = $input->getContentID();
         $action = null; // only available in protocol version 2
-        if ($this->protocolVersion() == 2) $action = $input->getAction();
+        if ($this->protocolVersion() == 2) $action = $this->adapterGetBookmarksAction($input->getAction());
 
         try
         {
@@ -1213,6 +1213,50 @@ class DaisyOnlineService
         // not possible
         return 0;
     }
+
+    /**
+     * Returns the action enum defined in Adapter for the string representation
+     * @param string $state human readable state string
+     * @return int
+     */
+    private function adapterGetBookmarksAction($action)
+    {
+        switch ($action)
+        {
+            case 'LASTMARK':
+                return Adapter::BMGET_LASTMARK;
+            case 'HILITE':
+                return Adapter::BMGET_HILITE;
+            case 'BOOKMARK':
+                return Adapter::BMGET_BOOKMARK;
+            case 'ALL':
+                return Adapter::BMGET_ALL;
+        }
+
+        // not possible
+        return 0;
+    }
+
+    /**
+     * Returns the action enum defined in Adapter for the string representation
+     * @param string $state human readable state string
+     * @return int
+     */
+     private function adapterSetBookmarksAction($action)
+     {
+        switch ($action)
+        {
+            case 'REPLACE_ALL':
+                return Adapter::BMSET_REPLACE;
+            case 'ADD':
+                return Adapter::BMSET_ADD;
+            case 'REMOVE':
+                return Adapter::BMSET_REMOVE;
+        }
+
+        // not possible
+        return 0;
+     }
 
     /**
      * Service helper

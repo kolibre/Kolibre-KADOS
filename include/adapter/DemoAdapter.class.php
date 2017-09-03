@@ -23,6 +23,8 @@ set_include_path(get_include_path() . PATH_SEPARATOR . $filePath . '/../../');
 
 require_once('vendor/autoload.php');
 require_once('Adapter.class.php');
+require_once('include/bookmarkSet_serialize.php');
+require_once('include/types/bookmarkSet.class.php');
 
 class DemoAdapter extends Adapter
 {
@@ -1012,6 +1014,147 @@ class DemoAdapter extends Adapter
             throw new AdapterException('Marking announcement as read failed');
         }
         return false;
+    }
+
+    public function setBookmarks($contentId, $bookmark, $action = null, $lastModifiedDate = null)
+    {
+        $contentId = $this->extractId($contentId);
+
+        try
+        {
+            // check if bookmark exists
+            $query = 'SELECT * FROM userbookmark WHERE user_id = :userId AND content_id = :contentId';
+            $sth = $this->dbh->prepare($query);
+            $values = array();
+            $values[':userId'] = $this->user;
+            $values[':contentId'] = $contentId;
+            $sth->execute($values);
+            $row = $sth->fetch(PDO::FETCH_ASSOC);
+            $bookmarkExists = ($row === false ? false : true);
+        }
+        catch (PDOException $e)
+        {
+            $this->logger->fatal($e->getMessage());
+            throw new AdapterException('Failed to check if user bookmark exists');
+        }
+
+        if ($bookmarkExists)
+        {
+            $storedBookmarkSet = bookmarkSet_from_json($row['bookmarkset']);
+            $bookmarkSet = bookmarkSet_from_json($bookmark);
+            switch ($action)
+            {
+                case Adapter::BMSET_ADD:
+                    if (isset($bookmarkSet->lastmark))
+                        $storedBookmarkSet->setLastmark($bookmarkSet->lastmark);
+                    if (is_array($bookmarkSet->bookmark) && count($bookmarkSet->bookmark) > 0)
+                    {
+                        foreach ($bookmarkSet->bookmark as $bookmark)
+                            $storedBookmarkSet->addBookmarkUnlessExist($bookmark);
+                    }
+                    if (is_array($bookmarkSet->hilite) && count($bookmarkSet->hilite) > 0)
+                    {
+                        foreach ($bookmarkSet->hilite as $hilite)
+                            $storedBookmarkSet->addHiliteUnlessExist($hilite);
+                    }
+                    $bookmark = json_encode($storedBookmarkSet);
+                    break;
+                case Adapter::BMSET_REMOVE:
+                    if (isset($bookmarkSet->lastmark))
+                        $storedBookmarkSet->resetLastmark();
+                    if (is_array($bookmarkSet->bookmark) && count($bookmarkSet->bookmark) > 0)
+                    {
+                        foreach ($bookmarkSet->bookmark as $bookmark)
+                            $storedBookmarkSet->removeBookmarkIfExist($bookmark);
+                    }
+                    if (is_array($bookmarkSet->hilite) && count($bookmarkSet->hilite) > 0)
+                    {
+                        foreach ($bookmarkSet->hilite as $hilite)
+                            $storedBookmarkSet->removeHiliteIfExist($hilite);
+                    }
+                    $bookmark = json_encode($storedBookmarkSet);
+                    break;
+            }
+        }
+
+        try
+        {
+            if ($bookmarkExists)
+               $query = 'UPDATE userbookmark SET bookmarkset = :bookmarkset WHERE user_id = :userId AND content_id = :contentId';
+            else
+                $query = 'INSERT INTO userbookmark (user_id, content_id, bookmarkset) VALUES(:userId, :contentId, :bookmarkset)';
+            $sth = $this->dbh->prepare($query);
+            $values = array();
+            $values[':userId'] = $this->user;
+            $values[':contentId'] = $contentId;
+            $values[':bookmarkset'] = $bookmark;
+            if ($sth->execute($values) === false)
+            {
+                $this->logger->error("setting bookmark for content '$contentId' for user with id '$this->user' failed");
+                return false;
+            }
+        }
+        catch (PDOException $e)
+        {
+            $this->logger->fatal($e->getMessage());
+            throw new AdapterException('Failed to set user bookmark');
+        }
+
+        return true;
+    }
+
+    public function getBookmarks($contentId, $action = null)
+    {
+        $contentId = $this->extractId($contentId);
+
+        try
+        {
+            $query = 'SELECT * FROM userbookmark WHERE user_id = :userId AND content_id = :contentId';
+            $sth = $this->dbh->prepare($query);
+            $values = array();
+            $values[':userId'] = $this->user;
+            $values[':contentId'] = $contentId;
+            $sth->execute($values);
+            $row = $sth->fetch(PDO::FETCH_ASSOC);
+        }
+        catch (PDOException $e)
+        {
+            $this->logger->fatal($e->getMessage());
+            throw new AdapterException('Retrieving user bookmarks failed');
+        }
+
+        if ($row === false) return false;
+
+        $bookmarks = array('lastModifiedDate' => $row['updated_at']);
+        switch ($action)
+        {
+            case Adapter::BMGET_ALL:
+                $bookmarks['bookmarkSet'] = $row['bookmarkset'];
+                break;
+            case Adapter::BMGET_LASTMARK:
+                $bookmarkSet = bookmarkSet_from_json($row['bookmarkset']);
+                $bookmarkSet->hilite = null;
+                $bookmarkSet->bookmark = null;
+                $bookmarks['bookmarkSet'] = json_encode($bookmarkSet);
+                break;
+            case Adapter::BMGET_HILITE:
+                $bookmarkSet = bookmarkSet_from_json($row['bookmarkset']);
+                $bookmarkSet->lastmark = null;
+                $bookmarkSet->bookmark = null;
+                $bookmarks['bookmarkSet'] = json_encode($bookmarkSet);
+                break;
+            case Adapter::BMGET_BOOKMARK:
+                $bookmarkSet = bookmarkSet_from_json($row['bookmarkset']);
+                $bookmarkSet->lastmark = null;
+                $bookmarkSet->hilite = null;
+                $bookmarks['bookmarkSet'] = json_encode($bookmarkSet);
+                break;
+            default:
+                $bookmarks['bookmarkSet'] = $row['bookmarkset'];
+                break;
+        }
+
+        return $bookmarks;
     }
 
     public function termsOfService()

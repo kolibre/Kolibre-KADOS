@@ -152,7 +152,7 @@ class DaisyOnlineServiceTest extends PHPUnit_Framework_TestCase
         $this->assertFalse($output->serviceAttributes->supportsSearch);
         $this->assertNull($output->serviceAttributes->supportedUplinkAudioCodecs->codec);
         $this->assertFalse($output->serviceAttributes->supportsAudioLabels);
-        $this->assertCount(1, $output->serviceAttributes->supportedOptionalOperations->operation);
+        $this->assertCount(3, $output->serviceAttributes->supportedOptionalOperations->operation);
         $this->assertContains('SERVICE_ANNOUNCEMENTS', $output->serviceAttributes->supportedOptionalOperations->operation);
 
         // adapter throws exception on label

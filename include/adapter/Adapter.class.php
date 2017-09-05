@@ -641,7 +641,7 @@ abstract class Adapter
      * @param string $announcementId The identifier for the announcement
      * @return mixed Returns false is not supported, otherwise an associative kay and value array.
      *
-     * <p>Valid key names are 'type' and 'priority'. Allowed values for key 'type' are: [WARNING, ERROR, INFORMATION, SYSTEM]. Allowed values for key 'priority' are: [1, 2, 3].</p>
+     * <p>Valid key names are 'type' and 'priority'. Allowed values for key 'type' are: [WARNING, ERROR, INFORMATION, SYSTEM]. Allowed values for key 'priority' are: [HIGH, MEDIUM, LOW].</p>
      * <p>Example of an array.</p>
      * <pre>
      * Array
@@ -676,14 +676,14 @@ abstract class Adapter
     }
 
     /**
-     * Mark the specified announcement as read of check if the announcement is read
+     * Mark the specified announcement as read
      *
      * This method is optional and does not require implementation.
      * It is invoked by the service when markAnnouncementsAsRead operation is called.
      * If the service supports SERVICE_ANNOUNCEMENTS, this method must be implemented.
      *
      * @param string $announcementId The identifier for the announcement
-     * @return boolean Returns True is the announcement is read, otherwise False.
+     * @return boolean Returns True is the announcement was marked as read or already read, otherwise False.
      *
      * @throws AdapterException
      */

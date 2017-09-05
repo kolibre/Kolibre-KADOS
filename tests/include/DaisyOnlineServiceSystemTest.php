@@ -36,6 +36,8 @@ class DaisyOnlineServiceSystem extends PHPUnit_Framework_TestCase
 
         $settings = array();
         $settings['Service'] = array();
+        $settings['Service']['supportedOptionalOperations'] = array();
+        $settings['Service']['supportedOptionalOperations'][] = 'SERVICE_ANNOUNCEMENTS';
         $settings['Service']['supportedOptionalOperationsExtra'] = array();
         $settings['Service']['supportedOptionalOperationsExtra'][] = 'PROGRESS_STATE';
         $settings['Service']['supportedOptionalOperationsExtra'][] = 'TERMS_OF_SERVICE';
@@ -231,6 +233,44 @@ class DaisyOnlineServiceSystem extends PHPUnit_Framework_TestCase
         $input = new getContentList('bookshelf', 0, -1);
         $output = self::$instance->getContentList($input);
         $this->assertNull($output->contentList->contentItem);
+    }
+
+    /**
+     * @group daisyonlineservice
+     * @group system
+     * @depends testSessionEstablishment
+     */
+    public function testMarkAnnouncementsAsReadWithoutPriorCallToGetServiceAnnouncements()
+    {
+        $input = new markAnnouncementsAsRead();
+        $this->assertTrue($this->callOperation('markAnnouncementsAsRead', $input, 'invalidOperationFault'));
+    }
+
+    /**
+     * @group daisyonlineservice
+     * @group system
+     * @depends testMarkAnnouncementsAsReadWithoutPriorCallToGetServiceAnnouncements
+     */
+    public function testGetServiceAnnouncements()
+    {
+        $input = new getServiceAnnouncements();
+        $output = self::$instance->getServiceAnnouncements($input);
+        $this->assertCount(3, $output->announcements->announcement);
+
+        // mark all announcments as read
+        $read = new read();
+        foreach ($output->announcements->announcement as $announcement)
+        {
+            $read->addItem($announcement->id);
+        }
+        $input = new markAnnouncementsAsRead($read);
+        $output = self::$instance->markAnnouncementsAsRead($input);
+        $this->assertTrue($output->markAnnouncementsAsReadResult);
+
+        // check that announcements is empty
+        $input = new getServiceAnnouncements();
+        $output = self::$instance->getServiceAnnouncements($input);
+        $this->assertNull($output->announcements->announcement);
     }
 
     /**

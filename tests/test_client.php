@@ -276,6 +276,44 @@ class TestClient
         return $result;
     }
 
+    public function getServiceAnnouncements()
+    {
+        $this->log('invoking operation ' . __FUNCTION__);
+        $result = $this->client->getServiceAnnouncements();
+        if ($this->acceptTermsOfServiceIfFaultReturned())
+        {
+            // retry operation
+            $this->log('retrying ' . __FUNCTION__);
+            $result = $this->client->getServiceAnnouncements();
+        }
+        if ($this->client->operationFailed())
+        {
+            $this->log(__FUNCTION__ . ' failed');
+            exit(1);
+        }
+        $this->log(__FUNCTION__ . ' successful');
+        return $result;
+    }
+
+    public function markAnnouncementsAsRead($read)
+    {
+        $this->log('invoking operation ' . __FUNCTION__);
+        $result = $this->client->markAnnouncementsAsRead($read);
+        if ($this->acceptTermsOfServiceIfFaultReturned())
+        {
+            // retry operation
+            $this->log('retrying ' . __FUNCTION__);
+            $result = $this->client->markAnnouncementsAsRead($read);
+        }
+        if ($this->client->operationFailed())
+        {
+            $this->log(__FUNCTION__ . ' failed');
+            exit(1);
+        }
+        $this->log(__FUNCTION__ . ' successful');
+        return $result;
+    }
+
     public function setProgressState($contentID, $state)
     {
         $this->log('invoking operation ' . __FUNCTION__);
@@ -307,7 +345,7 @@ class TestClient
 $testClient = new TestClient($serviceUrl, $username, $password);
 
 // establish session
-$result = $testClient->logOn();
+$serviceAttributes = $testClient->logOn();
 
 // get contentList for bookshelf
 $contentList = $testClient->getContentList('bookshelf');
@@ -352,6 +390,34 @@ foreach ($contentItems as $contentItem)
 foreach ($contentItems as $contentItem)
 {
     $result = $testClient->returnContent($contentItem->getId());
+}
+
+// request service announcements and mark them as read
+if (!is_null($serviceAttributes->getSupportedOptionalOperations()))
+{
+    // operation is a string in PHP if it only contains one item, and an array if it contains
+    // two or more items
+    $operations = $serviceAttributes->getSupportedOptionalOperations()->getOperation();
+    if ((is_string($operations) && $operations == 'SERVICE_ANNOUNCEMENTS') || (is_array($operations) && in_array('SERVICE_ANNOUNCEMENTS', $operations)))
+    {
+        $announcements = $testClient->getServiceAnnouncements();
+
+        $read = new read();
+        if (!is_null($announcements->getAnnouncement()))
+        {
+            foreach ($announcements->getAnnouncement() as $announcement)
+            {
+                $read->addItem($announcement->getId());
+            }
+            $numAnnouncements = count($read->getItem());
+            echo "marking $numAnnouncements announcement(s) as read...\n";
+            $ressult = $testClient->markAnnouncementsAsRead($read);
+        }
+        else
+        {
+            echo "no unread announcements returned\n";
+        }
+    }
 }
 
 // end session

@@ -19,7 +19,6 @@
  */
 
 require_once('AbstractType.class.php');
-
 require_once('bookmarkSet.class.php');
 
 class setBookmarks extends AbstractType {

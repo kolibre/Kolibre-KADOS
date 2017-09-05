@@ -35,6 +35,10 @@ class DaisyOnlineServiceTest extends PHPUnit_Framework_TestCase
 
         $settings = array();
         $settings['Service'] = array();
+        $settings['Service']['supportedOptionalOperations'] = array();
+        $settings['Service']['supportedOptionalOperations'][] = 'SERVICE_ANNOUNCEMENTS';
+        $settings['Service']['supportedOptionalOperations'][] = 'SET_BOOKMARKS';
+        $settings['Service']['supportedOptionalOperations'][] = 'GET_BOOKMARKS';
         $settings['Adapter'] = array();
         $settings['Adapter']['name'] = 'TestAdapter';
         $settings['Adapter']['path'] = realpath(dirname(__FILE__));
@@ -148,7 +152,8 @@ class DaisyOnlineServiceTest extends PHPUnit_Framework_TestCase
         $this->assertFalse($output->serviceAttributes->supportsSearch);
         $this->assertNull($output->serviceAttributes->supportedUplinkAudioCodecs->codec);
         $this->assertFalse($output->serviceAttributes->supportsAudioLabels);
-        $this->assertNull($output->serviceAttributes->supportedOptionalOperations->operation);
+        $this->assertCount(3, $output->serviceAttributes->supportedOptionalOperations->operation);
+        $this->assertContains('SERVICE_ANNOUNCEMENTS', $output->serviceAttributes->supportedOptionalOperations->operation);
 
         // adapter throws exception on label
         $settings = array();
@@ -595,6 +600,123 @@ class DaisyOnlineServiceTest extends PHPUnit_Framework_TestCase
         $input = new returnContent('valid-content-return');
         $output = self::$instance->returnContent($input);
         $this->assertTrue($output->returnContentResult);
+    }
+
+    /**
+     * @group daisyonlineservice
+     * @group operation
+     */
+    public function testGetServiceAnnouncements()
+    {
+        // to ensure we are using announcment logic for protocol version 1
+        self::$instance->setProtocolVersion(1);
+
+        // adapter throws exception
+        // TODO: figure out how to trigger internal server error
+        //  $input = new getServiceAnnouncements();
+        //  $this->assertTrue($this->callOperation('getServiceAnnouncements', $input, 'internalServerErrorFault'));
+
+        // return successful
+        $input = new getServiceAnnouncements();
+        $output = self::$instance->getServiceAnnouncements($input);
+        $this->assertCount(2, $output->announcements->announcement);
+        foreach ($output->announcements->announcement as $announcement)
+        {
+            $this->assertEquals($announcement->label->text, 'text');
+            $this->assertEquals($announcement->label->audio->uri, 'uri');
+            $this->assertEquals($announcement->label->audio->rangeBegin, 0);
+            $this->assertEquals($announcement->label->audio->rangeEnd, 1);
+            $this->assertEquals($announcement->label->audio->size, 2);
+            $this->assertEquals($announcement->label->lang, 'en');
+            $this->assertEquals($announcement->label->dir, 'ltr');
+            $this->assertContains('valid-identifier', $announcement->id);
+            $this->assertEquals($announcement->type, 'INFORMATION');
+            $this->assertEquals($announcement->priority, 1);
+        }
+    }
+
+    /**
+     * @group daisyonlineservice
+     * @group operation
+     */
+    public function testMarkAnnouncementsAsRead()
+    {
+        // request is not valid
+        $input = new markAnnouncementsAsRead();
+        $this->assertTrue($this->callOperation('markAnnouncementsAsRead', $input, 'invalidParameterFault'));
+
+        // adapter throws exception
+        $input = new markAnnouncementsAsRead(new read(array('exception-mark-as-read')));
+        $this->assertTrue($this->callOperation('markAnnouncementsAsRead', $input, 'internalServerErrorFault'));
+
+        // announcement does not exist
+        $input = new markAnnouncementsAsRead(new read(array('valid-announcement-id', 'nonexisting-announcement-id')));
+        $this->assertTrue($this->callOperation('markAnnouncementsAsRead', $input, 'invalidParameterFault'));
+
+        // announcement could not be marked as read
+        $input = new markAnnouncementsAsRead(new read(array('valid-announcement-id', 'invalid-announcement-id')));
+        $this->assertTrue($this->callOperation('markAnnouncementsAsRead', $input, 'invalidParameterFault'));
+
+        // return successful
+        $input = new markAnnouncementsAsRead(new read(array('valid-announcement-id-1', 'valid-announcement-id-2')));
+        $output = self::$instance->markAnnouncementsAsRead($input);
+        $this->assertTrue($output->markAnnouncementsAsReadResult);
+    }
+
+    /**
+     * @group daisyonlineservice
+     * @group operation
+     */
+    public function testSetBookmarks()
+    {
+        $bookmarkSet = new bookmarkSet(new title('text'),'uid');
+
+        // request is not valid
+        $input = new setBookmarks();
+        $this->assertTrue($this->callOperation('setBookmarks', $input, 'invalidParameterFault'));
+
+        // adapter throws exception
+        $input = new setBookmarks('exception-set-bookmarks', $bookmarkSet);
+        $this->assertTrue($this->callOperation('setBookmarks', $input, 'internalServerErrorFault'));
+
+        // update unsuccessful
+        $input = new setBookmarks('invalid-set-bookmarks', $bookmarkSet);
+        $output = self::$instance->setBookmarks($input);
+        $this->assertFalse($output->setBookmarksResult);
+
+        // update successful
+        $input = new setBookmarks('valid-set-bookmarks', $bookmarkSet);
+        $output = self::$instance->setBookmarks($input);
+        $this->assertTrue($output->setBookmarksResult);
+    }
+
+    /**
+     * @group daisyonlineservice
+     * @group operation
+     */
+    public function testGetBookmarks()
+    {
+        // request is not valid
+        $input = new getBookmarks();
+        $this->assertTrue($this->callOperation('getBookmarks', $input, 'invalidParameterFault'));
+
+        // adapter throws exception
+        $input = new getBookmarks('exception-get-bookmarks', 'ALL');
+        $this->assertTrue($this->callOperation('getBookmarks', $input, 'internalServerErrorFault'));
+
+        // no bookmarks found
+        $input = new getBookmarks('invalid-get-bookmarks', 'ALL');
+        $this->assertTrue($this->callOperation('getBookmarks', $input, 'invalidParameterFault'));
+
+        // update successful
+        $input = new getBookmarks('valid-get-bookmarks', 'ALL');
+        $output = self::$instance->getBookmarks($input);
+        $this->assertEquals($output->bookmarkSet->title->text, "text");
+        $this->assertEquals($output->bookmarkSet->uid, "uid");
+        $this->assertEquals($output->bookmarkSet->lastmark->ncxRef, "ncxRef");
+        $this->assertEquals($output->bookmarkSet->lastmark->URI, "uri");
+        $this->assertEquals($output->bookmarkSet->lastmark->timeOffset, "00:00");
+        $this->assertNull($output->bookmarkSet->lastmark->charOffset);
     }
 }
 

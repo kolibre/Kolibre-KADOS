@@ -354,7 +354,7 @@ INSERT INTO "userannouncement" VALUES(6,3,2,NULL,'0000-00-00 00:00:00');
 INSERT INTO "userannouncement" VALUES(7,4,1,NULL,'0000-00-00 00:00:00');
 INSERT INTO "userannouncement" VALUES(8,4,2,NULL,'0000-00-00 00:00:00');
 INSERT INTO "userannouncement" VALUES(9,5,1,NULL,'0000-00-00 00:00:00');
-INSERT INTO "userannouncement" VALUES(10,,5,2,NULL,'0000-00-00 00:00:00');
+INSERT INTO "userannouncement" VALUES(10,5,2,NULL,'0000-00-00 00:00:00');
 INSERT INTO "userannouncement" VALUES(11,6,1,NULL,'0000-00-00 00:00:00');
 INSERT INTO "userannouncement" VALUES(12,6,2,NULL,'0000-00-00 00:00:00');
 CREATE TABLE "usercontent" (

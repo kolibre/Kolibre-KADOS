@@ -369,6 +369,9 @@ CREATE TABLE "userlog" (
   "ip" TEXT NOT NULL DEFAULT '0.0.0.0'
 );
 DELETE FROM sqlite_sequence;
+INSERT INTO "sqlite_sequence" VALUES('announcement',2);
+INSERT INTO "sqlite_sequence" VALUES('announcementtext',4);
+INSERT INTO "sqlite_sequence" VALUES('announcementaudio',4);
 INSERT INTO "sqlite_sequence" VALUES('category',4);
 INSERT INTO "sqlite_sequence" VALUES('daisyformat',3);
 INSERT INTO "sqlite_sequence" VALUES('content',3);
@@ -376,7 +379,10 @@ INSERT INTO "sqlite_sequence" VALUES('contentaudio',3);
 INSERT INTO "sqlite_sequence" VALUES('contentlist',4);
 INSERT INTO "sqlite_sequence" VALUES('contentmetadata',67);
 INSERT INTO "sqlite_sequence" VALUES('contentresource',146);
+INSERT INTO "sqlite_sequence" VALUES('language',2);
+INSERT INTO "sqlite_sequence" VALUES('state',4);
 INSERT INTO "sqlite_sequence" VALUES('user',1);
+INSERT INTO "sqlite_sequence" VALUES('userannouncement',2);
 INSERT INTO "sqlite_sequence" VALUES('usercontent',3);
 CREATE INDEX index_foreignkey_content_daisyformat ON "content" (daisyformat_id);
 CREATE INDEX index_foreignkey_content_category ON "content" (category_id);

@@ -40,7 +40,6 @@ class DaisyOnlineServiceTest extends PHPUnit_Framework_TestCase
         $settings['Service']['supportedOptionalOperations'][] = 'SERVICE_ANNOUNCEMENTS';
         $settings['Service']['supportedOptionalOperationsExtra'] = array();
         $settings['Service']['supportedOptionalOperationsExtra'][] = 'PROGRESS_STATE';
-        $settings['Service']['supportedOptionalOperationsExtra'][] = 'PROGRESS_STATE';
         $settings['Adapter'] = array();
         $settings['Adapter']['name'] = 'TestAdapter';
         $settings['Adapter']['path'] = realpath(dirname(__FILE__));

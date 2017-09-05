@@ -326,6 +326,14 @@ CREATE TABLE "userannouncement" (
   FOREIGN KEY("user_id") REFERENCES "user"("id") ON DELETE SET NULL ON UPDATE SET NULL,
   FOREIGN KEY("announcement_id") REFERENCES "announcement"("id") ON DELETE SET NULL ON UPDATE SET NULL
 );
+CREATE TABLE "userbookmark" (
+  "id" INTEGER PRIMARY KEY AUTOINCREMENT,
+  "user_id" INTEGER NOT NULL,
+  "content_id" INTEGER NOT NULL,
+  "bookmarkset" TEXT NOT NULL,
+  "updated_at" NUMERIC NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY("user_id") REFERENCES "user"("id") ON DELETE SET NULL ON UPDATE SET NULL
+);
 INSERT INTO "userannouncement" VALUES(1,1,1,NULL,'0000-00-00 00:00:00');
 INSERT INTO "userannouncement" VALUES(2,1,2,NULL,'0000-00-00 00:00:00');
 CREATE TABLE "usercontent" (

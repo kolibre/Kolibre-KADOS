@@ -118,6 +118,35 @@ abstract class Adapter
      */
     const LABEL_CHOICE = 7;
 
+    /**
+     * Enum for only retrieving lastmark object
+     */
+    const BMGET_LASTMARK = 1;
+    /**
+     * Enum for only retrieving hilite objects
+     */
+    const BMGET_HILITE = 2;
+    /**
+     * Enum for only retrieving bookmark objects
+     */
+    const BMGET_BOOKMARK = 3;
+    /**
+     * Enum for retrieving all (lastmark, hilite and bookmarks) objects
+     */
+    const BMGET_ALL = 4;
+
+    /**
+     * Enum to replace bookmarks
+     */
+    const BMSET_REPLACE = 1;
+    /**
+     * Enum to add bookmarks
+     */
+    const BMSET_ADD = 2;
+    /**
+     * Enum to remove bookmarks
+     */
+    const BMSET_REMOVE = 3;
 
     /**
      * Store the SOAP request and response for an invoke of a service operation.
@@ -521,11 +550,13 @@ abstract class Adapter
      *
      * @param string $contentId The identifier for the content
      * @param string $bookmark A JSON encoded string of a bookmarkSet object
+     * @param int $action Specifies whether to replace, add or remove bookmarks. Must be one of the defined BMSET_ values.
+     * @param string $lastModifiedDate A date string including time zone when the bookmark was last modified.
      * @return boolean Returns True if the bookmark is saved, otherwise False.
      *
      * @throws AdapterException
      */
-    public function setBookmarks($contentId, $bookmark)
+    public function setBookmarks($contentId, $bookmark, $action = null, $lastModifiedDate = null)
     {
         return false;
     }
@@ -534,15 +565,27 @@ abstract class Adapter
      * Retrieve bookmark for the specified content
      *
      * This method is optional and does not require implementation.
-     * It is invoked by the service when getBookmarks operation is called.
+     * It is invoked by the service when getBookmarks or getContentList operation is called.
      * If the service supports GET_BOOKMARKS, this method must be implemented.
      *
      * @param string $contentId The identifier for the content
-     * @return mixed Returns false if bookmark not found, otherwise a JSON encoded string of a bookmarkSet object.
+     * @param int $action Specifies which bookmarks to retreive. Must be one of the defined BMGET_ values.
+     * @return mixed Returns False if bookmark not found, otherwise an associative array.
+     *
+     * <p>Valid key names are 'lastModifiedDate' and 'bookmarkSet'. The value for key 'lastModifiedDate' must be a date string containing time zone. The value for key 'bookmarkSet' must be a JSON encoded string of bookmarkSet object.</p>
+     *
+     * <p>Example of an array.</p>
+     * <pre>
+     * Array
+     * (
+     *     [lastModifiedDate => "2016-01-01T00:00:00Z"
+     *     [bookmarkSet] => '{"title":{"text":"content title"}, "uid":"uniqe id", "lastmark":{"ncxRef":"ncxRef", "URI":"uri", "charOffset":10}}'
+     * )
+     * </pre>
      *
      * @throws AdapterException
      */
-    public function getBookmarks($contentId)
+    public function getBookmarks($contentId, $action = null)
     {
         return false;
     }

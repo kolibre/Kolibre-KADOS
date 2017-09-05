@@ -115,8 +115,13 @@ This service implements the DAISY Online Delivery protocol as specified in the T
 // Include class map
 require_once('classmap.php');
 
+// Include type map
+// overrides PHP's inbuilt encoding/decoding for specific types
+require_once('typemap.php');
+
 // setup service options
 $options['classmap'] = $classmap;
+$options['typemap'] = $typemap;
 $options['soap_version'] = SOAP_1_1;
 $options['cache_wsdl'] = WSDL_CACHE_MEMORY;
 $options['features'] = SOAP_SINGLE_ELEMENT_ARRAYS;

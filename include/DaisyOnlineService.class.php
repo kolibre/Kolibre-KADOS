@@ -192,12 +192,10 @@ class DaisyOnlineService
      *
      * Warning! Do not invoke this function unless you are testing or debugging this class.
      */
-    public function setProtocolVersion($version = 1)
+    public function setProtocolVersion($version = 2)
     {
         if (is_int($version) && ($version == 1 || $version == 2))
-        {
             $this->sessionProtocolVersion = $version;
-        }
     }
 
     /**
@@ -1421,15 +1419,11 @@ class DaisyOnlineService
     private function protocolVersion()
     {
         if (!is_null($this->sessionProtocolVersion))
-        {
             return $this->sessionProtocolVersion;
-        }
         else
         {
             if (in_array('getServiceAttributes', $this->sessionInvokedOperations))
                 return 1;
-            else
-                return 2;
         }
 
         return 2;

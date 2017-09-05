@@ -71,6 +71,8 @@ class TestAdapter extends Adapter
                 throw new AdapterException('Error in adapter');
             return $label;
             break;
+        case Adapter::LABEL_ANNOUNCEMENT:
+            return $label;
         case Adapter::LABEL_CATEGORY:
             return $label;
             break;
@@ -338,6 +340,55 @@ class TestAdapter extends Adapter
             return false;
 
         return true;
+    }
+
+    public function announcements()
+    {
+        return array('valid-identifier-1', 'valid-identifier-2');
+    }
+
+    public function announcementInfo($announcementId)
+    {
+        return array('type' => 'INFORMATION', 'priority' => 'LOW');
+    }
+
+    public function announcementExists($announcementId)
+    {
+        if ($announcementId == 'exception-mark-as-read')
+            throw new AdapterException('Error in adapter');
+        if ($announcementId == 'nonexisting-announcement-id')
+            return false;
+        return true;
+    }
+
+    public function announcementRead($announcementId)
+    {
+        if ($announcementId == 'invalid-announcement-id')
+            return false;
+        return true;
+    }
+
+    public function setBookmarks($contentId, $bookmark, $action = null, $lastModifiedDate = null)
+    {
+        if ($contentId == 'exception-set-bookmarks')
+            throw new AdapterException('Error in adapter');
+        if ($contentId == 'invalid-set-bookmarks')
+            return false;
+
+        return true;
+    }
+
+    public function getBookmarks($contentId, $action = null)
+    {
+        if ($contentId == 'exception-get-bookmarks')
+            throw new AdapterException('Error in adapter');
+        if ($contentId == 'invalid-get-bookmarks')
+            return false;
+        if ($contentId != 'valid-get-bookmarks')
+            return false;
+
+        $bookmarkSet = '{"title":{"text":"text"}, "uid":"uid", "lastmark":{"ncxRef":"ncxRef", "URI":"uri", "timeOffset":"00:00"}}';
+        return array('lastModifiedDate' => '2016-01-01T00:00:00Z', 'bookmarkSet' => $bookmarkSet);
     }
 }
 

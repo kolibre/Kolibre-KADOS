@@ -27,6 +27,8 @@ class SystemTestAdapter extends Adapter
 {
     protected $sessionActive = true;
     protected $contentLists = array('bookshelf' => array('id_1','id_2'));
+    protected $announcements = array('ann_1','ann_2','ann_3');
+    protected $bookmarks = array();
 
     public function startSession()
     {
@@ -50,6 +52,8 @@ class SystemTestAdapter extends Adapter
         switch ($type)
         {
         case Adapter::LABEL_CONTENTITEM:
+            return $label;
+        case Adapter::LABEL_ANNOUNCEMENT:
             return $label;
         }
 
@@ -178,9 +182,52 @@ class SystemTestAdapter extends Adapter
         return false;
     }
 
+    public function announcements()
+    {
+        return $this->announcements;
+    }
+
+    public function announcementInfo($announcementId)
+    {
+        return array('type' => 'INFORMATION', 'priority' => 'LOW');
+    }
+
+    public function announcementExists($announcementId)
+    {
+        if (in_array($announcementId, $this->announcements)) {
+            return true;
+        }
+        return false;
+    }
+
+    public function announcementRead($announcementId)
+    {
+        $key = array_search($announcementId, $this->announcements);
+        if ($key !== false)
+        {
+            unset($this->announcements[$key]);
+        }
+        return true;
+    }
+
     public function contentAccessState($contentId, $state)
     {
         return true;
+    }
+
+    public function setBookmarks($contentId, $bookmark, $action = null, $lastModifiedDate = null)
+    {
+        $this->bookmarks[$contentId] = $bookmark;
+
+        return true;
+    }
+
+    public function getBookmarks($contentId, $action = null)
+    {
+        if (array_key_exists($contentId, $this->bookmarks))
+            return array('bookmarkSet' => $this->bookmarks[$contentId]);
+
+        return false;
     }
 
     public function termsOfService()

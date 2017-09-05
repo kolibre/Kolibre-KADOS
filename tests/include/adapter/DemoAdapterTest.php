@@ -236,6 +236,201 @@ class DemoAdapterTest extends PHPUnit_Framework_TestCase
         $this->assertTrue(self::$adapter->contentReturn('con_2'));
     }
 
+    public function testLabelAnnouncement()
+    {
+        $label = self::$adapter->label(1, Adapter::LABEL_ANNOUNCEMENT);
+        $this->assertArrayHasKey('text', $label);
+        $this->assertContains('Welcome', $label['text']);
+        $this->assertArrayHasKey('lang', $label);
+        $this->assertEquals('en', $label['lang']);
+        $this->assertArrayHasKey('audio', $label);
+        $this->assertArrayHasKey('uri', $label['audio']);
+        $this->assertArrayHasKey('size', $label['audio']);
+        $label = self::$adapter->label(1, Adapter::LABEL_ANNOUNCEMENT, 'sv');
+        $this->assertArrayHasKey('text', $label);
+        $this->assertContains('Välkommen', $label['text']);
+        $this->assertArrayHasKey('lang', $label);
+        $this->assertEquals('sv', $label['lang']);
+        $this->assertArrayHasKey('audio', $label);
+        $this->assertArrayHasKey('uri', $label['audio']);
+        $this->assertArrayHasKey('size', $label['audio']);
+    }
+
+    public function testAnnouncements()
+    {
+        $announcements = self::$adapter->announcements();
+        $this->assertCount(2, $announcements);
+
+        foreach ($announcements as $announcementId)
+        {
+            $this->assertTrue(self::$adapter->announcementRead($announcementId));
+        }
+
+        $announcements = self::$adapter->announcements();
+        $this->assertCount(0, $announcements);
+    }
+
+    public function testAnnouncementInfo()
+    {
+        $this->assertFalse(self::$adapter->announcementInfo(10));
+        $this->assertFalse(self::$adapter->announcementInfo('ann_10'));
+        $info = self::$adapter->announcementInfo(1);
+        $this->assertArrayHasKey('type', $info);
+        $this->assertEquals('INFORMATION', $info['type']);
+        $this->assertArrayHasKey('priority', $info);
+        $this->assertEquals('MEDIUM', $info['priority']);
+        $info = self::$adapter->announcementInfo('ann_1');
+        $this->assertArrayHasKey('type', $info);
+        $this->assertEquals('INFORMATION', $info['type']);
+        $this->assertArrayHasKey('priority', $info);
+        $this->assertEquals('MEDIUM', $info['priority']);
+        $info = self::$adapter->announcementInfo(2);
+        $this->assertArrayHasKey('type', $info);
+        $this->assertEquals('INFORMATION', $info['type']);
+        $this->assertArrayHasKey('priority', $info);
+        $this->assertEquals('LOW', $info['priority']);
+        $info = self::$adapter->announcementInfo('ann_2');
+        $this->assertArrayHasKey('type', $info);
+        $this->assertEquals('INFORMATION', $info['type']);
+        $this->assertArrayHasKey('priority', $info);
+        $this->assertEquals('LOW', $info['priority']);
+    }
+
+    public function testAnnouncementExists()
+    {
+        $this->assertFalse(self::$adapter->announcementExists(10));
+        $this->assertFalse(self::$adapter->announcementExists('ann_10'));
+        $this->assertTrue(self::$adapter->announcementExists(1));
+        $this->assertTrue(self::$adapter->announcementExists('ann_1'));
+        $this->assertTrue(self::$adapter->announcementExists(2));
+        $this->assertTrue(self::$adapter->announcementExists('ann_2'));
+    }
+
+    public function testGetBookmarks()
+    {
+        // create bookmarks
+        $lastmark = new lastmark('ncxRex','uri','timeOffset');
+        $bookmark = new bookmark('ncxRef','uri','timeOffset');
+        $hilite = new hilite(new hiliteStart('ncxRef','uri','timeOffset'),new hiliteEnd('ncxRef','uri','timeOffset'));
+        $bookmarkSet = new bookmarkSet(new title('text'),'uid',$lastmark);
+        $bookmarkSet->addBookmark($bookmark);
+        $bookmarkSet->addHilite($hilite);
+        $lastmark = new lastmark('ncxRex','uri','timeOffset',2);
+        $bookmark = new bookmark('ncxRef','uri','timeOffset',2);
+        $hilite = new hilite(new hiliteStart('ncxRef','uri','timeOffset',2),new hiliteEnd('ncxRef','uri','timeOffset',2));
+        $bookmarkSet2 = new bookmarkSet(new title('text'),'uid',$lastmark);
+        $bookmarkSet2->addBookmark($bookmark);
+        $bookmarkSet2->addHilite($hilite);
+
+        // no bookmarks exists
+        $this->assertFalse(self::$adapter->getBookmarks('con_1'));
+
+        // add bookmark
+        $this->assertTrue(self::$adapter->setBookmarks('con_1',json_encode($bookmarkSet)));
+
+        // get bookmark without action (default to all)
+        $output = self::$adapter->getBookmarks('con_1');
+        $this->assertArrayHasKey('lastModifiedDate', $output);
+        $this->assertArrayHasKey('bookmarkSet', $output);
+        $bookmarkSetDecoded = bookmarkSet_from_json($output['bookmarkSet']);
+        $this->assertNotNull($bookmarkSetDecoded->title);
+        $this->assertNotNull($bookmarkSetDecoded->uid);
+        $this->assertNotNull($bookmarkSetDecoded->lastmark);
+        $this->assertNull($bookmarkSetDecoded->lastmark->charOffset);
+        $this->assertNotNull($bookmarkSetDecoded->bookmark);
+        $this->assertCount(1, $bookmarkSetDecoded->bookmark);
+        $this->assertNotNull($bookmarkSetDecoded->hilite);
+        $this->assertCount(1, $bookmarkSetDecoded->hilite);
+
+        // get bookmark without action all
+        $output = self::$adapter->getBookmarks('con_1', Adapter::BMGET_ALL);
+        $this->assertArrayHasKey('lastModifiedDate', $output);
+        $this->assertArrayHasKey('bookmarkSet', $output);
+        $bookmarkSetDecoded = bookmarkSet_from_json($output['bookmarkSet']);
+        $this->assertNotNull($bookmarkSetDecoded->title);
+        $this->assertNotNull($bookmarkSetDecoded->uid);
+        $this->assertNotNull($bookmarkSetDecoded->lastmark);
+        $this->assertNotNull($bookmarkSetDecoded->bookmark);
+        $this->assertNotNull($bookmarkSetDecoded->hilite);
+
+        // get bookmark without action lastmark
+        $output = self::$adapter->getBookmarks('con_1', Adapter::BMGET_LASTMARK);
+        $this->assertArrayHasKey('lastModifiedDate', $output);
+        $this->assertArrayHasKey('bookmarkSet', $output);
+        $bookmarkSetDecoded = bookmarkSet_from_json($output['bookmarkSet']);
+        $this->assertNotNull($bookmarkSetDecoded->title);
+        $this->assertNotNull($bookmarkSetDecoded->uid);
+        $this->assertNotNull($bookmarkSetDecoded->lastmark);
+        $this->assertNull($bookmarkSetDecoded->bookmark);
+        $this->assertNull($bookmarkSetDecoded->hilite);
+
+        // get bookmark without action bookmark
+        $output = self::$adapter->getBookmarks('con_1', Adapter::BMGET_BOOKMARK);
+        $this->assertArrayHasKey('lastModifiedDate', $output);
+        $this->assertArrayHasKey('bookmarkSet', $output);
+        $bookmarkSetDecoded = bookmarkSet_from_json($output['bookmarkSet']);
+        $this->assertNotNull($bookmarkSetDecoded->title);
+        $this->assertNotNull($bookmarkSetDecoded->uid);
+        $this->assertNull($bookmarkSetDecoded->lastmark);
+        $this->assertNotNull($bookmarkSetDecoded->bookmark);
+        $this->assertNull($bookmarkSetDecoded->hilite);
+
+        // get bookmark without action hilite
+        $output = self::$adapter->getBookmarks('con_1', Adapter::BMGET_HILITE);
+        $this->assertArrayHasKey('lastModifiedDate', $output);
+        $this->assertArrayHasKey('bookmarkSet', $output);
+        $bookmarkSetDecoded = bookmarkSet_from_json($output['bookmarkSet']);
+        $this->assertNotNull($bookmarkSetDecoded->title);
+        $this->assertNotNull($bookmarkSetDecoded->uid);
+        $this->assertNull($bookmarkSetDecoded->lastmark);
+        $this->assertNull($bookmarkSetDecoded->bookmark);
+        $this->assertNotNull($bookmarkSetDecoded->hilite);
+
+        // update bookmark with add
+        $this->assertTrue(self::$adapter->setBookmarks('con_1',json_encode($bookmarkSet2),Adapter::BMSET_ADD));
+        $output = self::$adapter->getBookmarks('con_1');
+        $this->assertArrayHasKey('lastModifiedDate', $output);
+        $this->assertArrayHasKey('bookmarkSet', $output);
+        $bookmarkSetDecoded = bookmarkSet_from_json($output['bookmarkSet']);
+        $this->assertNotNull($bookmarkSetDecoded->title);
+        $this->assertNotNull($bookmarkSetDecoded->uid);
+        $this->assertNotNull($bookmarkSetDecoded->lastmark);
+        $this->assertEquals(2,$bookmarkSetDecoded->lastmark->charOffset);
+        $this->assertNotNull($bookmarkSetDecoded->bookmark);
+        $this->assertCount(2, $bookmarkSetDecoded->bookmark);
+        $this->assertNotNull($bookmarkSetDecoded->hilite);
+        $this->assertCount(2, $bookmarkSetDecoded->hilite);
+
+        // update bookmark with remove
+        $this->assertTrue(self::$adapter->setBookmarks('con_1',json_encode($bookmarkSet),Adapter::BMSET_REMOVE));
+        $output = self::$adapter->getBookmarks('con_1');
+        $this->assertArrayHasKey('lastModifiedDate', $output);
+        $this->assertArrayHasKey('bookmarkSet', $output);
+        $bookmarkSetDecoded = bookmarkSet_from_json($output['bookmarkSet']);
+        $this->assertNotNull($bookmarkSetDecoded->title);
+        $this->assertNotNull($bookmarkSetDecoded->uid);
+        $this->assertNull($bookmarkSetDecoded->lastmark);
+        $this->assertNotNull($bookmarkSetDecoded->bookmark);
+        $this->assertCount(1, $bookmarkSetDecoded->bookmark);
+        $this->assertNotNull($bookmarkSetDecoded->hilite);
+        $this->assertCount(1, $bookmarkSetDecoded->hilite);
+
+        // update bookmark with replace
+        $this->assertTrue(self::$adapter->setBookmarks('con_1',json_encode($bookmarkSet),Adapter::BMSET_REPLACE));
+        $output = self::$adapter->getBookmarks('con_1');
+        $this->assertArrayHasKey('lastModifiedDate', $output);
+        $this->assertArrayHasKey('bookmarkSet', $output);
+        $bookmarkSetDecoded = bookmarkSet_from_json($output['bookmarkSet']);
+        $this->assertNotNull($bookmarkSetDecoded->title);
+        $this->assertNotNull($bookmarkSetDecoded->uid);
+        $this->assertNotNull($bookmarkSetDecoded->lastmark);
+        $this->assertNull($bookmarkSetDecoded->lastmark->charOffset);
+        $this->assertNotNull($bookmarkSetDecoded->bookmark);
+        $this->assertCount(1, $bookmarkSetDecoded->bookmark);
+        $this->assertNotNull($bookmarkSetDecoded->hilite);
+        $this->assertCount(1, $bookmarkSetDecoded->hilite);
+    }
+
     public function testContentAccessState()
     {
         $this->assertFalse(self::$adapter->contentAccessState(10, 'START'));

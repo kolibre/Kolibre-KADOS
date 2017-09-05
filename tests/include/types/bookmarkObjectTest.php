@@ -22,70 +22,53 @@ $includePath = dirname(realpath(__FILE__)) . '/../../../include/types';
 set_include_path(get_include_path() . PATH_SEPARATOR . $includePath);
 
 require_once('bookmarkObject.class.php');
-require_once('bookmarkSet.class.php');
-require_once('title.class.php');
-require_once('lastmark.class.php');
-require_once('bookmarkAudio.class.php');
 
 class bookmarkObjectTest extends PHPUnit_Framework_TestCase
 {
+    protected $bookmarkSet;
+    
+    public function setUp()
+    {
+        $title = new title('title');
+        $this->bookmarkSet = new bookmarkSet($title, 'uid');
+    }
+
     /**
      * @group bookmarkObject
      * @group validate
      */
-
     public function testBookmarkSet()
     {
-
-        $bookmarkObject = new bookmarkObject('test', '2016-03-11T14:23:23+00:00');
-        $this->assertFalse($bookmarkObject->validate());
-
-        $bookmarkAudio = new bookmarkAudio('src','clipBegin','ClipEnd');
-        $title = new title('title',$bookmarkAudio);
-        $lastmark = new lastMark('uri','uri','time', 1234);
-
-        $bookmarkSet = new bookmarkSet($title, 'uid', $lastmark);
-        // check to see thast the bookmarkset is a valide object
-        $this->assertTrue($bookmarkSet->validate());
-
-
-        $bookmarkObject = new bookmarkObject($bookmarkSet, '2016-03-11T14:23:23+00:00');
-        $this->assertTrue($bookmarkObject->validate());
-
+        $instance = new bookmarkObject(null, '2016-03-11T14:23:23+00:00');
+        $this->assertFalse($instance->validate());
+        $this->assertContains('bookmarkObject.bookmarkSet', $instance->getError());
+        $instance->bookmarkSet = 1;
+        $this->assertFalse($instance->validate());
+        $this->assertContains('bookmarkObject.bookmarkSet', $instance->getError());
+        $instance->bookmarkSet = $this->bookmarkSet;
+        $this->assertTrue($instance->validate());
     }
-
 
     /**
      * @group bookmarkObject
      * @group validate
      */
-
     public function testLastDateModified()
     {
-        $bookmarkAudio = new bookmarkAudio('src','clipBegin','ClipEnd');
-        $title = new title('title',$bookmarkAudio);
-        $lastmark = new lastMark('uri','uri','time', 1234);
-
-        $bookmarkSet = new bookmarkSet($title, 'uid', $lastmark);
-
-        $bookmarkObject = new bookmarkObject($bookmarkSet);
-        $bookmarkObject->lastModifiedDate = 1;
-        $this->assertFalse($bookmarkObject->validate());
-
-
-        $bookmarkObject = new bookmarkObject($bookmarkSet, 'nfd');
-        $this->assertFalse($bookmarkObject->validate());
-
-
-        $bookmarkObject = new bookmarkObject($bookmarkSet, '2016-03-11T14:23:23Z');
-        $this->assertTrue($bookmarkObject->validate());
-
-
-        $bookmarkObject = new bookmarkObject($bookmarkSet, '2016-03-11T14:23:23+00:00');
-        $this->assertTrue($bookmarkObject->validate());
-
+        $instance = new bookmarkObject($this->bookmarkSet);
+        $this->assertTrue($instance->validate());
+        $instance->lastModifiedDate = 1;
+        $this->assertFalse($instance->validate());
+        $this->assertContains('bookmarkObject.lastModifiedDate', $instance->getError());
+        $instance->lastModifiedDate = '';
+        $this->assertFalse($instance->validate());
+        $this->assertContains('bookmarkObject.lastModifiedDate', $instance->getError());
+        $instance->lastModifiedDate = 'date';
+        $this->assertFalse($instance->validate());
+        $this->assertContains('bookmarkObject.lastModifiedDate', $instance->getError());
+        $instance->lastModifiedDate = '2016-03-11T14:23:23+00:00';
+        $this->assertTrue($instance->validate());
     }
-
 }
 
 ?>

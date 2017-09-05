@@ -123,7 +123,7 @@ class announcements extends AbstractType {
             foreach ($this->announcement as $index => $announcement) {
                 if ($announcement->validate() === false) {
                     $this->error = __CLASS__ . '.' . $announcement->getError();
-                    $this->error = str_replace('announcement', "announcement[$index]", $this->error);
+                    $this->error = str_replace('announcement.', "announcement[$index].", $this->error);
                     return false;
                 }
             }

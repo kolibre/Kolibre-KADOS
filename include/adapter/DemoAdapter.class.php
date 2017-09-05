@@ -23,6 +23,8 @@ set_include_path(get_include_path() . PATH_SEPARATOR . $filePath . '/../../');
 
 require_once('vendor/autoload.php');
 require_once('Adapter.class.php');
+require_once('include/bookmarkSet_serialize.php');
+require_once('include/types/bookmarkSet.class.php');
 
 class DemoAdapter extends Adapter
 {
@@ -256,6 +258,62 @@ class DemoAdapter extends Adapter
         return $row['value'];
     }
 
+    public function announcementAudioUri($announcementId)
+    {
+        $announcementId = $this->extractId($announcementId);
+
+        $filename = "announcement_$announcementId.ogg";
+        return $this->serviceBaseUri()."media/$filename";
+    }
+
+    public function announcementLabel($announcementId, $language = 'en')
+    {
+        $announcementId = $this->extractId($announcementId);
+
+        try
+        {
+            $query = 'SELECT
+                        announcementtext.text as text,
+                        language.lang as lang,
+                        announcementaudio.size as size,
+                        announcementaudio.id as id
+                    FROM announcement
+                    JOIN announcementtext ON announcement.id = announcementtext.announcement_id
+                    JOIN language ON announcementtext.language_id = language.id
+                    JOIN announcementaudio ON announcementtext.id = announcementaudio.announcementtext_id
+                    WHERE announcement.id = :announcementId';
+            $sth = $this->dbh->prepare($query);
+            $sth->execute(array(':announcementId' => $announcementId));
+            $rows = $sth->fetchAll(PDO::FETCH_ASSOC);
+        }
+        catch (PDOException $e)
+        {
+            $this->logger->fatal($e->getMessage());
+            throw new AdapterException('Retrieving announcement label failed');
+        }
+
+        $label = null;
+        foreach ($rows as $row)
+        {
+            $tmpLabel = array();
+            $tmpLabel['text'] = $row['text'];
+            $tmpLabel['lang'] = $row['lang'];
+            $audio = array();
+            $audio['uri'] = $this->announcementAudioUri($announcementId);
+            $size = $row['size'];
+            if ($size > 0) $audio['size'] = $size;
+            $tmpLabel['audio'] = $audio;
+            if (is_null($label)) $label = $tmpLabel;
+            if ($row['lang'] == $language)
+            {
+                $label = $tmpLabel;
+                break;
+            }
+        }
+
+        return $label;
+    }
+
     public function label($id, $type, $language = null)
     {
         switch ($type)
@@ -280,6 +338,9 @@ class DemoAdapter extends Adapter
             $size = $this->contentAudioSize($id);
             if ($size > 0) $audio['size'] = $size;
             $label['audio'] = $audio;
+            return $label;
+        case Adapter::LABEL_ANNOUNCEMENT:
+            $label = $this->announcementLabel($id, $language);
             return $label;
         default:
             return false;
@@ -846,10 +907,271 @@ class DemoAdapter extends Adapter
         return false;
     }
 
+    public function announcements()
+    {
+        try
+        {
+            $query = 'SELECT * FROM userannouncement WHERE user_id = :userId AND read_at IS NULL ORDER BY updated_at DESC';
+            $sth = $this->dbh->prepare($query);
+            $sth->execute(array(':userId' => $this->user));
+            $rows = $sth->fetchAll(PDO::FETCH_ASSOC);
+        }
+        catch (PDOException $e)
+        {
+            $this->logger->fatal($e->getMessage());
+            throw new AdapterException('Retrieving user announcements failed');
+        }
+
+        $announcements = array();
+        foreach ($rows as $row)
+        {
+            $announcementId = "ann_" . $row['announcement_id'];
+            array_push($announcements, $announcementId);
+        }
+
+        return $announcements;
+    }
+
+    public function announcementInfo($announcementId)
+    {
+        $announcementId = $this->extractId($announcementId);
+
+        try
+        {
+            $query = 'SELECT type,priority FROM announcement WHERE id = :announcementId';
+            $sth = $this->dbh->prepare($query);
+            if ($sth->execute(array(':announcementId' => $announcementId)) === false)
+            {
+                $this->logger->error("Retriving info for announcement '$announcementId' for user with id '$this->user' failed");
+                return array();
+            }
+
+            $row = $sth->fetch(PDO::FETCH_ASSOC);
+            return $row;
+        }
+        catch (PDOException $e)
+        {
+            $this->logger->fatal($e->getMessage());
+            throw new AdapterException('Retrieving announcement info failed');
+        }
+        return false;
+    }
+
+    public function announcementExists($announcementId)
+    {
+        $announcementId = $this->extractId($announcementId);
+
+        try
+        {
+            $query = 'SELECT * FROM userannouncement WHERE user_id = :userId AND announcement_id = :announcementId';
+            $sth = $this->dbh->prepare($query);
+            $values = array();
+            $values[':userId'] = $this->user;
+            $values[':announcementId'] = $announcementId;
+            $sth->execute($values);
+            $row = $sth->fetch(PDO::FETCH_ASSOC);
+        }
+        catch (PDOException $e)
+        {
+            $this->logger->fatal($e->getMessage());
+            throw new AdapterException('Retrieving user announcements failed');
+        }
+
+        if ($row === false) return false;
+        return true;
+    }
+
+    public function announcementRead($announcementId)
+    {
+        $announcementId = $this->extractId($announcementId);
+
+        try
+        {
+            // check if announcement already marked as read
+            $query = "SELECT read_at FROM userannouncement WHERE user_id = :userId AND announcement_id = :announcementId";
+            $sth = $this->dbh->prepare($query);
+            $values = array();
+            $values[':userId'] = $this->user;
+            $values[':announcementId'] = $announcementId;
+            if ($sth->execute($values) === false)
+            {
+                $this->logger->error("Checking read status for announcement with id '$announcementId' for user with id '$this->user' failed");
+                return false;
+            }
+
+            $row = $sth->fetch(PDO::FETCH_ASSOC);
+            if (!is_null($row['read_at']))
+            {
+                return true;
+            }
+
+            // mark as read
+            $query = "UPDATE userannouncement SET read_at = :timeNow WHERE user_id = :userId AND announcement_id = :announcementId";
+            $sth = $this->dbh->prepare($query);
+            $values = array();
+            $values[':timeNow'] = date('c');
+            $values[':userId'] = $this->user;
+            $values[':announcementId'] = $announcementId;
+            if ($sth->execute($values) === false)
+            {
+                $this->logger->error("Marking announcement with id '$announcementId' as read for user with id '$this->user' failed");
+                return false;
+            }
+            return true;
+        }
+        catch (PDOException $e)
+        {
+            $this->logger->fatal($e->getMessage());
+            throw new AdapterException('Marking announcement as read failed');
+        }
+        return false;
+    }
+
+    public function setBookmarks($contentId, $bookmark, $action = null, $lastModifiedDate = null)
+    {
+        $contentId = $this->extractId($contentId);
+
+        try
+        {
+            // check if bookmark exists
+            $query = 'SELECT * FROM userbookmark WHERE user_id = :userId AND content_id = :contentId';
+            $sth = $this->dbh->prepare($query);
+            $values = array();
+            $values[':userId'] = $this->user;
+            $values[':contentId'] = $contentId;
+            $sth->execute($values);
+            $row = $sth->fetch(PDO::FETCH_ASSOC);
+            $bookmarkExists = ($row === false ? false : true);
+        }
+        catch (PDOException $e)
+        {
+            $this->logger->fatal($e->getMessage());
+            throw new AdapterException('Failed to check if user bookmark exists');
+        }
+
+        if ($bookmarkExists)
+        {
+            $storedBookmarkSet = bookmarkSet_from_json($row['bookmarkset']);
+            $bookmarkSet = bookmarkSet_from_json($bookmark);
+            switch ($action)
+            {
+                case Adapter::BMSET_ADD:
+                    if (isset($bookmarkSet->lastmark))
+                        $storedBookmarkSet->setLastmark($bookmarkSet->lastmark);
+                    if (is_array($bookmarkSet->bookmark) && count($bookmarkSet->bookmark) > 0)
+                    {
+                        foreach ($bookmarkSet->bookmark as $bookmark)
+                            $storedBookmarkSet->addBookmarkUnlessExist($bookmark);
+                    }
+                    if (is_array($bookmarkSet->hilite) && count($bookmarkSet->hilite) > 0)
+                    {
+                        foreach ($bookmarkSet->hilite as $hilite)
+                            $storedBookmarkSet->addHiliteUnlessExist($hilite);
+                    }
+                    $bookmark = json_encode($storedBookmarkSet);
+                    break;
+                case Adapter::BMSET_REMOVE:
+                    if (isset($bookmarkSet->lastmark))
+                        $storedBookmarkSet->resetLastmark();
+                    if (is_array($bookmarkSet->bookmark) && count($bookmarkSet->bookmark) > 0)
+                    {
+                        foreach ($bookmarkSet->bookmark as $bookmark)
+                            $storedBookmarkSet->removeBookmarkIfExist($bookmark);
+                    }
+                    if (is_array($bookmarkSet->hilite) && count($bookmarkSet->hilite) > 0)
+                    {
+                        foreach ($bookmarkSet->hilite as $hilite)
+                            $storedBookmarkSet->removeHiliteIfExist($hilite);
+                    }
+                    $bookmark = json_encode($storedBookmarkSet);
+                    break;
+            }
+        }
+
+        try
+        {
+            if ($bookmarkExists)
+               $query = 'UPDATE userbookmark SET bookmarkset = :bookmarkset WHERE user_id = :userId AND content_id = :contentId';
+            else
+                $query = 'INSERT INTO userbookmark (user_id, content_id, bookmarkset) VALUES(:userId, :contentId, :bookmarkset)';
+            $sth = $this->dbh->prepare($query);
+            $values = array();
+            $values[':userId'] = $this->user;
+            $values[':contentId'] = $contentId;
+            $values[':bookmarkset'] = $bookmark;
+            if ($sth->execute($values) === false)
+            {
+                $this->logger->error("setting bookmark for content '$contentId' for user with id '$this->user' failed");
+                return false;
+            }
+        }
+        catch (PDOException $e)
+        {
+            $this->logger->fatal($e->getMessage());
+            throw new AdapterException('Failed to set user bookmark');
+        }
+
+        return true;
+    }
+
+    public function getBookmarks($contentId, $action = null)
+    {
+        $contentId = $this->extractId($contentId);
+
+        try
+        {
+            $query = 'SELECT * FROM userbookmark WHERE user_id = :userId AND content_id = :contentId';
+            $sth = $this->dbh->prepare($query);
+            $values = array();
+            $values[':userId'] = $this->user;
+            $values[':contentId'] = $contentId;
+            $sth->execute($values);
+            $row = $sth->fetch(PDO::FETCH_ASSOC);
+        }
+        catch (PDOException $e)
+        {
+            $this->logger->fatal($e->getMessage());
+            throw new AdapterException('Retrieving user bookmarks failed');
+        }
+
+        if ($row === false) return false;
+
+        $bookmarks = array('lastModifiedDate' => $row['updated_at']);
+        switch ($action)
+        {
+            case Adapter::BMGET_ALL:
+                $bookmarks['bookmarkSet'] = $row['bookmarkset'];
+                break;
+            case Adapter::BMGET_LASTMARK:
+                $bookmarkSet = bookmarkSet_from_json($row['bookmarkset']);
+                $bookmarkSet->hilite = null;
+                $bookmarkSet->bookmark = null;
+                $bookmarks['bookmarkSet'] = json_encode($bookmarkSet);
+                break;
+            case Adapter::BMGET_HILITE:
+                $bookmarkSet = bookmarkSet_from_json($row['bookmarkset']);
+                $bookmarkSet->lastmark = null;
+                $bookmarkSet->bookmark = null;
+                $bookmarks['bookmarkSet'] = json_encode($bookmarkSet);
+                break;
+            case Adapter::BMGET_BOOKMARK:
+                $bookmarkSet = bookmarkSet_from_json($row['bookmarkset']);
+                $bookmarkSet->lastmark = null;
+                $bookmarkSet->hilite = null;
+                $bookmarks['bookmarkSet'] = json_encode($bookmarkSet);
+                break;
+            default:
+                $bookmarks['bookmarkSet'] = $row['bookmarkset'];
+                break;
+        }
+
+        return $bookmarks;
+    }
+
     public function termsOfService()
     {
         $label = array();
-        $label['text'] = "Welcome to the Kolibre demo Daisy Online service. This service is free to use for for all.";
+        $label['text'] = "Welcome to the Kolibre demo Daisy Online service. This service is free to use for all.";
         $label['lang'] = "en";
         $audio = array();
         $audio['uri'] = $this->serviceBaseUri()."media/terms_of_service.ogg";

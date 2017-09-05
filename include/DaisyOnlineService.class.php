@@ -59,7 +59,7 @@ require_once('setProgressStateResponse.class.php');
 
 class DaisyOnlineService
 {
-    const VERSION = '0.2.1';
+    const VERSION = '0.2.2';
 
     private $optionalOperations = array();
     private $serviceAttributes = array();
@@ -88,6 +88,12 @@ class DaisyOnlineService
 
     // boolean indicating if cookie check is disabled in session handling, use with debugging and testing only
     private $sessionHandleCookieDisabled = false;
+
+    // boolean indicating if a call to getServieAnnouncements has been made
+    private $sessionGetServiceAnnouncementsInvoked = false;
+
+    // integer indicating protocol version (values are either 1 or 2)
+    private $sessionProtocolVersion = null;
 
     // boolean indicating if terms of service are accepted
     private $sessionTermsOfServiceAccepted = null;
@@ -158,6 +164,8 @@ class DaisyOnlineService
         array_push($instance_variables_to_serialize, 'sessionUserLoggedOn');
         array_push($instance_variables_to_serialize, 'sessionEstablished');
         array_push($instance_variables_to_serialize, 'sessionUsername');
+        array_push($instance_variables_to_serialize, 'sessionGetServiceAnnouncementsInvoked');
+        array_push($instance_variables_to_serialize, 'sessionProtocolVersion');
         array_push($instance_variables_to_serialize, 'sessionTermsOfServiceAccepted');
         array_push($instance_variables_to_serialize, 'adapter');
         array_push($instance_variables_to_serialize, 'adapterIncludeFile');
@@ -192,6 +200,17 @@ class DaisyOnlineService
             return $this->optionalOperations;
 
         return array();
+    }
+
+    /**
+     * Sets the protocol version to the user defined version.
+     *
+     * Warning! Do not invoke this function unless you are testing or debugging this class.
+     */
+    public function setProtocolVersion($version = 2)
+    {
+        if (is_int($version) && ($version == 1 || $version == 2))
+            $this->sessionProtocolVersion = $version;
     }
 
     /**
@@ -602,9 +621,9 @@ class DaisyOnlineService
                         $contentItem->setHasBookmarks(false);
                         if (in_array('SET_BOOKMARKS', $this->serviceAttributes['supportedOptionalOperations']))
                         {
-                            $boomarks = $this->adapter->getBookmarks($contentId, Adapter::BMGET_ALL);
+                            $bookmarks = $this->adapter->getBookmarks($contentId, Adapter::BMGET_ALL);
                             if (is_array($bookmarks))
-                                $contentitem->setHasBookmarks(true);
+                                $contentItem->setHasBookmarks(true);
                         }
                     }
                     catch (AdapterException $e)
@@ -733,6 +752,41 @@ class DaisyOnlineService
         $this->sessionHandle(__FUNCTION__);
         if (!in_array('SERVICE_ANNOUNCEMENTS', $this->serviceAttributes['supportedOptionalOperations']))
             throw new SoapFault ('Client', 'getServiceAnnouncements not supported', '', '', 'getServiceAnnouncements_operationNotSupportedFault');
+
+        // build announcements
+        $announcements = new announcements();
+
+        try
+        {
+            // build announcement
+            $unreadAnnouncements = $this->adapter->announcements();
+            foreach ($unreadAnnouncements as $announcementId)
+            {
+                $info = $this->adapter->announcementInfo($announcementId);
+                $label = $this->adapter->label($announcementId, Adapter::LABEL_ANNOUNCEMENT, $this->getClientLangCode());
+                $announcements->addAnnouncement($this->createAnnouncement($announcementId, $info, $label));
+            }
+        }
+        catch (AdapterException $e)
+        {
+            $this->logger->fatal($e->getMessage());
+            throw new SoapFault('Server', 'Internal Server Error', '', '', 'getServiceAnnouncements_internalServerErrorFault');
+        }
+
+        $output = new getServiceAnnouncementsResponse($announcements);
+
+        if ($output->validate() === false)
+        {
+            $msg = "failed to build response " . $output->getError();
+            $this->logger->error($msg);
+            $faultString = 'getServiceAnnouncements could not be built';
+            throw new SoapFault('Server', $faultString, '', '', 'getServiceAnnouncements_internalServerErrorFault');
+        }
+
+        // mark call to getServiceAnnouncemets as completed
+        $this->sessionGetServiceAnnouncementsInvoked = true;
+
+        return $output;
     }
 
     /**
@@ -745,6 +799,65 @@ class DaisyOnlineService
         $this->sessionHandle(__FUNCTION__);
         if (!in_array('SERVICE_ANNOUNCEMENTS', $this->serviceAttributes['supportedOptionalOperations']))
             throw new SoapFault ('Client', 'markAnnouncementsAsRead not supported', '', '', 'markAnnouncementsAsRead_operationNotSupportedFault');
+
+        // check if a prior call to getServiceAnnouncements has been made
+        if (!$this->sessionHandleDisabled && $this->sessionGetServiceAnnouncementsInvoked === false)
+        {
+            $this->logger->warn("No prior call to getServiceAnnouncements");
+            $faultString = "No previous call to getServiceAnnouncements operation within this session";
+            throw new SoapFault('Client', $faultString, '', '', 'markAnnouncementsAsRead_invalidOperationFault');
+        }
+
+        if ($input->validate() === false)
+        {
+            $msg = "request is not valid " . $input->getError();
+            $this->logger->warn($msg);
+            throw new SoapFault ('Client', $input->getError(), '', '', 'markAnnouncementsAsRead_invalidParameterFault');
+        }
+
+        // parameters
+        $read = $input->getRead();
+
+        // check if the requested announcements exists
+        try
+        {
+            foreach ($read->item as $announcementId)
+            {
+                if ($this->adapter->announcementExists($announcementId) === false)
+                {
+                    $msg = "User '$this->sessionUsername' requested mark announcement as read for a nonexistent announcement '$announcementId'";
+                    $this->logger->warn($msg);
+                    $faultString = "announcement '$announcementId' does not exist";
+                    throw new SoapFault('Client', $faultString,'', '', 'markAnnouncementsAsRead_invalidParameterFault');
+                }
+            }
+        }
+        catch (AdapterException $e)
+        {
+            $this->logger->fatal($e->getMessage());
+            throw new SoapFault('Server', 'Internal Server Error', '', '', 'markAnnouncementsAsRead_internalServerErrorFault');
+        }
+
+        // mark announcements as read
+        try
+        {
+            foreach ($read->item as $announcementId)
+            {
+                if ($this->adapter->announcementRead($announcementId) === false) {
+                    $msg = "User '$this->sessionUsername' unsuccessfully marked announcement '$announcementId' as read";
+                    $this->logger->warn($msg);
+                    $faultString = "announcement '$announcementId' could not be marked as read";
+                    throw new SoapFault ('Client', $faultString, '', '', 'markAnnouncementsAsRead_invalidParameterFault');
+                }
+            }
+        }
+        catch (AdapterException $e)
+        {
+            $this->logger->fatal($e->getMessage());
+            throw new SoapFault('Server', 'Internal Server Error', '', '', 'markAnnouncementsAsRead_internalServerErrorFault');
+        }
+
+        return new markAnnouncementsAsReadResponse(true);
     }
 
     /**
@@ -827,6 +940,36 @@ class DaisyOnlineService
         $this->sessionHandle(__FUNCTION__);
         if (!in_array('SET_BOOKMARKS', $this->serviceAttributes['supportedOptionalOperations']))
             throw new SoapFault ('Client', 'updateBookmarks not supported', '', '', 'updateBookmarks_operationNotSupportedFault');
+
+        if ($input->validate() === false)
+        {
+            $msg = "request is not valid " . $input->getError();
+            $this->logger->warn($msg);
+            throw new SoapFault ('Client', $input->getError(), '', '', 'updateBookmarks_invalidParameterFault');
+        }
+
+        // parameters
+        $contentId = $input->getContentID();
+        $action = $this->adapterSetBookmarksAction($input->getAction());
+        $bookmarkObject = $input->getBookmarkObject();
+        $bookmarkSet = json_encode($bookmarkObject->bookmarkSet);
+
+        try
+        {
+            $result = $this->adapter->setBookmarks($contentId, $bookmarkSet, $action, $bookmarkObject->lastModifiedDate);
+            if ($result === false)
+            {
+                $msg = "User '$this->sessionUsername' could not set bookmarks for content '$contentId'";
+                $this->logger->warn($msg);
+            }
+        }
+        catch (AdapterException $e)
+        {
+            $this->logger->fatal($e->getMessage());
+            throw new SoapFault('Server', 'Internal Server Error', '', '', 'updateBookmarks_internalServerErrorFault');
+        }
+
+        return new updateBookmarksResponse($result);
     }
 
     /**
@@ -840,6 +983,58 @@ class DaisyOnlineService
         if (!in_array('GET_BOOKMARKS', $this->serviceAttributes['supportedOptionalOperations']))
             throw new SoapFault ('Client', 'getBookmarks not supported', '', '', 'getBookmarks_operationNotSupportedFault');
 
+        if ($input->validate() === false)
+        {
+            $msg = "request is not valid " . $input->getError();
+            $this->logger->warn($msg);
+            throw new SoapFault ('Client', $input->getError(), '', '', 'getBookmarks_invalidParameterFault');
+        }
+
+        // parameters
+        $contentId = $input->getContentID();
+        $action = null; // only available in protocol version 2
+        if ($this->protocolVersion() == 2) $action = $this->adapterGetBookmarksAction($input->getAction());
+
+        try
+        {
+            $bookmarks = $this->adapter->getBookmarks($contentId, $action);
+            if ($bookmarks === false)
+            {
+                $msg = "No bookmarks found for user '$this->sessionUsername' and content '$contentId'";
+                $this->logger->warn($msg);
+                throw new SoapFault('Client', 'no bookmarks found for the given content id', '', '', 'getBookmarks_invalidParameterFault');
+            }
+        }
+        catch (AdapterException $e)
+        {
+            $this->logger->fatal($e->getMessage());
+            throw new SoapFault('Server', 'Internal Server Error', '', '', 'getBookmarks_internalServerErrorFault');
+        }
+
+        // build response according to protocol version
+        require_once('bookmarkSet_serialize.php');
+        $bookmarkSet = bookmarkSet_from_json($bookmarks['bookmarkSet']);
+        if ($this->protocolVersion() == 1)
+        {
+            $output = new getBookmarksResponse($bookmarkSet);
+        }
+        else if ($this->protocolVersion() == 2 )
+        {
+            $bookmarkObject = new bookmarkObject($bookmarkSet);
+            if (array_key_exists('lastModifiedDate', $bookmarks))
+                $bookmarkObject->setLastModifiedDate($bookmarks['lastModifiedDate']);
+            $output = new getBookmarksResponse($bookmarkObject);
+        }
+
+        if ($output->validate() === false)
+        {
+            $msg = "failed to build response " . $output->getError();
+            $this->logger->error($msg);
+            $faultString = 'getBookmarks could not be built';
+            throw new SoapFault('Server', $faultString, '', '', 'getBookmarks_internalServerErrorFault');
+        }
+
+        return $output;
     }
 
     /**
@@ -1016,6 +1211,50 @@ class DaisyOnlineService
         // not possible
         return 0;
     }
+
+    /**
+     * Returns the action enum defined in Adapter for the string representation
+     * @param string $state human readable state string
+     * @return int
+     */
+    private function adapterGetBookmarksAction($action)
+    {
+        switch ($action)
+        {
+            case 'LASTMARK':
+                return Adapter::BMGET_LASTMARK;
+            case 'HILITE':
+                return Adapter::BMGET_HILITE;
+            case 'BOOKMARK':
+                return Adapter::BMGET_BOOKMARK;
+            case 'ALL':
+                return Adapter::BMGET_ALL;
+        }
+
+        // not possible
+        return 0;
+    }
+
+    /**
+     * Returns the action enum defined in Adapter for the string representation
+     * @param string $state human readable state string
+     * @return int
+     */
+     private function adapterSetBookmarksAction($action)
+     {
+        switch ($action)
+        {
+            case 'REPLACE_ALL':
+                return Adapter::BMSET_REPLACE;
+            case 'ADD':
+                return Adapter::BMSET_ADD;
+            case 'REMOVE':
+                return Adapter::BMSET_REMOVE;
+        }
+
+        // not possible
+        return 0;
+     }
 
     /**
      * Service helper
@@ -1287,11 +1526,29 @@ class DaisyOnlineService
         $this->sessionContentMetadataRequests = array();
         $this->sessionUserLoggedOn = false;
         $this->sessionEstablished = false;
+        $this->sessionGetServiceAnnouncementsInvoked = false;
+        $this->sessionProtocolVersion = null;
 
         // The following variables must reamin untouched as they are use in logging messages,
         // otherwise some logging messages will be incomplete
         // sessionUsername
         // sessionCurrentOperation
+    }
+
+    /**
+     * Returns the current protocol version used by the client.
+     */
+    private function protocolVersion()
+    {
+        if (!is_null($this->sessionProtocolVersion))
+            return $this->sessionProtocolVersion;
+        else
+        {
+            if (in_array('getServiceAttributes', $this->sessionInvokedOperations))
+                return 1;
+        }
+
+        return 2;
     }
 
     private function createLabel($labelArray)
@@ -1544,6 +1801,103 @@ class DaisyOnlineService
         $package = new package($resourceRef, $uri, $mimeType, $size, $lastModifiedDate);
         return $package;
     }
+
+    private function createAnnouncement($announcementId, $announcementArray, $labelArray)
+    {
+        $label = null;
+        $id = null;
+        $type = null;
+        $priority = null;
+
+        // label [mandatory]
+        if (is_array($labelArray))
+            $label = $this->createLabel($labelArray);
+
+        // id [mandatory]
+        $id = $announcementId;
+
+        if (is_array($announcementArray)) {
+            // type [optional]
+            if (array_key_exists('type', $announcementArray) === true)
+            {
+                $type = $this->transformAnnouncementType($announcementArray['type']);
+            }
+
+            // priority [mandatory (version 2) / optional (version 1)]
+            if (array_key_exists('priority', $announcementArray) === false)
+            {
+                if ($this->protocolVersion() == 2)
+                    $this->logger->error("Required field 'priority' is missing in announcement");
+            }
+            else
+                $priority = $this->transformAnnouncementPriority($announcementArray['priority']);
+        }
+
+        $announcement = new announcement($label, $id, $type, $priority);
+        return $announcement;
+    }
+
+    /**
+     * Transforms the type value according to protocol version.
+     * Supported values in protocol version 1: [WARNING,ERROR,INFORMATION,SYSTEM]
+     * Supported values in protocol verison 2: [INFORMATION,SYSTEM]
+     */
+    private function transformAnnouncementType($value)
+    {
+        if ($this->protocolVersion() == 2)
+        {
+            switch ($value)
+            {
+                case 'WARNING':
+                return 'INFORMATION';
+                case 'ERROR':
+                return 'INFORMATION';
+            }
+        }
+
+        return $value;
+    }
+
+    /**
+     * Transforms the priority value according to protocol version.
+     * Supported values in protocol version 1: [1,2,3]
+     * Supported values in protocol verison 2: [HIGH,MEDIUM,LOW]
+     */
+     private function transformAnnouncementPriority($value)
+     {
+        if ($this->protocolVersion() == 1)
+        {
+            if (is_string($value))
+            {
+                switch ($value)
+                {
+                    case 'HIGH':
+                    return 1;
+                    case 'MEDIUM':
+                    return 2;
+                    case 'LOW':
+                    return 3;
+                }
+            }
+        }
+        else if ($this->protocolVersion() == 2)
+        {
+            if (is_int($value))
+            {
+                switch ($value)
+                {
+                    case 1:
+                    return 'HIGH';
+                    case 2:
+                    return 'MEDIUM';
+                    case 3:
+                    return 'LOW';
+                }
+            }
+        }
+
+        return $value;
+     }
 
     /**
      * Client function getClientIP

@@ -79,7 +79,7 @@ class resourcesTest extends PHPUnit_Framework_TestCase
         $instance->package = $package;
         $this->assertFalse($instance->validate());
         // invalid resource since resourceRef is null and not resourceRef object
-        $this->assertContains('resources.resource', $instance->getError());
+        $this->assertContains('resources.package', $instance->getError());
         $resourceRef = new resourceRef('localURI');
         $package_array = array(new package(array($resourceRef), 'uri', 'mimetype', 1234, '2016-03-11T14:23:23Z'));
         $instance->package = $package_array;

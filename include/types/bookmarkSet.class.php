@@ -134,6 +134,194 @@ class bookmarkSet extends AbstractType {
         $this->lastmark = NULL;
     }
 
+    /****************************** get set methods for arrays **********************************/
+
+    /**
+     * get the ith element of bookmark
+     */
+    function getBookmarkAt($i) {
+        if (array_key_exists($i, $this->bookmark))
+            return $this->bookmark[$i];
+        else return NULL;
+    }
+
+    /**
+     * set the ith elemenent of bookmark
+     */
+    function setBookmarkAt($i, $_bookmark) {
+        $this->bookmark[$i] = $_bookmark;
+    }
+
+    /**
+     * add to bookmark
+     */
+    function addBookmark($_bookmark) {
+        if (is_array($this->bookmark))
+            $this->setBookmarkAt($this->nextChoiceIndex(), $_bookmark);
+        else {
+            $this->bookmark = array();
+            $this->addBookmark($_bookmark);
+        }
+    }
+
+    /**
+     * remove the ith element of bookmark
+     */
+    function removeBookmarkAt($i) {
+        if (array_key_exists($i, $this->bookmark))
+            unset($this->bookmark[$i]);
+    }
+
+    /**
+     * add to bookmark unless object it exist
+     */
+    function addBookmarkUnlessExist($_bookmark) {
+        if (is_array($this->bookmark)) {
+            $objectExists = false;
+            foreach ($this->bookmark as $bookmark) {
+                if ($bookmark == $_bookmark) {
+                    $objectExists = true;
+                    break;
+                }
+            }
+            if (!$objectExists) {
+                $this->setBookmarkAt($this->nextChoiceIndex(), $_bookmark);
+                return true;
+            }
+        }
+        else {
+            $this->bookmark = array();
+            $this->addBookmark($_bookmark);
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * remove from bookmark if object exists
+     */
+    function removeBookmarkIfExist($_bookmark) {
+        if (is_array($this->bookmark)) {
+            $objectExists = false;
+            $i = 0;
+            foreach ($this->bookmark as $index => $bookmark) {
+                if ($bookmark == $_bookmark) {
+                    $objectExists = true;
+                    $i = $index;
+                    break;
+                }
+            }
+            if ($objectExists) {
+                $this->removeBookmarkAt($i);
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * get the ith element of hilite
+     */
+    function getHiliteAt($i) {
+        if (array_key_exists($i, $this->hilite))
+            return $this->hilite[$i];
+        else return NULL;
+    }
+
+    /**
+     * set the ith elemenent of hilite
+     */
+    function setHiliteAt($i, $_hilite) {
+        $this->hilite[$i] = $_hilite;
+    }
+
+    /**
+     * add to hilite
+     */
+    function addHilite($_hilite) {
+        if (is_array($this->hilite))
+            $this->setHiliteAt($this->nextChoiceIndex(), $_hilite);
+        else {
+            $this->hilite = array();
+            $this->addHilite($_hilite);
+        }
+    }
+
+    /**
+     * remove the ith element of hilite
+     */
+    function removeHiliteAt($i) {
+        if (array_key_exists($i, $this->hilite))
+            unset($this->hilite[$i]);
+    }
+
+    /**
+     * add to hilite unless object it exist
+     */
+    function addHiliteUnlessExist($_hilite) {
+        if (is_array($this->hilite)) {
+            $objectExists = false;
+            foreach ($this->hilite as $hilite) {
+                if ($hilite == $_hilite) {
+                    $objectExists = true;
+                    break;
+                }
+            }
+            if (!$objectExists) {
+                $this->setHiliteAt($this->nextChoiceIndex(), $_hilite);
+                return true;
+            }
+        }
+        else {
+            $this->hilite = array();
+            $this->addHilite($_hilite);
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * remove from hilite if object exists
+     */
+    function removeHiliteIfExist($_hilite) {
+        if (is_array($this->hilite)) {
+            $objectExists = false;
+            $i = 0;
+            foreach ($this->hilite as $index => $hilite) {
+                if ($hilite == $_hilite) {
+                    $objectExists = true;
+                    $i = $index;
+                    break;
+                }
+            }
+            if ($objectExists) {
+                $this->removeHiliteAt($i);
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * returns the next index to use for choices
+     */
+    private function nextChoiceIndex() {
+        $index = 0;
+        if (is_array($this->bookmark) && count($this->bookmark) > 0) {
+            $maxIndex = max(array_keys($this->bookmark));
+            if ($maxIndex > $index) $index = $maxIndex;
+        }
+        if (is_array($this->hilite) && count($this->hilite) > 0) {
+            $maxIndex = max(array_keys($this->hilite));
+            if ($maxIndex > $index) $index = $maxIndex;
+        }
+
+        return ++$index;
+    }
 
     /******************** validator methods ********************/
 

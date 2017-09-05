@@ -1,5 +1,35 @@
 PRAGMA foreign_keys=OFF;
 BEGIN TRANSACTION;
+CREATE TABLE "announcement" (
+  "id" INTEGER PRIMARY KEY AUTOINCREMENT,
+  "type" TEXT DEFAULT NULL,
+  "priority" TEXT NOT NULL DEFAULT 'LOW'
+);
+INSERT INTO "announcement" VALUES(1,'INFORMATION','MEDIUM');
+INSERT INTO "announcement" VALUES(2,'INFORMATION','LOW');
+CREATE TABLE "announcementtext" (
+  "id" INTEGER PRIMARY KEY AUTOINCREMENT,
+  "announcement_id" INTEGER NOT NULL,
+  "text" INTEGER NOT NULL,
+  "language_id" INTEGER NOT NULL,
+  FOREIGN KEY("announcement_id") REFERENCES "announcement"("id") ON DELETE SET NULL ON UPDATE SET NULL,
+  FOREIGN KEY("language_id") REFERENCES "language"("id") ON DELETE SET NULL ON UPDATE SET NULL
+);
+INSERT INTO "announcementtext" VALUES(1,1,"Welcome to the Kolibre Daisy Online demo service.",1);
+INSERT INTO "announcementtext" VALUES(2,1,"Välkommen till Kolibres Daisy Online demo tjänst.",2);
+INSERT INTO "announcementtext" VALUES(3,2,"Feel free to use and explore this service. Remember to mark the announcements as read when you have read them.",1);
+INSERT INTO "announcementtext" VALUES(4,2,"Du kan fritt använda och utforska denna tjänst. Kom ihåg att markera meddelandena som lästa efter att du läst dem.",2);
+CREATE TABLE "announcementaudio" (
+  "id" INTEGER PRIMARY KEY AUTOINCREMENT,
+  "announcementtext_id" INTEGER NOT NULL,
+  "size" INTEGER NOT NULL,
+  "length" INTEGER NOT NULL,
+  FOREIGN KEY("announcementtext_id") REFERENCES "announcementtext"("id") ON DELETE SET NULL ON UPDATE SET NULL
+);
+INSERT INTO "announcementaudio" VALUES(1,1,24677,2594);
+INSERT INTO "announcementaudio" VALUES(2,2,27392,2880);
+INSERT INTO "announcementaudio" VALUES(3,3,53310,5680);
+INSERT INTO "announcementaudio" VALUES(4,4,63226,6952);
 CREATE TABLE "category" (
   "id" INTEGER PRIMARY KEY AUTOINCREMENT,
   "name" TEXT NOT NULL
@@ -270,6 +300,13 @@ INSERT INTO "contentresource" VALUES(143,3,'bagw001C.mp3',451552,'audio/mpeg');
 INSERT INTO "contentresource" VALUES(144,3,'bagw0001.smil',1728,'application/xml');
 INSERT INTO "contentresource" VALUES(145,3,'bagw001D.mp3',335882,'audio/mpeg');
 INSERT INTO "contentresource" VALUES(146,3,'bagw0004.smil',3047,'application/xml');
+CREATE TABLE "language" (
+  "id" INTEGER PRIMARY KEY AUTOINCREMENT,
+  "lang" TEXT NOT NULL
+);
+INSERT INTO "language" VALUES(1,'en');
+INSERT INTO "language" VALUES(2,'sv');
+INSERT INTO "language" VALUES(3,'fi');
 CREATE TABLE "state" (
   "id" INTEGER PRIMARY KEY AUTOINCREMENT,
   "state" TEXT NOT NULL
@@ -282,7 +319,7 @@ CREATE TABLE "user" (
   "id" INTEGER PRIMARY KEY AUTOINCREMENT,
   "username" TEXT NOT NULL,
   "password" TEXT NOT NULL,
-  "terms_accepted" INTEGER NOL NULL DEFAULT '0',
+  "terms_accepted" INTEGER NOT NULL DEFAULT '0',
   "log" INTEGER NOT NULL DEFAULT '0'
 );
 INSERT INTO "user" VALUES(1,'kolibre','kolibre',0,1);
@@ -291,6 +328,25 @@ INSERT INTO "user" VALUES(3,'user2','password',0,1);
 INSERT INTO "user" VALUES(4,'user3','password',0,1);
 INSERT INTO "user" VALUES(5,'user4','password',0,1);
 INSERT INTO "user" VALUES(6,'user5','password',0,1);
+CREATE TABLE "userannouncement" (
+  "id" INTEGER PRIMARY KEY AUTOINCREMENT,
+  "user_id" INTEGER NOT NULL,
+  "announcement_id" INTEGER NOT NULL,
+  "read_at" NUMERIC DEFAULT NULL,
+  "updated_at" NUMERIC NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY("user_id") REFERENCES "user"("id") ON DELETE SET NULL ON UPDATE SET NULL,
+  FOREIGN KEY("announcement_id") REFERENCES "announcement"("id") ON DELETE SET NULL ON UPDATE SET NULL
+);
+CREATE TABLE "userbookmark" (
+  "id" INTEGER PRIMARY KEY AUTOINCREMENT,
+  "user_id" INTEGER NOT NULL,
+  "content_id" INTEGER NOT NULL,
+  "bookmarkset" TEXT NOT NULL,
+  "updated_at" NUMERIC NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY("user_id") REFERENCES "user"("id") ON DELETE SET NULL ON UPDATE SET NULL
+);
+INSERT INTO "userannouncement" VALUES(1,1,1,NULL,'0000-00-00 00:00:00');
+INSERT INTO "userannouncement" VALUES(2,1,2,NULL,'0000-00-00 00:00:00');
 CREATE TABLE "usercontent" (
   "id" INTEGER PRIMARY KEY AUTOINCREMENT,
   "user_id" INTEGER  NOT NULL,
@@ -333,6 +389,9 @@ CREATE TABLE "userlog" (
   "ip" TEXT NOT NULL DEFAULT '0.0.0.0'
 );
 DELETE FROM sqlite_sequence;
+INSERT INTO "sqlite_sequence" VALUES('announcement',2);
+INSERT INTO "sqlite_sequence" VALUES('announcementtext',4);
+INSERT INTO "sqlite_sequence" VALUES('announcementaudio',4);
 INSERT INTO "sqlite_sequence" VALUES('category',4);
 INSERT INTO "sqlite_sequence" VALUES('daisyformat',3);
 INSERT INTO "sqlite_sequence" VALUES('content',3);
@@ -340,7 +399,10 @@ INSERT INTO "sqlite_sequence" VALUES('contentaudio',3);
 INSERT INTO "sqlite_sequence" VALUES('contentlist',4);
 INSERT INTO "sqlite_sequence" VALUES('contentmetadata',67);
 INSERT INTO "sqlite_sequence" VALUES('contentresource',146);
+INSERT INTO "sqlite_sequence" VALUES('language',2);
+INSERT INTO "sqlite_sequence" VALUES('state',4);
 INSERT INTO "sqlite_sequence" VALUES('user',6);
+INSERT INTO "sqlite_sequence" VALUES('userannouncement',2);
 INSERT INTO "sqlite_sequence" VALUES('usercontent',18);
 CREATE INDEX index_foreignkey_content_daisyformat ON "content" (daisyformat_id);
 CREATE INDEX index_foreignkey_content_category ON "content" (category_id);

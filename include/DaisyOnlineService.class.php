@@ -1549,9 +1549,12 @@ class DaisyOnlineService
                 $type = $this->transformAnnouncementType($announcementArray['type']);
             }
 
-            // priority [mandatory]
+            // priority [mandatory (version 2) / optional (version 1)]
             if (array_key_exists('priority', $announcementArray) === false)
-                $this->logger->error("Required field 'priority' is missing in announcement");
+            {
+                if ($this->protocolVersion() == 2)
+                    $this->logger->error("Required field 'priority' is missing in announcement");
+            }
             else
                 $priority = $this->transformAnnouncementPriority($announcementArray['priority']);
         }

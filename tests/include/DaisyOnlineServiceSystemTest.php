@@ -38,6 +38,8 @@ class DaisyOnlineServiceSystem extends PHPUnit_Framework_TestCase
         $settings['Service'] = array();
         $settings['Service']['supportedOptionalOperations'] = array();
         $settings['Service']['supportedOptionalOperations'][] = 'SERVICE_ANNOUNCEMENTS';
+        $settings['Service']['supportedOptionalOperations'][] = 'SET_BOOKMARKS';
+        $settings['Service']['supportedOptionalOperations'][] = 'GET_BOOKMARKS';
         $settings['Service']['supportedOptionalOperationsExtra'] = array();
         $settings['Service']['supportedOptionalOperationsExtra'][] = 'PROGRESS_STATE';
         $settings['Service']['supportedOptionalOperationsExtra'][] = 'TERMS_OF_SERVICE';
@@ -271,6 +273,33 @@ class DaisyOnlineServiceSystem extends PHPUnit_Framework_TestCase
         $input = new getServiceAnnouncements();
         $output = self::$instance->getServiceAnnouncements($input);
         $this->assertNull($output->announcements->announcement);
+    }
+
+    /**
+     * @group daisyonlineservice
+     * @group system
+     * @depends testSessionEstablishment
+     */
+    public function testGetBookmarks()
+    {
+        $bookmarkSet = new bookmarkSet(new title('text'),'uid', new lastmark('ncxRef','uri','timeOffset'));
+
+        $input = new getBookmarks('id-without-bookmarks', 'ALL');
+        $this->assertTrue($this->callOperation('getBookmarks', $input, 'invalidParameterFault'));
+
+        $input = new updateBookmarks('id-with-bookmarks', 'REPLACE_ALL', new bookmarkObject($bookmarkSet));
+        $output = self::$instance->updateBookmarks($input);
+        $this->assertTrue($output->updateBookmarksResult);
+
+        $input = new getBookmarks('id-with-bookmarks', 'ALL');
+        $output = self::$instance->getBookmarks($input);
+        $this->assertNull($output->bookmarkObject->lastModifiedDate);
+        $this->assertEquals($output->bookmarkObject->bookmarkSet->title->text, "text");
+        $this->assertEquals($output->bookmarkObject->bookmarkSet->uid, "uid");
+        $this->assertEquals($output->bookmarkObject->bookmarkSet->lastmark->ncxRef, "ncxRef");
+        $this->assertEquals($output->bookmarkObject->bookmarkSet->lastmark->URI, "uri");
+        $this->assertEquals($output->bookmarkObject->bookmarkSet->lastmark->timeOffset, "timeOffset");
+        $this->assertNull($output->bookmarkObject->bookmarkSet->lastmark->charOffset);
     }
 
     /**

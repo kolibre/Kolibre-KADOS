@@ -138,7 +138,7 @@ class updateBookmarks extends AbstractType {
         if ($this->isInstanceOf($this->bookmarkObject, 'bookmarkObject') === false)
             return false;
         if ($this->bookmarkObject->validate() === false) {
-            $this->error = __CLASS__ . '.' . $this->label->getError();
+            $this->error = __CLASS__ . '.' . $this->bookmarkObject->getError();
             return false;
         }
 

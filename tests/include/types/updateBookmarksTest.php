@@ -25,31 +25,22 @@ require_once('updateBookmarks.class.php');
 
 class updateBookmarksTest extends PHPUnit_Framework_TestCase
 {
-
     protected $bookmarkObject;
-    /**
-     * @before
-     */
-     public function setUp()
-     {
-        $bookmarkAudio = new bookmarkAudio('src','clipBegin','ClipEnd');
-        $title = new title('title',$bookmarkAudio);
-        $lastmark = new lastMark('uri','uri','time', 1234);
-        $bookmarkSet = new bookmarkSet($title, 'uid', $lastmark);
-        // check to see thast the bookmarkSet is a valid object
-        $this->assertTrue($bookmarkSet->validate());
-        $this->bookmarkObject = new bookmarkObject($bookmarkSet,'2016-03-11T14:23:23+00:00');
-        // check to see thast the bookmarkObject is a valid object
-        $this->assertTrue($this->bookmarkObject->validate());
-     }
+
+    public function setUp()
+    {
+        $title = new title('title');
+        $bookmarkSet = new bookmarkSet($title, 'uid');
+        $this->bookmarkObject = new bookmarkObject($bookmarkSet);
+    }
+
     /**
      * @group updateBookmarks
      * @group validate
      */
     public function testContentID()
     {
-        $bookmarkObjectInstance = $this->bookmarkObject;
-        $instance = new updateBookmarks(NULL, 'REPLACE_ALL',$bookmarkObjectInstance);
+        $instance = new updateBookmarks(NULL, 'REPLACE_ALL', $this->bookmarkObject);
         $this->assertFalse($instance->validate());
         $this->assertContains('updateBookmarks.contentID', $instance->getError());
         $instance->contentID = 1;
@@ -68,8 +59,7 @@ class updateBookmarksTest extends PHPUnit_Framework_TestCase
      */
     public function testAction()
     {
-        $bookmarkObjectInstance = $this->bookmarkObject;
-        $instance = new updateBookmarks('contentID', NULL, $bookmarkObjectInstance);
+        $instance = new updateBookmarks('contentID', NULL, $this->bookmarkObject);
         $this->assertFalse($instance->validate());
         $this->assertContains('updateBookmarks.action', $instance->getError());
         $instance->action = 1;
@@ -80,6 +70,10 @@ class updateBookmarksTest extends PHPUnit_Framework_TestCase
         $this->assertContains('updateBookmarks.action', $instance->getError());
         $instance->action = 'REPLACE_ALL';
         $this->assertTrue($instance->validate());
+        $instance->action = 'ADD';
+        $this->assertTrue($instance->validate());
+        $instance->action = 'REMOVE';
+        $this->assertTrue($instance->validate());
     }
 
     /**
@@ -88,7 +82,6 @@ class updateBookmarksTest extends PHPUnit_Framework_TestCase
      */
     public function testBookmarkObject()
     {
-
         $instance = new updateBookmarks('contentID','REPLACE_ALL', NULL);
         $this->assertFalse($instance->validate());
         $this->assertContains('updateBookmarks.bookmarkObject', $instance->getError());

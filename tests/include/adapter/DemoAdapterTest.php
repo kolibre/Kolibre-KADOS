@@ -282,6 +282,76 @@ class DemoAdapterTest extends PHPUnit_Framework_TestCase
         $this->assertTrue(self::$adapter->contentReturn(2));
         $this->assertTrue(self::$adapter->contentReturn('con_2'));
     }
+
+    public function testLabelAnnouncement()
+    {
+        $label = self::$adapter->label(1, Adapter::LABEL_ANNOUNCEMENT);
+        $this->assertArrayHasKey('text', $label);
+        $this->assertContains('Welcome', $label['text']);
+        $this->assertArrayHasKey('lang', $label);
+        $this->assertEquals('en', $label['lang']);
+        $this->assertArrayHasKey('audio', $label);
+        $this->assertArrayHasKey('uri', $label['audio']);
+        $this->assertArrayHasKey('size', $label['audio']);
+        $label = self::$adapter->label(1, Adapter::LABEL_ANNOUNCEMENT, 'sv');
+        $this->assertArrayHasKey('text', $label);
+        $this->assertContains('Välkommen', $label['text']);
+        $this->assertArrayHasKey('lang', $label);
+        $this->assertEquals('sv', $label['lang']);
+        $this->assertArrayHasKey('audio', $label);
+        $this->assertArrayHasKey('uri', $label['audio']);
+        $this->assertArrayHasKey('size', $label['audio']);
+    }
+
+    public function testAnnouncements()
+    {
+        $announcements = self::$adapter->announcements();
+        $this->assertCount(2, $announcements);
+
+        foreach ($announcements as $announcementId)
+        {
+            $this->assertTrue(self::$adapter->announcementRead($announcementId));
+        }
+
+        $announcements = self::$adapter->announcements();
+        $this->assertCount(0, $announcements);
+    }
+
+    public function testAnnouncementInfo()
+    {
+        $this->assertFalse(self::$adapter->announcementInfo(10));
+        $this->assertFalse(self::$adapter->announcementInfo('ann_10'));
+        $info = self::$adapter->announcementInfo(1);
+        $this->assertArrayHasKey('type', $info);
+        $this->assertEquals('INFORMATION', $info['type']);
+        $this->assertArrayHasKey('priority', $info);
+        $this->assertEquals('MEDIUM', $info['priority']);
+        $info = self::$adapter->announcementInfo('ann_1');
+        $this->assertArrayHasKey('type', $info);
+        $this->assertEquals('INFORMATION', $info['type']);
+        $this->assertArrayHasKey('priority', $info);
+        $this->assertEquals('MEDIUM', $info['priority']);
+        $info = self::$adapter->announcementInfo(2);
+        $this->assertArrayHasKey('type', $info);
+        $this->assertEquals('INFORMATION', $info['type']);
+        $this->assertArrayHasKey('priority', $info);
+        $this->assertEquals('LOW', $info['priority']);
+        $info = self::$adapter->announcementInfo('ann_2');
+        $this->assertArrayHasKey('type', $info);
+        $this->assertEquals('INFORMATION', $info['type']);
+        $this->assertArrayHasKey('priority', $info);
+        $this->assertEquals('LOW', $info['priority']);
+    }
+
+    public function testAnnouncementExists()
+    {
+        $this->assertFalse(self::$adapter->announcementExists(10));
+        $this->assertFalse(self::$adapter->announcementExists('ann_10'));
+        $this->assertTrue(self::$adapter->announcementExists(1));
+        $this->assertTrue(self::$adapter->announcementExists('ann_1'));
+        $this->assertTrue(self::$adapter->announcementExists(2));
+        $this->assertTrue(self::$adapter->announcementExists('ann_2'));
+    }
 }
 
 ?>

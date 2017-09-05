@@ -35,6 +35,8 @@ class DaisyOnlineServiceTest extends PHPUnit_Framework_TestCase
 
         $settings = array();
         $settings['Service'] = array();
+        $settings['Service']['supportedOptionalOperations'] = array();
+        $settings['Service']['supportedOptionalOperations'][] = 'SERVICE_ANNOUNCEMENTS';
         $settings['Adapter'] = array();
         $settings['Adapter']['name'] = 'TestAdapter';
         $settings['Adapter']['path'] = realpath(dirname(__FILE__));
@@ -148,7 +150,8 @@ class DaisyOnlineServiceTest extends PHPUnit_Framework_TestCase
         $this->assertFalse($output->serviceAttributes->supportsSearch);
         $this->assertNull($output->serviceAttributes->supportedUplinkAudioCodecs->codec);
         $this->assertFalse($output->serviceAttributes->supportsAudioLabels);
-        $this->assertNull($output->serviceAttributes->supportedOptionalOperations->operation);
+        $this->assertCount(1, $output->serviceAttributes->supportedOptionalOperations->operation);
+        $this->assertContains('SERVICE_ANNOUNCEMENTS', $output->serviceAttributes->supportedOptionalOperations->operation);
 
         // adapter throws exception on label
         $settings = array();
@@ -595,6 +598,67 @@ class DaisyOnlineServiceTest extends PHPUnit_Framework_TestCase
         $input = new returnContent('valid-content-return');
         $output = self::$instance->returnContent($input);
         $this->assertTrue($output->returnContentResult);
+    }
+
+    /**
+     * @group daisyonlineservice
+     * @group operation
+     */
+    public function testGetServiceAnnouncements()
+    {
+        // to ensure we are using announcment logic for protocol version 1
+        self::$instance->setProtocolVersion(1);
+
+        // adapter throws exception
+        // TODO: figure out how to trigger internal server error
+        //  $input = new getServiceAnnouncements();
+        //  $this->assertTrue($this->callOperation('getServiceAnnouncements', $input, 'internalServerErrorFault'));
+
+        // return successful
+        $input = new getServiceAnnouncements();
+        $output = self::$instance->getServiceAnnouncements($input);
+        $this->assertCount(2, $output->announcements->announcement);
+        foreach ($output->announcements->announcement as $announcement)
+        {
+            $this->assertEquals($announcement->label->text, 'text');
+            $this->assertEquals($announcement->label->audio->uri, 'uri');
+            $this->assertEquals($announcement->label->audio->rangeBegin, 0);
+            $this->assertEquals($announcement->label->audio->rangeEnd, 1);
+            $this->assertEquals($announcement->label->audio->size, 2);
+            $this->assertEquals($announcement->label->lang, 'en');
+            $this->assertEquals($announcement->label->dir, 'ltr');
+            $this->assertContains('valid-identifier', $announcement->id);
+            $this->assertEquals($announcement->type, 'INFORMATION');
+            $this->assertEquals($announcement->priority, 1);
+        }
+    }
+
+    /**
+     * @group daisyonlineservice
+     * @group operation
+     */
+    public function testMarkAnnouncementsAsRead()
+    {
+        // request is not valid
+        $input = new markAnnouncementsAsRead();
+        $this->assertTrue($this->callOperation('markAnnouncementsAsRead', $input, 'invalidParameterFault'));
+
+        // adapter throws exception
+        $input = new markAnnouncementsAsRead(new read(array('exception-mark-as-read')));
+        $this->assertTrue($this->callOperation('markAnnouncementsAsRead', $input, 'internalServerErrorFault'));
+
+        // announcement does not exist
+        $input = new markAnnouncementsAsRead(new read(array('valid-announcement-id', 'nonexisting-announcement-id')));
+        $this->assertTrue($this->callOperation('markAnnouncementsAsRead', $input, 'invalidParameterFault'));
+
+        // announcement could not be marked as read
+        $input = new markAnnouncementsAsRead(new read(array('valid-announcement-id', 'invalid-announcement-id')));
+        $this->assertTrue($this->callOperation('markAnnouncementsAsRead', $input, 'invalidParameterFault'));
+
+        // return successful
+        $input = new markAnnouncementsAsRead(new read(array('valid-announcement-id-1', 'valid-announcement-id-2')));
+        $output = self::$instance->markAnnouncementsAsRead($input);
+        $this->assertTrue($output->markAnnouncementsAsReadResult);
     }
 }
 

@@ -34,15 +34,12 @@ class credentialsTest extends PHPUnit_Framework_TestCase
         $credentials = new credentials(null, 'password', 'RSAES-OAEP');
         $this->assertFalse($credentials->validate());
         $this->assertContains('credentials.username', $credentials->getError());
-
         $credentials->username = 1;
         $this->assertFalse($credentials->validate());
         $this->assertContains('credentials.username', $credentials->getError());
-
         $credentials->username = '';
         $this->assertFalse($credentials->validate());
         $this->assertContains('credentials.username', $credentials->getError());
-
         $credentials->username = 'username';
         $this->assertTrue($credentials->validate());
     }
@@ -56,15 +53,12 @@ class credentialsTest extends PHPUnit_Framework_TestCase
         $credentials = new credentials('username', null, 'RSAES-OAEP');
         $this->assertFalse($credentials->validate());
         $this->assertContains('credentials.password', $credentials->getError());
-
         $credentials->password = 1;
         $this->assertFalse($credentials->validate());
         $this->assertContains('credentials.password', $credentials->getError());
-
         $credentials->password = '';
         $this->assertFalse($credentials->validate());
         $this->assertContains('credentials.password', $credentials->getError());
-
         $credentials->password = 'password';
         $this->assertTrue($credentials->validate());
     }
@@ -79,15 +73,12 @@ class credentialsTest extends PHPUnit_Framework_TestCase
         $credentials = new credentials('username','password');
         $this->assertFalse($credentials->validate());
         $this->assertContains('credentials.encryptionScheme', $credentials->getError());
-
         $credentials->encryptionScheme = 1;
         $this->assertFalse($credentials->validate());
         $this->assertContains('credentials.encryptionScheme', $credentials->getError());
-
         $credentials->encryptionScheme = '';
         $this->assertFalse($credentials->validate());
         $this->assertContains('credentials.encryptionScheme', $credentials->getError());
-
         $credentials->encryptionScheme = 'RSAES-OAEP';
         $this->assertTrue($credentials->validate());
     }

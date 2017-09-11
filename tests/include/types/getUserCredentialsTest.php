@@ -22,11 +22,9 @@ $includePath = dirname(realpath(__FILE__)) . '/../../../include/types';
 set_include_path(get_include_path() . PATH_SEPARATOR . $includePath);
 
 require_once('getUserCredentials.class.php');
-require_once('readingSystemAttributes.class.php');
 
 class getUserCredentialsTest extends PHPUnit_Framework_TestCase
 {
-    protected $config;
     protected $readingSystemAttributes;
 
     public function setUp()
@@ -43,7 +41,7 @@ class getUserCredentialsTest extends PHPUnit_Framework_TestCase
         $supportedInputTypes = new supportedInputTypes();
         $requiresAudioLabels = false;
         $additionalTransferProtocols = null;
-        $this->config = new config(
+        $config = new config(
             $accessConfig,
             $supportsMultipleSelections,
             $supportsAdvancedDynamicMenus,
@@ -56,18 +54,17 @@ class getUserCredentialsTest extends PHPUnit_Framework_TestCase
             $supportedInputTypes,
             $requiresAudioLabels,
             $additionalTransferProtocols);
-
         $manufacturer = 'manufacturer';
         $model = 'model';
         $serialNumber = null;
         $version = 'version';
-        $config = $this->config;
         $this->readingSystemAttributes = new readingSystemAttributes(
             $manufacturer,
             $model,
             $serialNumber,
             $version,
             $config);
+        $this->assertTrue($this->readingSystemAttributes->validate());
     }
 
     /**
@@ -76,10 +73,7 @@ class getUserCredentialsTest extends PHPUnit_Framework_TestCase
      */
     public function testReadingSystemAttributes()
     {
-
-        $readingSystemAttributes = $this->readingSystemAttributes;
-        $this->assertTrue($readingSystemAttributes->validate());
-        $instance = new getUserCredentials(null);
+        $instance = new getUserCredentials();
         $this->assertFalse($instance->validate());
         $this->assertContains('getUserCredentials.readingSystemAttributes', $instance->getError());
         $instance->readingSystemAttributes = 1;
@@ -88,10 +82,9 @@ class getUserCredentialsTest extends PHPUnit_Framework_TestCase
         $instance->readingSystemAttributes = '';
         $this->assertFalse($instance->validate());
         $this->assertContains('getUserCredentials.readingSystemAttributes', $instance->getError());
-        $instance->readingSystemAttributes = $readingSystemAttributes;
+        $instance->readingSystemAttributes = $this->readingSystemAttributes;;
         $this->assertTrue($instance->validate());
     }
-
 }
 
 ?>

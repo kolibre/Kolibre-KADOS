@@ -390,6 +390,16 @@ class TestAdapter extends Adapter
         $bookmarkSet = '{"title":{"text":"text"}, "uid":"uid", "lastmark":{"ncxRef":"ncxRef", "URI":"uri", "timeOffset":"00:00"}}';
         return array('lastModifiedDate' => '2016-01-01T00:00:00Z', 'bookmarkSet' => $bookmarkSet);
     }
+
+    public function userCredentials($manufacturer, $model, $serialNumber, $version)
+    {
+        if ($serialNumber == 'exception')
+            throw new AdapterException('Error in adapter');
+        if ($serialNumber == 'invalid')
+            return false;
+
+        return array('username' => 'username', 'password' => 'encrypted password');
+    }
 }
 
 ?>

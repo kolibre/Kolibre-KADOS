@@ -1068,9 +1068,47 @@ class DaisyOnlineService
      */
     public function getUserCredentials($input)
     {
-        $this->sessionHandle(__FUNCTION__);
-        throw new SoapFault ('Client', 'getUserCredentials not supported', '', '', 'getUserCredentials_operationNotSupportedFault');
+        if (!in_array('USER_CREDENTIALS', $this->optionalOperations))
+            throw new SoapFault ('Client', 'getUserCredentials not supported', '', '', 'getUserCredentials_operationNotSupportedFault');
 
+        if ($input->validate() === false)
+        {
+            $msg = "request is not valid " . $input->getError();
+            $this->logger->warn($msg);
+            throw new SoapFault ('Client', $input->getError(), '', '', 'getUserCredentials_invalidParameterFault');
+        }
+
+        try
+        {
+            $manufacturer = $input->getReadingSystemAttributes()->getManufacturer();
+            $model = $input->getReadingSystemAttributes()->getModel();
+            $serialNumber = $input->getReadingSystemAttributes()->getSerialNumber();
+            $version = $input->getReadingSystemAttributes()->getVersion();
+            $credentials = $this->adapter->userCredentials($manufacturer, $model, $serialNumber, $version);
+            if ($credentials === false)
+            {
+                $msg = "No credentials found for reading system with serial '$serialNumber'";
+                $this->logger->warn($msg);
+                throw new SoapFault('Client', 'no credentials found for the given serial', '', '', 'getUserCredentials_invalidParameterFault');
+            }
+        }
+        catch (AdapterException $e)
+        {
+            $this->logger->fatal($e->getMessage());
+            throw new SoapFault('Server', 'Internal Server Error', '', '', 'getUserCredentials_internalServerErrorFault');
+        }
+
+        $output = new getUserCredentialsResponse(new credentials($credentials['username'],$credentials['password'],'RSAES-OAEP'));
+
+        if ($output->validate() === false)
+        {
+            $msg = "failed to build response " . $output->getError();
+            $this->logger->error($msg);
+            $faultString = 'getUserCredentialsResponse could not be built';
+            throw new SoapFault('Server', $faultString, '', '', 'getUserCredentials_internalServerErrorFault');
+        }
+
+        return $output;
     }
 
     /**

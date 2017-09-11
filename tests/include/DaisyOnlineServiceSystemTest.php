@@ -43,6 +43,7 @@ class DaisyOnlineServiceSystem extends PHPUnit_Framework_TestCase
         $settings['Service']['supportedOptionalOperationsExtra'] = array();
         $settings['Service']['supportedOptionalOperationsExtra'][] = 'PROGRESS_STATE';
         $settings['Service']['supportedOptionalOperationsExtra'][] = 'TERMS_OF_SERVICE';
+        $settings['Service']['supportedOptionalOperationsExtra'][] = 'USER_CREDENTIALS';
         $settings['Adapter'] = array();
         $settings['Adapter']['name'] = 'SystemTestAdapter';
         $settings['Adapter']['path'] = realpath(dirname(__FILE__));
@@ -144,6 +145,21 @@ class DaisyOnlineServiceSystem extends PHPUnit_Framework_TestCase
     /**
      * @group daisyonlineservice
      * @group system
+     */
+    public function testGetUserCredentials()
+    {
+        $input = new getUserCredentials(self::$rsa);
+        $output = self::$instance->getUserCredentials($input);
+        $this->assertTrue($output->validate());
+        $this->assertEquals($output->credentials->username, 'username');
+        $this->assertEquals($output->credentials->password, 'encrypted password');
+        $this->assertEquals($output->credentials->encryptionScheme, 'RSAES-OAEP');
+    }
+
+    /**
+     * @group daisyonlineservice
+     * @group system
+     * @depends testGetUserCredentials
      */
     public function testSessionEstablishment()
     {

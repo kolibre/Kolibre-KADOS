@@ -230,6 +230,11 @@ class SystemTestAdapter extends Adapter
         return false;
     }
 
+    public function userCredentials($manufacturer, $model, $serialNumber, $version)
+    {
+        return array('username' => 'username', 'password' => 'encrypted password');
+    }
+
     public function termsOfService()
     {
         $label = array();

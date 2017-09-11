@@ -28,6 +28,49 @@ class DaisyOnlineServiceTest extends PHPUnit_Framework_TestCase
 {
     protected static $inifile;
     protected static $instance;
+    protected $readingSsytemAttributes;
+
+    public function setUp()
+    {
+        // build readingSystemAttributes
+        $accessConfig = "STREAM_ONLY";
+        $supportsMultipleSelections = false;
+        $supportsAdvancedDynamicMenus = false;
+        $preferredUILanguage = 'preferredUILanguage';
+        $bandwidth = null;
+        $supportedContentFormats = new supportedContentFormats();
+        $supportedContentProtectionFormats = new supportedContentProtectionFormats();
+        $keyRing = null;
+        $supportedMimeTypes = new supportedMimeTypes();
+        $supportedInputTypes = new supportedInputTypes();
+        $requiresAudioLabels = false;
+        $additionalTransferProtocols = null;
+        $config = new config(
+            $accessConfig,
+            $supportsMultipleSelections,
+            $supportsAdvancedDynamicMenus,
+            $preferredUILanguage,
+            $bandwidth,
+            $supportedContentFormats,
+            $supportedContentProtectionFormats,
+            $keyRing,
+            $supportedMimeTypes,
+            $supportedInputTypes,
+            $requiresAudioLabels,
+            $additionalTransferProtocols);
+        $manufacturer = 'manufacturer';
+        $model = 'model';
+        $serialNumber = null;
+        $version = 'version';
+        $readingSystemAttributes = new readingSystemAttributes(
+            $manufacturer,
+            $model,
+            $serialNumber,
+            $version,
+            $config);
+        $this->assertTrue($readingSystemAttributes->validate());
+        $this->readingSystemAttributes = $readingSystemAttributes;
+    }
 
     public static function setUpBeforeClass()
     {
@@ -42,6 +85,7 @@ class DaisyOnlineServiceTest extends PHPUnit_Framework_TestCase
         $settings['Service']['supportedOptionalOperations'][] = 'GET_BOOKMARKS';
         $settings['Service']['supportedOptionalOperationsExtra'] = array();
         $settings['Service']['supportedOptionalOperationsExtra'][] = 'PROGRESS_STATE';
+        $settings['Service']['supportedOptionalOperationsExtra'][] = 'USER_CREDENTIALS';
         $settings['Adapter'] = array();
         $settings['Adapter']['name'] = 'TestAdapter';
         $settings['Adapter']['path'] = realpath(dirname(__FILE__));
@@ -107,55 +151,16 @@ class DaisyOnlineServiceTest extends PHPUnit_Framework_TestCase
      */
     public function testLogOn()
     {
-        // build readingSystemAttributes
-        $accessConfig = "STREAM_ONLY";
-        $supportsMultipleSelections = false;
-        $supportsAdvancedDynamicMenus = false;
-        $preferredUILanguage = 'preferredUILanguage';
-        $bandwidth = null;
-        $supportedContentFormats = new supportedContentFormats();
-        $supportedContentProtectionFormats = new supportedContentProtectionFormats();
-        $keyRing = null;
-        $supportedMimeTypes = new supportedMimeTypes();
-        $supportedInputTypes = new supportedInputTypes();
-        $requiresAudioLabels = false;
-        $additionalTransferProtocols = null;
-        $config = new config(
-            $accessConfig,
-            $supportsMultipleSelections,
-            $supportsAdvancedDynamicMenus,
-            $preferredUILanguage,
-            $bandwidth,
-            $supportedContentFormats,
-            $supportedContentProtectionFormats,
-            $keyRing,
-            $supportedMimeTypes,
-            $supportedInputTypes,
-            $requiresAudioLabels,
-            $additionalTransferProtocols);
-
-        $manufacturer = 'manufacturer';
-        $model = 'model';
-        $serialNumber = null;
-        $version = 'version';
-        $readingSystemAttributes = new readingSystemAttributes(
-            $manufacturer,
-            $model,
-            $serialNumber,
-            $version,
-            $config);
-        $this->assertTrue($readingSystemAttributes->validate());
-
         // adapter throws exception on authenticate
-        $input = new logOn('exception', 'exception', $readingSystemAttributes);
+        $input = new logOn('exception', 'exception', $this->readingSystemAttributes);
         $this->assertTrue($this->callOperation('logOn', $input, 'internalServerErrorFault'));
 
         // adapter returns false on authenticate
-        $input = new logOn('invalid', 'invalid', $readingSystemAttributes);
+        $input = new logOn('invalid', 'invalid', $this->readingSystemAttributes);
         $this->assertTrue($this->callOperation('logOn', $input, 'unauthorizedFault'));
 
         // adapter returns true on authenticate
-        $input = new logOn('valid', 'valid', $readingSystemAttributes);
+        $input = new logOn('valid', 'valid', $this->readingSystemAttributes);
         $output = self::$instance->logOn($input);
         $this->assertInstanceOf('serviceAttributes',$output->serviceAttributes);
 
@@ -539,6 +544,36 @@ class DaisyOnlineServiceTest extends PHPUnit_Framework_TestCase
         $this->assertEquals($output->bookmarkObject->bookmarkSet->lastmark->URI, "uri");
         $this->assertEquals($output->bookmarkObject->bookmarkSet->lastmark->timeOffset, "00:00");
         $this->assertNull($output->bookmarkObject->bookmarkSet->lastmark->charOffset);
+    }
+
+    /**
+     * @group daisyonlineservice
+     * @group operation
+     */
+    public function testGetUserCredentials()
+    {
+        $readingSystemAttributes = $this->readingSystemAttributes;
+
+        // request is not valid
+        $input = new getUserCredentials();
+        $this->assertTrue($this->callOperation('getUserCredentials', $input, 'invalidParameterFault'));
+
+        // adapter throws exception
+        $readingSystemAttributes->setSerialNumber('exception');
+        $input = new getUserCredentials($readingSystemAttributes);
+        $this->assertTrue($this->callOperation('getUserCredentials', $input, 'internalServerErrorFault'));
+
+        // adapter returns false
+        $readingSystemAttributes->setSerialNumber('invalid');
+        $this->assertTrue($this->callOperation('getUserCredentials', $input, 'invalidParameterFault'));
+
+        // adapter returns true
+        $readingSystemAttributes->setSerialNumber('valid');
+        $input = new getUserCredentials($readingSystemAttributes);
+        $output = self::$instance->getUserCredentials($input);
+        $this->assertEquals($output->credentials->username, 'username');
+        $this->assertEquals($output->credentials->password, 'encrypted password');
+        $this->assertEquals($output->credentials->encryptionScheme, 'RSAES-OAEP');
     }
 
     /**

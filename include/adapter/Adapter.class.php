@@ -397,7 +397,7 @@ abstract class Adapter
      * Check if the specified content exists
      *
      * This method is required and must be implemented for a basic service.
-     * It is invoked by the service when operations getContentMetadata, issueContent, getContentResources or returnContent is called.
+     * It is invoked by the service when operations getContentMetadata, issueContent, getContentResources, returnContent or addContentToBookshelf is called.
      *
      * @param string $contentId The identifier for the content
      * @return boolean Returns True if the content exists, otherwise False.
@@ -410,7 +410,7 @@ abstract class Adapter
      * Check if the specified content is accessible for the current user
      *
      * This method is required and must be implemented for a basic service.
-     * It is invoked by the service when operations getContentMetadata, issueContent, getContentResources or returnContent is called.
+     * It is invoked by the service when operations getContentMetadata, issueContent, getContentResources, returnContent or addContentToBookshelf is called.
      *
      * @param string $contentId The identifier for the content
      * @return boolean Returns True if the content is accessible, otherwise False.
@@ -536,6 +536,23 @@ abstract class Adapter
      * @throws AdapterException
      */
     abstract public function contentIssue($contentId);
+
+    /**
+     * Add the speciified content to the users bookshelf
+     *
+     * This method is optional and does not require implementation.
+     * It is invoked by the service when addContentToBookshelf operation is called.
+     * If the service supports ADD_CONTENT, this method must be implemented.
+     *
+     * @param string $contentId the identifier for the content
+     * @return boolean Returns True if the content is added, otherwise False.
+     *
+     * @throws AdapterException
+     */
+    public function contentAddBookshelf($contentId)
+    {
+        return false;
+    }
 
     /**
      * Retrieve resources for the specified content

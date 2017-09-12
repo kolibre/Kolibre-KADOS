@@ -257,6 +257,17 @@ class TestAdapter extends Adapter
         return true;
     }
 
+    public function contentAddBookshelf($contentId)
+    {
+        if ($contentId == 'exception-add-bookshelf')
+            throw new AdapterException('Error in adapter');
+
+        if ($contentId == 'invalid-add-bookshelf')
+            return false;
+
+        return true;
+    }
+
     public function contentResources($contentId, $accessMethod = null)
     {
         if ($contentId == 'exception-content-resources')

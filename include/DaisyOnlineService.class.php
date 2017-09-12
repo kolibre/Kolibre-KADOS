@@ -1045,8 +1045,61 @@ class DaisyOnlineService
     public function addContentToBookshelf($input)
     {
         $this->sessionHandle(__FUNCTION__);
-        throw new SoapFault ('Client', 'addContentToBookshelf not supported', '', '', 'addContentToBookshelf_operationNotSupportedFault');
+        if (!in_array('ADD_CONTENT', $this->optionalOperations))
+            throw new SoapFault ('Client', 'addContentToBookshelf not supported', '', '', 'addContentToBookshelf_operationNotSupportedFault');
 
+        if ($input->validate() === false)
+        {
+            $msg = "request is not valid " . $input->getError();
+            $this->logger->warn($msg);
+            throw new SoapFault ('Client', $input->getError(), '', '', 'addContentToBookshelf_invalidParameterFault');
+        }
+
+        // parameters
+        $contentId = $input->getContentID();
+
+        // check if the requested content exists and is accessible
+        try
+        {
+            if ($this->adapter->contentExists($contentId) === false)
+            {
+                $msg = "User '$this->sessionUsername' tried to add an nonexistent content '$contentId' to bookshlf";
+                $this->logger->warn($msg);
+                $faultString = "content '$contentId' does not exist";
+                throw new SoapFault('Client', $faultString,'', '', 'addContentToBookshelf_invalidParameterFault');
+            }
+
+            if ($this->adapter->contentAccessible($contentId) === false)
+            {
+                $msg = "User '$this->sessionUsername' tried to add an inaccessible content '$contentId' to bookshelf";
+                $this->logger->warn($msg);
+                $faultString = "content '$contentId' not accessible";
+                throw new SoapFault('Client', $faultString,'', '', 'addContentToBookshelf_invalidParameterFault');
+            }
+        }
+        catch (AdapterException $e)
+        {
+            $this->logger->fatal($e->getMessage());
+            throw new SoapFault('Server', 'Internal Server Error', '', '', 'addContentToBookshelf_internalServerErrorFault');
+        }
+
+        // add content to bookshelf
+        try
+        {
+            if ($this->adapter->contentAddBookshelf($contentId) === false)
+            {
+                $msg = "User '$this->sessionUsername' could not add content '$contentId' to bookshelf";
+                $this->logger->warn($msg);
+                throw new SoapFault('Client', 'content could not be added to user bookshelf', '', '', 'addContentToBookshelf_invalidParameterFault');
+            }
+        }
+        catch (AdapterException $e)
+        {
+            $this->logger->fatal($e->getMessage());
+            throw new SoapFault('Server', 'Internal Server Error', '', '', 'addContentToBookshelf_internalServerErrorFault');
+        }
+
+        return new addContentToBookshelfResponse(true);
     }
 
     /**

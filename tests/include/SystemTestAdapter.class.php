@@ -154,6 +154,13 @@ class SystemTestAdapter extends Adapter
         return true;
     }
 
+    public function contentAddBookshelf($contentId)
+    {
+        if (!in_array($contentId, $this->contentLists['bookshelf']))
+            array_push($this->contentLists['bookshelf'], $contentId);
+        return true;
+    }
+
     public function contentResources($contentId, $accessMethod = null)
     {
         $resources = array();

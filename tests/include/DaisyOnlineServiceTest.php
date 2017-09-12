@@ -86,6 +86,7 @@ class DaisyOnlineServiceTest extends PHPUnit_Framework_TestCase
         $settings['Service']['supportedOptionalOperationsExtra'] = array();
         $settings['Service']['supportedOptionalOperationsExtra'][] = 'PROGRESS_STATE';
         $settings['Service']['supportedOptionalOperationsExtra'][] = 'USER_CREDENTIALS';
+        $settings['Service']['supportedOptionalOperationsExtra'][] = 'ADD_CONTENT';
         $settings['Adapter'] = array();
         $settings['Adapter']['name'] = 'TestAdapter';
         $settings['Adapter']['path'] = realpath(dirname(__FILE__));
@@ -544,6 +545,46 @@ class DaisyOnlineServiceTest extends PHPUnit_Framework_TestCase
         $this->assertEquals($output->bookmarkObject->bookmarkSet->lastmark->URI, "uri");
         $this->assertEquals($output->bookmarkObject->bookmarkSet->lastmark->timeOffset, "00:00");
         $this->assertNull($output->bookmarkObject->bookmarkSet->lastmark->charOffset);
+    }
+
+    /**
+     * @group daisyonlineservice
+     * @group operation
+     */
+    public function testAddContentToBookshelf()
+    {
+        // request is not valid
+        $input = new addContentToBookshelf();
+        $this->assertTrue($this->callOperation('addContentToBookshelf', $input, 'invalidParameterFault'));
+
+        // adapter throws exception on contentExists
+        $input = new addContentToBookshelf('exception-content-exists');
+        $this->assertTrue($this->callOperation('addContentToBookshelf', $input, 'internalServerErrorFault'));
+
+        // adapter returns false on contentExists
+        $input = new addContentToBookshelf('invalid-content-exists');
+        $this->assertTrue($this->callOperation('addContentToBookshelf', $input, 'invalidParameterFault'));
+
+        // adapter throws exception on contentAccessible
+        $input = new addContentToBookshelf('exception-content-accessible');
+        $this->assertTrue($this->callOperation('addContentToBookshelf', $input, 'internalServerErrorFault'));
+
+        // adapter returns false on contentAccessible
+        $input = new addContentToBookshelf('invalid-content-accessible');
+        $this->assertTrue($this->callOperation('addContentToBookshelf', $input, 'invalidParameterFault'));
+
+        // adapter throws exception on contentAddBookshelf
+        $input = new addContentToBookshelf('exception-add-bookshelf');
+        $this->assertTrue($this->callOperation('addContentToBookshelf', $input, 'internalServerErrorFault'));
+
+        // adapter returns false on contentAddBookshelf
+        $input = new addContentToBookshelf('invalid-add-bookshelf');
+        $this->assertTrue($this->callOperation('addContentToBookshelf', $input, 'invalidParameterFault'));
+
+        // add successful
+        $input = new addContentToBookshelf('valid-add-bookshelf');
+        $output = self::$instance->addContentToBookshelf($input);
+        $this->assertTrue($output->addContentToBookshelfResult);
     }
 
     /**

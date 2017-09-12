@@ -44,6 +44,7 @@ class DaisyOnlineServiceSystem extends PHPUnit_Framework_TestCase
         $settings['Service']['supportedOptionalOperationsExtra'][] = 'PROGRESS_STATE';
         $settings['Service']['supportedOptionalOperationsExtra'][] = 'TERMS_OF_SERVICE';
         $settings['Service']['supportedOptionalOperationsExtra'][] = 'USER_CREDENTIALS';
+        $settings['Service']['supportedOptionalOperationsExtra'][] = 'ADD_CONTENT';
         $settings['Adapter'] = array();
         $settings['Adapter']['name'] = 'SystemTestAdapter';
         $settings['Adapter']['path'] = realpath(dirname(__FILE__));
@@ -316,6 +317,32 @@ class DaisyOnlineServiceSystem extends PHPUnit_Framework_TestCase
         $this->assertEquals($output->bookmarkObject->bookmarkSet->lastmark->URI, "uri");
         $this->assertEquals($output->bookmarkObject->bookmarkSet->lastmark->timeOffset, "timeOffset");
         $this->assertNull($output->bookmarkObject->bookmarkSet->lastmark->charOffset);
+    }
+
+    /**
+     * @group daisyonlineservice
+     * @group system
+     * @depends testReturnContent
+     */
+    public function testAddContentToBookshelf()
+    {
+        $bookshelfItemsBefore = 0;
+        $bookshelfItemsAfter = 1;
+
+        // check that bookshelf is empty
+        $input = new getContentList('bookshelf', 0, -1);
+        $output = self::$instance->getContentList($input);
+        $this->assertNull($output->contentList->contentItem);
+
+        // add content to bookshelf
+        $input = new addContentToBookshelf('id_123');
+        $output = self::$instance->addContentToBookshelf($input);
+        $this->assertTrue($output->addContentToBookshelfResult);
+
+        // check that the content exits in bookshelf
+        $input = new getContentList('bookshelf', 0, -1);
+        $output = self::$instance->getContentList($input);
+        $this->assertCount($bookshelfItemsAfter, $output->contentList->contentItem);
     }
 
     /**

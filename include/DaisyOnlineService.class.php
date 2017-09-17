@@ -1214,7 +1214,7 @@ class DaisyOnlineService
 
     /**
      * Returns the action enum defined in Adapter for the string representation
-     * @param string $state human readable state string
+     * @param string $action human readable action string
      * @return int
      */
     private function adapterGetBookmarksAction($action)
@@ -1237,7 +1237,7 @@ class DaisyOnlineService
 
     /**
      * Returns the action enum defined in Adapter for the string representation
-     * @param string $state human readable state string
+     * @param string $action human readable action string
      * @return int
      */
      private function adapterSetBookmarksAction($action)

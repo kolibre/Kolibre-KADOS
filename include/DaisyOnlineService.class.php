@@ -1151,7 +1151,9 @@ class DaisyOnlineService
             throw new SoapFault('Server', 'Internal Server Error', '', '', 'getUserCredentials_internalServerErrorFault');
         }
 
-        $output = new getUserCredentialsResponse(new credentials($credentials['username'],$credentials['password'],'RSAES-OAEP'));
+        $username = $credentials['username'];
+        $password = $this->encode_b64($credentials['password']);
+        $output = new getUserCredentialsResponse(new credentials($username,$password,'RSAES-OAEP'));
 
         if ($output->validate() === false)
         {
@@ -1346,6 +1348,21 @@ class DaisyOnlineService
         // not possible
         return 0;
      }
+
+    /**
+     * Returns a base64 encoded string
+     * @param string $value the string to encode
+     * @return string
+     */
+    private function encode_b64($value)
+    {
+        if (base64_encode(base64_decode($value)) == $value)
+        {
+            return $value; // already encoded
+        }
+
+        return base64_encode($value);
+    }
 
     /**
      * Service helper

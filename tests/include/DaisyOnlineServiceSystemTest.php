@@ -153,7 +153,7 @@ class DaisyOnlineServiceSystem extends PHPUnit_Framework_TestCase
         $output = self::$instance->getUserCredentials($input);
         $this->assertTrue($output->validate());
         $this->assertEquals($output->credentials->username, 'username');
-        $this->assertEquals($output->credentials->password, 'encrypted password');
+        $this->assertEquals($output->credentials->password, base64_encode('encrypted password'));
         $this->assertEquals($output->credentials->encryptionScheme, 'RSAES-OAEP');
     }
 

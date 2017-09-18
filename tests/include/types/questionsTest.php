@@ -49,8 +49,7 @@ class questionsTest extends PHPUnit_Framework_TestCase
         $this->assertContains('questions.contentListRef', $instance->getError());
         $instance->contentListRef = null;
         $instance->label = new label('text',null,'en');
-        $this->assertFalse($instance->validate());
-        $this->assertContains('questions.label', $instance->getError());
+        $this->assertTrue($instance->validate());
     }
 
     /**
@@ -77,8 +76,7 @@ class questionsTest extends PHPUnit_Framework_TestCase
         $this->assertContains('questions.contentListRef', $instance->getError());
         $instance->contentListRef = null;
         $instance->label = new label('text',null,'en');
-        $this->assertFalse($instance->validate());
-        $this->assertContains('questions.label', $instance->getError());
+        $this->assertTrue($instance->validate());
     }
 
     /**
@@ -99,8 +97,7 @@ class questionsTest extends PHPUnit_Framework_TestCase
         $instance->contentListRef = 'contentListRef';
         $this->assertTrue($instance->validate());
         $instance->label = new label('text',null,'en');
-        $this->assertFalse($instance->validate());
-        $this->assertContains('questions.label', $instance->getError());
+        $this->assertTrue($instance->validate());
     }
 
     /**

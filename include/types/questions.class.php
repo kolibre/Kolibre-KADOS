@@ -209,52 +209,12 @@ class questions extends AbstractType {
                 $this->error = __CLASS__ . ".contentListRef can not be set when multipleChoiceQuestion is set";
                 return false;
             }
-            if (!is_null($this->label)) {
-                $this->error = __CLASS__ . ".label can not be set when multipleChoiceQuestion is set";
-                return false;
-            }
         }
 
         // check that neither contentListRef nor label is set when inputQuestion is set
         if (!is_null($this->inputQuestion)) {
             if (!is_null($this->contentListRef)) {
                 $this->error = __CLASS__ . ".contentListRef can not be set when inputQuestion is set";
-                return false;
-            }
-            if (!is_null($this->label)) {
-                $this->error = __CLASS__ . ".label can not be set when inputQuestion is set";
-                return false;
-            }
-        }
-
-        // check that no other variables are set when contentListRef is set
-        if (!is_null($this->contentListRef)) {
-            if (!is_null($this->multipleChoiceQuestion)) {
-                $this->error = __CLASS__ . ".multipleChoiceQuestion can not be set when contentListRef is set";
-                return false;
-            }
-            if (!is_null($this->inputQuestion)) {
-                $this->error = __CLASS__ . ".inputQuestion can not be set when contentListRef is set";
-                return false;
-            }
-            if (!is_null($this->label)) {
-                $this->error = __CLASS__ . ".label can not be set when contentListRef is set";
-                return false;
-            }
-        }
-
-        // check that no other variables are set when label is set
-        if (!is_null($this->label)) {
-            if (!is_null($this->multipleChoiceQuestion)) {
-                $this->error = __CLASS__ . ".multipleChoiceQuestion can not be set when label is set";
-                return false;
-            }
-            if (!is_null($this->inputQuestion)) {
-                $this->error = __CLASS__ . ".inputQuestion can not be set when label is set";
-                return false;
-            }
-            if (!is_null($this->contentListRef)) {
-                $this->error = __CLASS__ . ".contentListRef can not be set when label is set";
                 return false;
             }
         }

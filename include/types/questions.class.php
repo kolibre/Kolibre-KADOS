@@ -259,6 +259,12 @@ class questions extends AbstractType {
             }
         }
 
+        // check that either multipleChoiceQuestion, inputQuestion, contentListRef or label is set
+        if (is_null($this->multipleChoiceQuestion) && is_null($this->inputQuestion) && is_null($this->contentListRef) && is_null($this->label)) {
+            $this->error = __CLASS__ . " no required element set";
+            return false;
+        }
+
         return true;
     }
 }

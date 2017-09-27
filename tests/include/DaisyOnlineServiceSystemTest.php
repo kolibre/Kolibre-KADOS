@@ -36,10 +36,13 @@ class DaisyOnlineServiceSystem extends PHPUnit_Framework_TestCase
 
         $settings = array();
         $settings['Service'] = array();
+        $settings['Service']['supportsServerSideBack'] = 1;
+        $settings['Service']['supportsSearch'] = 1;
         $settings['Service']['supportedOptionalOperations'] = array();
         $settings['Service']['supportedOptionalOperations'][] = 'SERVICE_ANNOUNCEMENTS';
         $settings['Service']['supportedOptionalOperations'][] = 'SET_BOOKMARKS';
         $settings['Service']['supportedOptionalOperations'][] = 'GET_BOOKMARKS';
+        $settings['Service']['supportedOptionalOperations'][] = 'DYNAMIC_MENUS';
         $settings['Service']['supportedOptionalOperationsExtra'] = array();
         $settings['Service']['supportedOptionalOperationsExtra'][] = 'PROGRESS_STATE';
         $settings['Service']['supportedOptionalOperationsExtra'][] = 'TERMS_OF_SERVICE';
@@ -317,6 +320,51 @@ class DaisyOnlineServiceSystem extends PHPUnit_Framework_TestCase
         $this->assertEquals($output->bookmarkObject->bookmarkSet->lastmark->URI, "uri");
         $this->assertEquals($output->bookmarkObject->bookmarkSet->lastmark->timeOffset, "timeOffset");
         $this->assertNull($output->bookmarkObject->bookmarkSet->lastmark->charOffset);
+    }
+
+    /**
+     * @group daisyonlineservice
+     * @group system
+     * @depends testSessionEstablishment
+     */
+    public function testGetQuestions()
+    {
+        // requst search menu
+        $input = new getQuestions();
+        $input->userResponses = new userResponses(array(new userResponse('search')));
+        $output = self::$instance->getQuestions($input);
+        $this->assertCount(1, $output->questions->multipleChoiceQuestion);
+        $this->assertArrayHasKey(1, $output->questions->multipleChoiceQuestion);
+        $this->assertInstanceOf('multipleChoiceQuestion', $output->questions->multipleChoiceQuestion[1]);
+        $this->assertEquals('search-by', $output->questions->multipleChoiceQuestion[1]->id);
+        $this->assertCount(2, $output->questions->multipleChoiceQuestion[1]->choices->choice);
+        $this->assertNull($output->questions->inputQuestion);
+        $this->assertNull($output->questions->contentListRef);
+        $this->assertNull($output->questions->label);
+
+        // request back
+        $input->userResponses = new userResponses(array(new userResponse('back')));
+        $output = self::$instance->getQuestions($input);
+        $this->assertCount(1, $output->questions->multipleChoiceQuestion);
+        $this->assertArrayHasKey(1, $output->questions->multipleChoiceQuestion);
+        $this->assertInstanceOf('multipleChoiceQuestion', $output->questions->multipleChoiceQuestion[1]);
+        $this->assertEquals('main-menu', $output->questions->multipleChoiceQuestion[1]->id);
+        $this->assertCount(2, $output->questions->multipleChoiceQuestion[1]->choices->choice);
+        $this->assertNull($output->questions->inputQuestion);
+        $this->assertNull($output->questions->contentListRef);
+        $this->assertNull($output->questions->label);
+
+        // request next menu
+        $input->userResponses = new userResponses(array(new userResponse('main-menu', 'give-feedback')));
+        $output = self::$instance->getQuestions($input);
+        $this->assertCount(1, $output->questions->multipleChoiceQuestion);
+        $this->assertArrayHasKey(1, $output->questions->multipleChoiceQuestion);
+        $this->assertInstanceOf('multipleChoiceQuestion', $output->questions->multipleChoiceQuestion[1]);
+        $this->assertCount(1, $output->questions->inputQuestion);
+        $this->assertArrayHasKey(2, $output->questions->inputQuestion);
+        $this->assertInstanceOf('inputQuestion', $output->questions->inputQuestion[2]);
+        $this->assertNull($output->questions->contentListRef);
+        $this->assertNull($output->questions->label);
     }
 
     /**

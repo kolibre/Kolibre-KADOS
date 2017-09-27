@@ -83,6 +83,7 @@ class DaisyOnlineServiceTest extends PHPUnit_Framework_TestCase
         $settings['Service']['supportedOptionalOperations'][] = 'SERVICE_ANNOUNCEMENTS';
         $settings['Service']['supportedOptionalOperations'][] = 'SET_BOOKMARKS';
         $settings['Service']['supportedOptionalOperations'][] = 'GET_BOOKMARKS';
+        $settings['Service']['supportedOptionalOperations'][] = 'DYNAMIC_MENUS';
         $settings['Service']['supportedOptionalOperationsExtra'] = array();
         $settings['Service']['supportedOptionalOperationsExtra'][] = 'PROGRESS_STATE';
         $settings['Service']['supportedOptionalOperationsExtra'][] = 'USER_CREDENTIALS';
@@ -545,6 +546,90 @@ class DaisyOnlineServiceTest extends PHPUnit_Framework_TestCase
         $this->assertEquals($output->bookmarkObject->bookmarkSet->lastmark->URI, "uri");
         $this->assertEquals($output->bookmarkObject->bookmarkSet->lastmark->timeOffset, "00:00");
         $this->assertNull($output->bookmarkObject->bookmarkSet->lastmark->charOffset);
+    }
+
+    /**
+     * @group daisyonlineservice
+     * @group operation
+     */
+    public function testGetQuestions()
+    {
+        // request is not valid
+        $input = new getQuestions();
+        $this->assertTrue($this->callOperation('getQuestions', $input, 'invalidParameterFault'));
+
+        // search not supported by server
+        $input->userResponses = new userResponses(array(new userResponse('search')));
+        $this->assertTrue($this->callOperation('getQuestions', $input, 'invalidParameterFault'));
+
+        // back not supported by server
+        $input->userResponses = new userResponses(array(new userResponse('back')));
+        $this->assertTrue($this->callOperation('getQuestions', $input, 'invalidParameterFault'));
+
+        // unkown question id
+        $input->userResponses = new userResponses(array(new userResponse('unkown')));
+        $this->assertTrue($this->callOperation('getQuestions', $input, 'invalidParameterFault'));
+
+        // adapter throws exception on menuNext
+        $input->userResponses = new userResponses(array(new userResponse('exception-menu-next', 'value')));
+        $this->assertTrue($this->callOperation('getQuestions', $input, 'internalServerErrorFault'));
+
+        // adapter returns false
+        $input->userResponses = new userResponses(array(new userResponse('false', 'value')));
+        $this->assertTrue($this->callOperation('getQuestions', $input, 'internalServerErrorFault'));
+
+        // default menu is returned
+        $input->userResponses = new userResponses(array(new userResponse('default')));
+        $output = self::$instance->getQuestions($input);
+        $this->assertCount(1, $output->questions->multipleChoiceQuestion);
+        $this->assertArrayHasKey(1, $output->questions->multipleChoiceQuestion);
+        $this->assertInstanceOf('multipleChoiceQuestion', $output->questions->multipleChoiceQuestion[1]);
+        $this->assertEquals('main-menu', $output->questions->multipleChoiceQuestion[1]->id);
+        $this->assertCount(2, $output->questions->multipleChoiceQuestion[1]->choices->choice);
+        $this->assertNull($output->questions->inputQuestion);
+        $this->assertNull($output->questions->contentListRef);
+        $this->assertNull($output->questions->label);
+
+        // next menu is returned
+        $input->userResponses = new userResponses(array(new userResponse('main-menu', 'give-feedback')));
+        $output = self::$instance->getQuestions($input);
+        $this->assertCount(1, $output->questions->multipleChoiceQuestion);
+        $this->assertArrayHasKey(1, $output->questions->multipleChoiceQuestion);
+        $this->assertInstanceOf('multipleChoiceQuestion', $output->questions->multipleChoiceQuestion[1]);
+        $this->assertEquals('rate-service', $output->questions->multipleChoiceQuestion[1]->id);
+        $this->assertCount(5, $output->questions->multipleChoiceQuestion[1]->choices->choice);
+        $this->assertCount(1, $output->questions->inputQuestion);
+        $this->assertArrayHasKey(2, $output->questions->inputQuestion);
+        $this->assertInstanceOf('inputQuestion', $output->questions->inputQuestion[2]);
+        $this->assertEquals('user-input', $output->questions->inputQuestion[2]->id);
+        $this->assertCount(1, $output->questions->inputQuestion[2]->inputTypes->input);
+        $this->assertEquals('default-value', $output->questions->inputQuestion[2]->defaultValue);
+        $this->assertNull($output->questions->contentListRef);
+        $this->assertNull($output->questions->label);
+
+        // content list endpoint is returned
+        $input->userResponses = new userResponses(array(new userResponse('content-list-endpoint', 'value')));
+        $output = self::$instance->getQuestions($input);
+        $this->assertNull($output->questions->multipleChoiceQuestion);
+        $this->assertNull($output->questions->inputQuestion);
+        $this->assertEquals($output->questions->contentListRef, "content-list-ref");
+        $this->assertNull($output->questions->label);
+
+        // label endpoint is returned
+        $input->userResponses = new userResponses(array(new userResponse('label-endpoint', 'value')));
+        $output = self::$instance->getQuestions($input);
+        $this->assertNull($output->questions->multipleChoiceQuestion);
+        $this->assertNull($output->questions->inputQuestion);
+        $this->assertNull($output->questions->contentListRef);
+        $this->assertInstanceOf('label', $output->questions->label);
+        $this->assertEquals($output->questions->label->text, 'text');
+        $this->assertInstanceOf('audio', $output->questions->label->audio);
+        $this->assertEquals($output->questions->label->audio->uri, 'uri');
+        $this->assertEquals($output->questions->label->audio->rangeBegin, 0);
+        $this->assertEquals($output->questions->label->audio->rangeEnd, 1);
+        $this->assertEquals($output->questions->label->audio->size, 2);
+        $this->assertEquals($output->questions->label->lang, 'en');
+        $this->assertEquals($output->questions->label->dir, 'ltr');
     }
 
     /**

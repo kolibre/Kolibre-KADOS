@@ -79,6 +79,21 @@ class TestAdapter extends Adapter
         case Adapter::LABEL_SUBCATEGORY:
             return $label;
             break;
+        case Adapter::LABEL_INPUTQUESTION:
+            if ($id == 'input-question-exception')
+                throw new AdapterException('Error in adapter');
+            return $label;
+            break;
+        case Adapter::LABEL_CHOICEQUESTION:
+            if ($id == 'mulitple-choice-question-exception')
+                throw new AdapterException('Error in adapter');
+            return $label;
+            break;
+        case Adapter::LABEL_CHOICE:
+            if ($id == 'choice-exception')
+                throw new AdapterException('Error in adapter');
+            return $label;
+            break;
         default:
             return false;
         }
@@ -400,6 +415,43 @@ class TestAdapter extends Adapter
 
         $bookmarkSet = '{"title":{"text":"text"}, "uid":"uid", "lastmark":{"ncxRef":"ncxRef", "URI":"uri", "timeOffset":"00:00"}}';
         return array('lastModifiedDate' => '2016-01-01T00:00:00Z', 'bookmarkSet' => $bookmarkSet);
+    }
+
+    public function menuDefault()
+    {
+        $mainMenu = array('type' => 'multipleChoiceQuestion', 'id' => 'main-menu', 'choices' => array('search-library', 'give-feedback'));
+        return array($mainMenu);
+    }
+
+    public function menuSearch()
+    {
+        return false;
+    }
+
+    public function menuBack()
+    {
+        return false;
+    }
+
+    public function menuNext($responses)
+    {
+        if (count($responses) == 1 && $responses[0]['questionID'] == 'exception-menu-next')
+            throw new AdapterException('Error in adapter');
+        if (count($responses) == 1 && $responses[0]['questionID'] == 'false')
+            throw new AdapterException('Error in adapter');
+        if (count($responses) == 1 && $responses[0]['questionID'] == 'content-list-endpoint')
+            return "content-list-ref";
+        if (count($responses) == 1 && $responses[0]['questionID'] == 'label-endpoint')
+            return $this->label('label', Adapter::LABEL_CHOICE);
+        if (count($responses) == 1 && $responses[0]['questionID'] == 'main-menu' && $responses[0]['value'] == 'search-library')
+            return $this->menuSearch();
+        if (count($responses) == 1 && $responses[0]['questionID'] == 'main-menu' && $responses[0]['value'] == 'give-feedback')
+        {
+            $rateQuestion = array('type' => 'multipleChoiceQuestion', 'id' => 'rate-service', 'choices' => array('A', 'B', 'C', 'D', 'E'));
+            $userInput = array('type' => 'inputQuestion', 'id' => 'user-input', 'inputTypes' => array('TEXT_ALPHANUMERIC'), 'defaultValue' => 'default-value');
+            return array($rateQuestion, $userInput);
+        }
+        return false;
     }
 
     public function userCredentials($manufacturer, $model, $serialNumber, $version)

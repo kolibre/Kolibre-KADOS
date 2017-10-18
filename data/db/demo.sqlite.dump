@@ -310,6 +310,51 @@ CREATE TABLE "language" (
 INSERT INTO "language" VALUES(1,'en');
 INSERT INTO "language" VALUES(2,'sv');
 INSERT INTO "language" VALUES(3,'fi');
+CREATE TABLE "question" (
+  "id" INTEGER PRIMARY KEY AUTOINCREMENT,
+  "parent_id" INTEGER NOT NULL,
+  "questiontype_id" INTEGET NOT NULL,
+  FOREIGN KEY("parent_id") REFERENCES "question"("id") ON DELETE SET NULL ON UPDATE SET NULL
+);
+CREATE TABLE "questioninput" (
+  "id" INTEGER PRIMARY KEY AUTOINCREMENT,
+  "question_id" INTEGER NOT NULL,
+  "allow_multiple_selections" INTEGER DEFAULT NULL,
+  "text_numeric" INTEGER DEFAULT NULL,
+  "text_alpanumeric" INTEGER DEFAULT NULL,
+  "audio" INTEGER DEFAULT NULL,
+  "default_value" TEXT DEFAULT NULL,
+  FOREIGN KEY("question_id") REFERENCES "question"("id") ON DELETE SET NULL ON UPDATE SET NULL
+);
+CREATE TABLE "questiontype" (
+  "id" INTEGER PRIMARY KEY AUTOINCREMENT,
+  "type" STRING NOT NULL
+);
+INSERT INTO "questiontype" VALUES(1, "multipleChoiceQuestion");
+INSERT INTO "questiontype" VALUES(2, "inputQuestion");
+INSERT INTO "questiontype" VALUES(3, "choice");
+INSERT INTO "questiontype" VALUES(4, "contentListRef");
+INSERT INTO "questiontype" VALUES(5, "label");
+CREATE TABLE "question_questiontext" (
+  "id" INTEGER PRIMARY KEY AUTOINCREMENT,
+  "question_id" INTEGER NOT NULL,
+  "questiontext_id" INTEGER NOT NULL,
+  FOREIGN KEY("question_id") REFERENCES "question"("id") ON DELETE SET NULL ON UPDATE SET NULL,
+  FOREIGN KEY("questiontext_id") REFERENCES "questiontext"("id") ON DELETE SET NULL ON UPDATE SET NULL
+);
+CREATE TABLE "questiontext" (
+  "id" INTEGER PRIMARY KEY AUTOINCREMENT,
+  "language_id" INTEGER NOT NULL,
+  "text" INTEGER NOT NULL,
+  FOREIGN KEY("language_id") REFERENCES "language"("id") ON DELETE SET NULL ON UPDATE SET NULL
+);
+CREATE TABLE "questionaudio" (
+  "id" INTEGER PRIMARY KEY AUTOINCREMENT,
+  "questiontext_id" INTEGER NOT NULL,
+  "size" INTEGER NOT NULL,
+  "length" INTEGER NOT NULL,
+  FOREIGN KEY("questiontext_id") REFERENCES "questiontext"("id") ON DELETE SET NULL ON UPDATE SET NULL
+);
 CREATE TABLE "user" (
   "id" INTEGER PRIMARY KEY AUTOINCREMENT,
   "username" TEXT NOT NULL,
@@ -372,6 +417,7 @@ INSERT INTO "sqlite_sequence" VALUES('contentlist',4);
 INSERT INTO "sqlite_sequence" VALUES('contentmetadata',67);
 INSERT INTO "sqlite_sequence" VALUES('contentresource',146);
 INSERT INTO "sqlite_sequence" VALUES('language',2);
+INSERT INTO "sqlite_sequence" VALUES('questiontype',5);
 INSERT INTO "sqlite_sequence" VALUES('user',1);
 INSERT INTO "sqlite_sequence" VALUES('userannouncement',2);
 INSERT INTO "sqlite_sequence" VALUES('usercontent',3);

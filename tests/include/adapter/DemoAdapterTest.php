@@ -245,7 +245,9 @@ class DemoAdapterTest extends PHPUnit_Framework_TestCase
         $this->assertEquals('en', $label['lang']);
         $this->assertArrayHasKey('audio', $label);
         $this->assertArrayHasKey('uri', $label['audio']);
+        $this->assertContains('announcement_1.ogg', $label['audio']['uri']);
         $this->assertArrayHasKey('size', $label['audio']);
+        $this->assertEquals(24677, $label['audio']['size']);
         $label = self::$adapter->label(1, Adapter::LABEL_ANNOUNCEMENT, 'sv');
         $this->assertArrayHasKey('text', $label);
         $this->assertContains('Välkommen', $label['text']);
@@ -253,7 +255,9 @@ class DemoAdapterTest extends PHPUnit_Framework_TestCase
         $this->assertEquals('sv', $label['lang']);
         $this->assertArrayHasKey('audio', $label);
         $this->assertArrayHasKey('uri', $label['audio']);
+        $this->assertContains('announcement_2.ogg', $label['audio']['uri']);
         $this->assertArrayHasKey('size', $label['audio']);
+        $this->assertEquals(27392, $label['audio']['size']);
     }
 
     public function testAnnouncements()

@@ -260,8 +260,6 @@ class DemoAdapter extends Adapter
 
     public function announcementAudioUri($announcementId)
     {
-        $announcementId = $this->extractId($announcementId);
-
         $filename = "announcement_$announcementId.ogg";
         return $this->serviceBaseUri()."media/$filename";
     }
@@ -299,7 +297,7 @@ class DemoAdapter extends Adapter
             $tmpLabel['text'] = $row['text'];
             $tmpLabel['lang'] = $row['lang'];
             $audio = array();
-            $audio['uri'] = $this->announcementAudioUri($announcementId);
+            $audio['uri'] = $this->announcementAudioUri($row['id']);
             $size = $row['size'];
             if ($size > 0) $audio['size'] = $size;
             $tmpLabel['audio'] = $audio;

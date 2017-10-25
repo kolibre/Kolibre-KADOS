@@ -163,10 +163,6 @@ function encodeInputQuestion($dom, $node, $inputQuestion)
     {
         $node->setAttribute("id", $inputQuestion->id);
     }
-    if (!is_null($inputQuestion->defaultValue) && is_string($inputQuestion->defaultValue))
-    {
-        $node->setAttribute("defaultValue", $inputQuestion->defaultValue);
-    }
 }
 
 /**

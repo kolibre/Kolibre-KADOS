@@ -27,24 +27,25 @@ class DaisyOnlineServiceTest extends PHPUnit_Framework_TestCase
 {
     protected static $inifile;
     protected static $instance;
+    protected static $settings;
 
     public static function setUpBeforeClass()
     {
         self::$inifile = realpath(dirname(__FILE__)) . '/service.ini';
         if (file_exists(self::$inifile)) unlink(self::$inifile);
 
-        $settings = array();
-        $settings['Service'] = array();
-        $settings['Service']['supportedOptionalOperations'] = array();
-        $settings['Service']['supportedOptionalOperations'][] = 'SERVICE_ANNOUNCEMENTS';
-        $settings['Service']['supportedOptionalOperations'][] = 'SET_BOOKMARKS';
-        $settings['Service']['supportedOptionalOperations'][] = 'GET_BOOKMARKS';
-        $settings['Service']['supportedOptionalOperations'][] = 'DYNAMIC_MENUS';
-        $settings['Adapter'] = array();
-        $settings['Adapter']['name'] = 'TestAdapter';
-        $settings['Adapter']['path'] = realpath(dirname(__FILE__));
+        self::$settings = array();
+        self::$settings['Service'] = array();
+        self::$settings['Service']['supportedOptionalOperations'] = array();
+        self::$settings['Service']['supportedOptionalOperations'][] = 'SERVICE_ANNOUNCEMENTS';
+        self::$settings['Service']['supportedOptionalOperations'][] = 'SET_BOOKMARKS';
+        self::$settings['Service']['supportedOptionalOperations'][] = 'GET_BOOKMARKS';
+        self::$settings['Service']['supportedOptionalOperations'][] = 'DYNAMIC_MENUS';
+        self::$settings['Adapter'] = array();
+        self::$settings['Adapter']['name'] = 'TestAdapter';
+        self::$settings['Adapter']['path'] = realpath(dirname(__FILE__));
 
-        self::write_ini_file($settings, self::$inifile);
+        self::write_ini_file(self::$settings, self::$inifile);
 
         self::$instance = new DaisyOnlineService(self::$inifile);
         self::$instance->disableInternalSessionHandling();
@@ -153,7 +154,7 @@ class DaisyOnlineServiceTest extends PHPUnit_Framework_TestCase
         $this->assertFalse($output->serviceAttributes->supportsSearch);
         $this->assertNull($output->serviceAttributes->supportedUplinkAudioCodecs->codec);
         $this->assertFalse($output->serviceAttributes->supportsAudioLabels);
-        $this->assertCount(3, $output->serviceAttributes->supportedOptionalOperations->operation);
+        $this->assertCount(4, $output->serviceAttributes->supportedOptionalOperations->operation);
         $this->assertContains('SERVICE_ANNOUNCEMENTS', $output->serviceAttributes->supportedOptionalOperations->operation);
 
         // adapter throws exception on label
@@ -216,6 +217,11 @@ class DaisyOnlineServiceTest extends PHPUnit_Framework_TestCase
         $this->assertContains('GET_BOOKMARKS', $output->serviceAttributes->supportedOptionalOperations->operation);
         $this->assertContains('DYNAMIC_MENUS', $output->serviceAttributes->supportedOptionalOperations->operation);
         $this->assertContains('PDTB2_KEY_PROVISION', $output->serviceAttributes->supportedOptionalOperations->operation);
+
+        // apply initial settings
+        self::write_ini_file(self::$settings, self::$inifile);
+        self::$instance = new DaisyOnlineService(self::$inifile);
+        self::$instance->disableInternalSessionHandling();
     }
 
     /**
@@ -775,7 +781,6 @@ class DaisyOnlineServiceTest extends PHPUnit_Framework_TestCase
         $this->assertInstanceOf('inputQuestion', $output->questions->inputQuestion[2]);
         $this->assertEquals('user-input', $output->questions->inputQuestion[2]->id);
         $this->assertCount(1, $output->questions->inputQuestion[2]->inputTypes->input);
-        $this->assertEquals('default-value', $output->questions->inputQuestion[2]->defaultValue);
         $this->assertNull($output->questions->contentListRef);
         $this->assertNull($output->questions->label);
 

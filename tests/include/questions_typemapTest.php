@@ -33,7 +33,7 @@ class QuestionsTypemap extends PHPUnit_Framework_TestCase
 </choice>
 </choices>
 </multipleChoiceQuestion>
-<inputQuestion id="q2" defaultValue="defaultValue">
+<inputQuestion id="q2">
 <inputTypes>
 <input type="TEXT_NUMERIC"/>
 <input type="AUDIO"/>
@@ -91,7 +91,7 @@ XML;
         // question 2
         $inputTypes = new inputTypes(array(new input('TEXT_NUMERIC'), new input('AUDIO')));
         $q2label = new label('question 2',new audio('src',1,2,3),'en','ltr');
-        $q2 = new inputQuestion($inputTypes, $q2label, 'q2', 'defaultValue');
+        $q2 = new inputQuestion($inputTypes, $q2label, 'q2');
         $questions->addInputQuestion($q2);
         // question 3
         $q3label = new label('question 3',new audio('src',1,2,3),'en','ltr');

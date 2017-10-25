@@ -75,24 +75,6 @@ class inputQuestionTest extends PHPUnit_Framework_TestCase
         $instance->id = 'id';
         $this->assertTrue($instance->validate());
     }
-
-    /**
-     * @group inputQuestion
-     * @group validate
-     */
-    public function testDefaultValue()
-    {
-        $instance = new inputQuestion(new inputTypes(array(new input('TEXT_NUMERIC'))),new label('text',null,'en'),'id');
-        $this->assertTrue($instance->validate());        
-        $instance->defaultValue = 1;
-        $this->assertFalse($instance->validate());
-        $this->assertContains('inputQuestion.defaultValue', $instance->getError());
-        $instance->defaultValue = '';
-        $this->assertFalse($instance->validate());
-        $this->assertContains('inputQuestion.defaultValue', $instance->getError());
-        $instance->defaultValue = 'defaultValue';
-        $this->assertTrue($instance->validate());        
-    }
 }
 
 ?>

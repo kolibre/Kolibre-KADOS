@@ -376,8 +376,7 @@ class DaisyOnlineService
         $announcementsPullFrequency = $this->serviceAttributes['announcementsPullFrequency'];
 
         // set progressStateOperationAllowed
-        // TODO: make this configurable in service.ini
-        $progressStateOperationAllowed = false;
+        $progressStateOperationAllowed = in_array('PROGRESS_STATE', $this->optionalOperations) ? true : false;
 
         $serviceAttributes = new serviceAttributes(
             $serviceProvider,

@@ -373,8 +373,7 @@ class DaisyOnlineService
         $accessConfig = $this->serviceAttributes['accessConfig'];
 
         // set announcementsPullFrequency
-        // TODO: make this configurable in service.ini
-        $announcementsPullFrequency = 720;
+        $announcementsPullFrequency = $this->serviceAttributes['announcementsPullFrequency'];
 
         // set progressStateOperationAllowed
         // TODO: make this configurable in service.ini
@@ -1528,6 +1527,17 @@ class DaisyOnlineService
             else
             {
                 $msg = "No valid access config found, defaulting to STREAM_AND_DOWNLOAD";
+                $this->logger->warn($msg);
+            }
+        }
+        $this->serviceAttributes['announcementsPullFrequency'] = 0;
+        if (array_key_exists('announcementsPullFrequency', $settings))
+        {
+            if ((int)$settings['announcementsPullFrequency'] > 0)
+                $this->serviceAttributes['announcementsPullFrequency'] = (int)$settings['announcementsPullFrequency'];
+            else
+            {
+                $msg = "Invalid announcements pull frequency, defaulting to 0";
                 $this->logger->warn($msg);
             }
         }

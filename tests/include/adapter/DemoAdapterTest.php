@@ -622,6 +622,16 @@ class DemoAdapterTest extends PHPUnit_Framework_TestCase
         $msg = "Failed asserting that $haystack' contains any of '$needles'.";
         $this->assertTrue($result, $msg);
     }
+
+    public function testContentAddBookshelf()
+    {
+        $this->assertTrue(self::$adapter->contentAddBookshelf(10));
+        $this->assertTrue(self::$adapter->contentAddBookshelf('con_10'));
+        $this->assertTrue(self::$adapter->contentAddBookshelf(1));
+        $this->assertTrue(self::$adapter->contentAddBookshelf('con_1'));
+        $this->assertTrue(self::$adapter->contentAddBookshelf(2));
+        $this->assertTrue(self::$adapter->contentAddBookshelf('con_2'));
+    }
 }
 
 ?>

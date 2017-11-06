@@ -567,12 +567,17 @@ class DaisyOnlineService
                         // multipleChoiceQuestion [optional]
                         if (in_array('DYNAMIC_MENUS', $this->serviceAttributes['supportedOptionalOperations']))
                         {
-                            // TODO: implement me when get
                             $question = $this->adapter->menuContentQuestion($contentId);
-                            if (is_array($question))
+                            if (is_array($question) && array_key_exists('type', $question))
                             {
-                                // TODO: implement me when getQuestions operation is implemented
-                                $this->logger->warn("please implement me, multipleChoiceQuestion not set");
+                                if ($question['type'] == 'multipleChoiceQuestion')
+                                {
+                                    $contentItem->setMultipleChoiceQuestion($this->createMultipleChoiceQuestion($question));
+                                }
+                                else
+                                {
+                                    $this->logger->warn("Only mutlipleChoiceQuestions are allowed with contentLists");
+                                }
                             }
                         }
 

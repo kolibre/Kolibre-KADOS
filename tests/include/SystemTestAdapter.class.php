@@ -274,6 +274,13 @@ class SystemTestAdapter extends Adapter
         return false;
     }
 
+    public function menuContentQuestion($contentId)
+    {
+        if ($contentId == "id_1")
+            return array('type' => 'multipleChoiceQuestion', 'id' => 'options_ids', 'choices' => array('option_1', 'option_2'));
+        return array();
+    }
+
     public function userCredentials($manufacturer, $model, $serialNumber, $version)
     {
         return array('username' => 'username', 'password' => 'encrypted password');

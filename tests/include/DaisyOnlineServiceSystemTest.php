@@ -199,11 +199,13 @@ class DaisyOnlineServiceSystem extends PHPUnit_Framework_TestCase
             {
                 $this->assertNotNull($contentItem->lastmark);
                 $this->assertTrue($contentItem->hasBookmarks);
+                $this->assertNotNull($contentItem->multipleChoiceQuestion);
             }
             else
             {
                 $this->assertNull($contentItem->lastmark);
                 $this->assertFalse($contentItem->hasBookmarks);
+                $this->assertNull($contentItem->multipleChoiceQuestion);
             }
             foreach($contentItem->metadata as $metadata)
             {

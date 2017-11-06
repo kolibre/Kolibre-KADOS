@@ -554,13 +554,14 @@ class DaisyOnlineService
                         $contentItem->setAccessPermission($accessPermission);
 
                         // lastmark [optional]
-                        if (in_array('SET_BOOKMARKS', $this->serviceAttributes['supportedOptionalOperations']))
+                        if (in_array('SET_BOOKMARKS', $this->serviceAttributes['supportedOptionalOperations']) && in_array('GET_BOOKMARKS', $this->serviceAttributes['supportedOptionalOperations']))
                         {
-                            $lastmark = $this->adapter->getBookmarks($contentId, Adapter::BMGET_LASTMARK);
-                            if (is_array($lastmark))
+                            $bookmarks = $this->adapter->getBookmarks($contentId, Adapter::BMGET_LASTMARK);
+                            if (is_array($bookmarks))
                             {
-                                // TODO: implement me when getBookmarks operation is implemented
-                                $this->logger->warn("please implement me, lastmark not set");
+                                require_once('bookmarkSet_serialize.php');
+                                $bookmarkSet = bookmarkSet_from_json($bookmarks['bookmarkSet']);
+                                $contentItem->setLastmark($bookmarkSet->lastmark);
                             }
                         }
                         // multipleChoiceQuestion [optional]
@@ -617,11 +618,18 @@ class DaisyOnlineService
 
                         // hasBookmarks [mandatory] assume no bookmarks
                         $contentItem->setHasBookmarks(false);
-                        if (in_array('SET_BOOKMARKS', $this->serviceAttributes['supportedOptionalOperations']))
+                        if (in_array('SET_BOOKMARKS', $this->serviceAttributes['supportedOptionalOperations']) && in_array('GET_BOOKMARKS', $this->serviceAttributes['supportedOptionalOperations']))
                         {
                             $bookmarks = $this->adapter->getBookmarks($contentId, Adapter::BMGET_ALL);
                             if (is_array($bookmarks))
-                                $contentItem->setHasBookmarks(true);
+                            {
+                                require_once('bookmarkSet_serialize.php');
+                                $bookmarkSet = bookmarkSet_from_json($bookmarks['bookmarkSet']);
+                                if (!is_null($bookmarkSet->bookmark) || !is_null($bookmarkSet->hilite))
+                                {
+                                    $contentItem->setHasBookmarks(true);
+                                }
+                            }
                         }
                     }
                     catch (AdapterException $e)

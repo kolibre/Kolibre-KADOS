@@ -28,7 +28,7 @@ class SystemTestAdapter extends Adapter
     protected $sessionActive = true;
     protected $contentLists = array('bookshelf' => array('id_1','id_2'));
     protected $announcements = array('ann_1','ann_2','ann_3');
-    protected $bookmarks = array();
+    protected $bookmarks = array('id_1' => "{\"title\":{\"text\":\"dc:title\"}, \"uid\":\"dc:identifier\", \"lastmark\":{\"ncxRef\":\"ncxRef\", \"URI\":\"uri\", \"charOffset\":10}, \"bookmark\":[{\"ncxRef\":\"ncxRef\",\"URI\":\"uri\",\"timeOffset\":\"00:00:00\"}]}");
 
     public function startSession()
     {

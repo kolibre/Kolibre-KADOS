@@ -102,7 +102,6 @@ XML;
         $questions->addMultipleChoiceQuestion($q3);
         $questions->setContentListRef('contentListRef');
         $questions->setLabel(new label('label',new audio('src',1,2,3),'en','ltr'));
-        // print_r($questions);
         $outputXML = questions_to_xml($questions);
 
         // tweak output and input to make them compareable

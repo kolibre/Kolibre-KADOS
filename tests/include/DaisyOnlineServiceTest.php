@@ -28,7 +28,7 @@ class DaisyOnlineServiceTest extends PHPUnit_Framework_TestCase
 {
     protected static $inifile;
     protected static $instance;
-    protected $readingSsytemAttributes;
+    protected $readingSystemAttributes;
 
     public function setUp()
     {
@@ -79,6 +79,9 @@ class DaisyOnlineServiceTest extends PHPUnit_Framework_TestCase
 
         $settings = array();
         $settings['Service'] = array();
+        $settings['Service']['serviceProvider'] = 'serviceProvider';
+        $settings['Service']['service'] = 'service';
+        $settings['Service']['accessConfig'] = 'STREAM_AND_RESTRICTED_DOWNLOAD';
         $settings['Service']['supportedOptionalOperations'] = array();
         $settings['Service']['supportedOptionalOperations'][] = 'SERVICE_ANNOUNCEMENTS';
         $settings['Service']['supportedOptionalOperations'][] = 'SET_BOOKMARKS';
@@ -88,6 +91,7 @@ class DaisyOnlineServiceTest extends PHPUnit_Framework_TestCase
         $settings['Service']['supportedOptionalOperationsExtra'][] = 'PROGRESS_STATE';
         $settings['Service']['supportedOptionalOperationsExtra'][] = 'USER_CREDENTIALS';
         $settings['Service']['supportedOptionalOperationsExtra'][] = 'ADD_CONTENT';
+        $settings['Service']['announcementsPullFrequency'] = 60;
         $settings['Adapter'] = array();
         $settings['Adapter']['name'] = 'TestAdapter';
         $settings['Adapter']['path'] = realpath(dirname(__FILE__));
@@ -165,7 +169,16 @@ class DaisyOnlineServiceTest extends PHPUnit_Framework_TestCase
         $input = new logOn('valid', 'valid', $this->readingSystemAttributes);
         $output = self::$instance->logOn($input);
         $this->assertInstanceOf('serviceAttributes',$output->serviceAttributes);
-
+        $this->assertEquals('serviceProvider', $output->serviceAttributes->serviceProvider->id);
+        $this->assertEquals('service', $output->serviceAttributes->service->id);
+        $this->assertEquals(false, $output->serviceAttributes->supportsServerSideBack);
+        $this->assertEquals(false, $output->serviceAttributes->supportsSearch);
+        $this->assertNull($output->serviceAttributes->supportedUplinkAudioCodecs->codec);
+        $this->assertEquals(false, $output->serviceAttributes->supportsAudioLabels);
+        $this->assertCount(4, $output->serviceAttributes->supportedOptionalOperations->operation);
+        $this->assertEquals('STREAM_AND_RESTRICTED_DOWNLOAD', $output->serviceAttributes->accessConfig);
+        $this->assertEquals(60, $output->serviceAttributes->announcementsPullFrequency);
+        $this->assertEquals(true, $output->serviceAttributes->progressStateOperationAllowed);
     }
 
     /**

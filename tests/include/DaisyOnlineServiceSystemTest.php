@@ -195,6 +195,18 @@ class DaisyOnlineServiceSystem extends PHPUnit_Framework_TestCase
             $this->assertTrue($contentItem->accessPermission == "STREAM_AND_DOWNLOAD_AUTOMATIC_ALLOWED");
             $this->assertTrue($contentItem->lastModifiedDate == "2016-03-11T14:23:23+00:00");
             $this->assertTrue($contentItem->returnBy == "2016-03-11T14:23:23+00:00");
+            if ($contentItem->id == 'id_1')
+            {
+                $this->assertNotNull($contentItem->lastmark);
+                $this->assertTrue($contentItem->hasBookmarks);
+                $this->assertNotNull($contentItem->multipleChoiceQuestion);
+            }
+            else
+            {
+                $this->assertNull($contentItem->lastmark);
+                $this->assertFalse($contentItem->hasBookmarks);
+                $this->assertNull($contentItem->multipleChoiceQuestion);
+            }
             foreach($contentItem->metadata as $metadata)
             {
                 $this->assertTrue(is_string($contentItem->metadata->title));

@@ -373,12 +373,10 @@ class DaisyOnlineService
         $accessConfig = $this->serviceAttributes['accessConfig'];
 
         // set announcementsPullFrequency
-        // TODO: make this configurable in service.ini
-        $announcementsPullFrequency = 720;
+        $announcementsPullFrequency = $this->serviceAttributes['announcementsPullFrequency'];
 
         // set progressStateOperationAllowed
-        // TODO: make this configurable in service.ini
-        $progressStateOperationAllowed = false;
+        $progressStateOperationAllowed = in_array('PROGRESS_STATE', $this->optionalOperations) ? true : false;
 
         $serviceAttributes = new serviceAttributes(
             $serviceProvider,
@@ -556,24 +554,30 @@ class DaisyOnlineService
                         $contentItem->setAccessPermission($accessPermission);
 
                         // lastmark [optional]
-                        if (in_array('SET_BOOKMARKS', $this->serviceAttributes['supportedOptionalOperations']))
+                        if (in_array('SET_BOOKMARKS', $this->serviceAttributes['supportedOptionalOperations']) && in_array('GET_BOOKMARKS', $this->serviceAttributes['supportedOptionalOperations']))
                         {
-                            $lastmark = $this->adapter->getBookmarks($contentId, Adapter::BMGET_LASTMARK);
-                            if (is_array($lastmark))
+                            $bookmarks = $this->adapter->getBookmarks($contentId, Adapter::BMGET_LASTMARK);
+                            if (is_array($bookmarks))
                             {
-                                // TODO: implement me when getBookmarks operation is implemented
-                                $this->logger->warn("please implement me, lastmark not set");
+                                require_once('bookmarkSet_serialize.php');
+                                $bookmarkSet = bookmarkSet_from_json($bookmarks['bookmarkSet']);
+                                $contentItem->setLastmark($bookmarkSet->lastmark);
                             }
                         }
                         // multipleChoiceQuestion [optional]
                         if (in_array('DYNAMIC_MENUS', $this->serviceAttributes['supportedOptionalOperations']))
                         {
-                            // TODO: implement me when get
                             $question = $this->adapter->menuContentQuestion($contentId);
-                            if (is_array($question))
+                            if (is_array($question) && array_key_exists('type', $question))
                             {
-                                // TODO: implement me when getQuestions operation is implemented
-                                $this->logger->warn("please implement me, multipleChoiceQuestion not set");
+                                if ($question['type'] == 'multipleChoiceQuestion')
+                                {
+                                    $contentItem->setMultipleChoiceQuestion($this->createMultipleChoiceQuestion($question));
+                                }
+                                else
+                                {
+                                    $this->logger->warn("Only mutlipleChoiceQuestions are allowed with contentLists");
+                                }
                             }
                         }
 
@@ -619,11 +623,18 @@ class DaisyOnlineService
 
                         // hasBookmarks [mandatory] assume no bookmarks
                         $contentItem->setHasBookmarks(false);
-                        if (in_array('SET_BOOKMARKS', $this->serviceAttributes['supportedOptionalOperations']))
+                        if (in_array('SET_BOOKMARKS', $this->serviceAttributes['supportedOptionalOperations']) && in_array('GET_BOOKMARKS', $this->serviceAttributes['supportedOptionalOperations']))
                         {
                             $bookmarks = $this->adapter->getBookmarks($contentId, Adapter::BMGET_ALL);
                             if (is_array($bookmarks))
-                                $contentItem->setHasBookmarks(true);
+                            {
+                                require_once('bookmarkSet_serialize.php');
+                                $bookmarkSet = bookmarkSet_from_json($bookmarks['bookmarkSet']);
+                                if (!is_null($bookmarkSet->bookmark) || !is_null($bookmarkSet->hilite))
+                                {
+                                    $contentItem->setHasBookmarks(true);
+                                }
+                            }
                         }
                     }
                     catch (AdapterException $e)
@@ -1528,6 +1539,17 @@ class DaisyOnlineService
             else
             {
                 $msg = "No valid access config found, defaulting to STREAM_AND_DOWNLOAD";
+                $this->logger->warn($msg);
+            }
+        }
+        $this->serviceAttributes['announcementsPullFrequency'] = 0;
+        if (array_key_exists('announcementsPullFrequency', $settings))
+        {
+            if ((int)$settings['announcementsPullFrequency'] > 0)
+                $this->serviceAttributes['announcementsPullFrequency'] = (int)$settings['announcementsPullFrequency'];
+            else
+            {
+                $msg = "Invalid announcements pull frequency, defaulting to 0";
                 $this->logger->warn($msg);
             }
         }

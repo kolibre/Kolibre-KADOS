@@ -1507,6 +1507,35 @@ class DemoAdapter extends Adapter
         return "que_$questionId";
     }
 
+    public function contentAddBookshelf($contentId)
+    {
+        $contentId = $this->extractId($contentId);
+
+        if ($this->contentInList($contentId, 'bookshelf')) return true;
+
+        try
+        {
+            $query = 'INSERT INTO usercontent (user_id,content_id,contentlist_id,return) VALUES(:userId, :contentId, :contentListId, :return)';
+            $sth = $this->dbh->prepare($query);
+            $values = array();
+            $values[':userId'] = $this->user;
+            $values[':contentId'] = $contentId;
+            $values[':contentListId'] = $this->contentListId('bookshelf');
+            $values[':return'] = 0;
+            if ($sth->execute($values) === false)
+            {
+                $this->logger->error("Adding content '$contentId' to bookshelf for user with id '$this->user' failed");
+                return false;
+            }
+        }
+        catch (PDOException $e)
+        {
+            $this->logger->fatal($e->getMessage());
+            throw new AdapterException('Adding content to bookshelf failed');
+        }
+        return true;
+    }
+
     public function termsOfService()
     {
         $label = array();

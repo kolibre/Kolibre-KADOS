@@ -75,6 +75,8 @@ INSERT INTO "contentlist" VALUES(1,'new');
 INSERT INTO "contentlist" VALUES(2,'issued');
 INSERT INTO "contentlist" VALUES(3,'expired');
 INSERT INTO "contentlist" VALUES(4,'returned');
+INSERT INTO "contentlist" VALUES(20,'search');
+INSERT INTO "contentlist" VALUES(30,'browse');
 CREATE TABLE "contentmetadata" (
   "id" INTEGER PRIMARY KEY AUTOINCREMENT,
   "content_id" INTEGER  NOT NULL ,
@@ -310,6 +312,215 @@ CREATE TABLE "language" (
 INSERT INTO "language" VALUES(1,'en');
 INSERT INTO "language" VALUES(2,'sv');
 INSERT INTO "language" VALUES(3,'fi');
+CREATE TABLE "question" (
+  "id" INTEGER PRIMARY KEY AUTOINCREMENT,
+  "parent_id" INTEGER NOT NULL,
+  "questiontype_id" INTEGET NOT NULL,
+  FOREIGN KEY("parent_id") REFERENCES "question"("id") ON DELETE SET NULL ON UPDATE SET NULL
+);
+INSERT INTO "question" VALUES(1,0,1); -- MAIN MENU
+INSERT INTO "question" VALUES(2,1,3); -- search option
+INSERT INTO "question" VALUES(3,1,3); -- browse option
+INSERT INTO "question" VALUES(4,1,3); -- feedback option
+INSERT INTO "question" VALUES(20,2,1); -- SEARCH MENU
+INSERT INTO "question" VALUES(21,20,3); -- search by author
+INSERT INTO "question" VALUES(22,20,3); -- search by title
+INSERT INTO "question" VALUES(23,21,2); -- input for search by author
+INSERT INTO "question" VALUES(24,22,2); -- input for search by title
+INSERT INTO "question" VALUES(25,23,4); -- endpoint for search by author
+INSERT INTO "question" VALUES(26,24,4); -- endpoint for search by title
+INSERT INTO "question" VALUES(30,3,1); -- BROWSE MENU
+INSERT INTO "question" VALUES(31,30,3); -- browse by title
+INSERT INTO "question" VALUES(32,30,3); -- browse by daisy2
+INSERT INTO "question" VALUES(33,30,3); -- browse by daisy3
+INSERT INTO "question" VALUES(34,31,4); -- endpoint for browse by title
+INSERT INTO "question" VALUES(35,32,4); -- endpoint for browse by daisy2
+INSERT INTO "question" VALUES(36,33,4); -- endpoint for browse by daisy3
+INSERT INTO "question" VALUES(40,4,1); -- FEEDBACK MENU (rate)
+INSERT INTO "question" VALUES(41,4,2); -- FEEDBACK MENU (custom feedback)
+INSERT INTO "question" VALUES(42,40,3); -- rate option excellent
+INSERT INTO "question" VALUES(43,40,3); -- rate option good
+INSERT INTO "question" VALUES(44,40,3); -- rate option fair
+INSERT INTO "question" VALUES(45,40,3); -- rate option poor
+INSERT INTO "question" VALUES(46,41,5); -- endpoint for feedback
+INSERT INTO "question" VALUES(47,42,5); -- endpoint for feedback
+INSERT INTO "question" VALUES(48,43,5); -- endpoint for feedback
+INSERT INTO "question" VALUES(49,44,5); -- endpoint for feedback
+INSERT INTO "question" VALUES(50,45,5); -- endpoint for feedback
+CREATE TABLE "questioninput" (
+  "id" INTEGER PRIMARY KEY AUTOINCREMENT,
+  "question_id" INTEGER NOT NULL,
+  "allow_multiple_selections" INTEGER DEFAULT NULL,
+  "text_numeric" INTEGER DEFAULT NULL,
+  "text_alpanumeric" INTEGER DEFAULT NULL,
+  "audio" INTEGER DEFAULT NULL,
+  "default_value" TEXT DEFAULT NULL,
+  FOREIGN KEY("question_id") REFERENCES "question"("id") ON DELETE SET NULL ON UPDATE SET NULL
+);
+INSERT INTO "questioninput" VALUES(1,1,NULL,NULL,NULL,NULL,NULL);
+INSERT INTO "questioninput" VALUES(2,20,NULL,NULL,NULL,NULL,NULL);
+INSERT INTO "questioninput" VALUES(3,23,NULL,NULL,1,NULL,NULL);
+INSERT INTO "questioninput" VALUES(4,24,NULL,NULL,1,NULL,NULL);
+INSERT INTO "questioninput" VALUES(5,30,NULL,NULL,NULL,NULL,NULL);
+INSERT INTO "questioninput" VALUES(6,40,NULL,NULL,NULL,NULL,NULL);
+INSERT INTO "questioninput" VALUES(7,41,NULL,NULL,1,NULL,NULL);
+CREATE TABLE "questiontype" (
+  "id" INTEGER PRIMARY KEY AUTOINCREMENT,
+  "type" STRING NOT NULL
+);
+INSERT INTO "questiontype" VALUES(1, "multipleChoiceQuestion");
+INSERT INTO "questiontype" VALUES(2, "inputQuestion");
+INSERT INTO "questiontype" VALUES(3, "choice");
+INSERT INTO "questiontype" VALUES(4, "contentListRef");
+INSERT INTO "questiontype" VALUES(5, "label");
+CREATE TABLE "question_questiontext" (
+  "id" INTEGER PRIMARY KEY AUTOINCREMENT,
+  "question_id" INTEGER NOT NULL,
+  "questiontext_id" INTEGER NOT NULL,
+  FOREIGN KEY("question_id") REFERENCES "question"("id") ON DELETE SET NULL ON UPDATE SET NULL,
+  FOREIGN KEY("questiontext_id") REFERENCES "questiontext"("id") ON DELETE SET NULL ON UPDATE SET NULL
+);
+INSERT INTO "question_questiontext" VALUES(1,1,1);
+INSERT INTO "question_questiontext" VALUES(2,1,2);
+INSERT INTO "question_questiontext" VALUES(3,2,3);
+INSERT INTO "question_questiontext" VALUES(4,2,4);
+INSERT INTO "question_questiontext" VALUES(5,3,5);
+INSERT INTO "question_questiontext" VALUES(6,3,6);
+INSERT INTO "question_questiontext" VALUES(7,4,7);
+INSERT INTO "question_questiontext" VALUES(8,4,8);
+INSERT INTO "question_questiontext" VALUES(9,20,9);
+INSERT INTO "question_questiontext" VALUES(10,20,10);
+INSERT INTO "question_questiontext" VALUES(11,21,11);
+INSERT INTO "question_questiontext" VALUES(12,21,12);
+INSERT INTO "question_questiontext" VALUES(13,22,13);
+INSERT INTO "question_questiontext" VALUES(14,22,14);
+INSERT INTO "question_questiontext" VALUES(15,23,15);
+INSERT INTO "question_questiontext" VALUES(16,23,16);
+INSERT INTO "question_questiontext" VALUES(17,24,17);
+INSERT INTO "question_questiontext" VALUES(18,24,18);
+INSERT INTO "question_questiontext" VALUES(19,30,19);
+INSERT INTO "question_questiontext" VALUES(20,30,20);
+INSERT INTO "question_questiontext" VALUES(21,31,21);
+INSERT INTO "question_questiontext" VALUES(22,31,22);
+INSERT INTO "question_questiontext" VALUES(23,32,23);
+INSERT INTO "question_questiontext" VALUES(24,32,24);
+INSERT INTO "question_questiontext" VALUES(25,33,25);
+INSERT INTO "question_questiontext" VALUES(26,33,26);
+INSERT INTO "question_questiontext" VALUES(27,40,27);
+INSERT INTO "question_questiontext" VALUES(28,40,28);
+INSERT INTO "question_questiontext" VALUES(29,41,29);
+INSERT INTO "question_questiontext" VALUES(30,41,30);
+INSERT INTO "question_questiontext" VALUES(31,42,31);
+INSERT INTO "question_questiontext" VALUES(32,42,32);
+INSERT INTO "question_questiontext" VALUES(33,43,44);
+INSERT INTO "question_questiontext" VALUES(34,43,44);
+INSERT INTO "question_questiontext" VALUES(35,44,35);
+INSERT INTO "question_questiontext" VALUES(36,44,26);
+INSERT INTO "question_questiontext" VALUES(37,45,37);
+INSERT INTO "question_questiontext" VALUES(38,45,38);
+INSERT INTO "question_questiontext" VALUES(39,46,39);
+INSERT INTO "question_questiontext" VALUES(40,46,40);
+INSERT INTO "question_questiontext" VALUES(41,47,39);
+INSERT INTO "question_questiontext" VALUES(42,47,40);
+INSERT INTO "question_questiontext" VALUES(43,48,39);
+INSERT INTO "question_questiontext" VALUES(44,48,40);
+INSERT INTO "question_questiontext" VALUES(45,49,39);
+INSERT INTO "question_questiontext" VALUES(46,49,40);
+INSERT INTO "question_questiontext" VALUES(47,50,39);
+INSERT INTO "question_questiontext" VALUES(48,50,40);
+CREATE TABLE "questiontext" (
+  "id" INTEGER PRIMARY KEY AUTOINCREMENT,
+  "language_id" INTEGER NOT NULL,
+  "text" INTEGER NOT NULL,
+  FOREIGN KEY("language_id") REFERENCES "language"("id") ON DELETE SET NULL ON UPDATE SET NULL
+);
+INSERT INTO "questiontext" VALUES(1,1,"What would you like to do?");
+INSERT INTO "questiontext" VALUES(2,2,"Vad vill du göra?");
+INSERT INTO "questiontext" VALUES(3,1,"Search the library.");
+INSERT INTO "questiontext" VALUES(4,2,"Söka i biblioteket.");
+INSERT INTO "questiontext" VALUES(5,1,"Browse the library.");
+INSERT INTO "questiontext" VALUES(6,2,"Utforska biblioteket.");
+INSERT INTO "questiontext" VALUES(7,1,"Give feedback.");
+INSERT INTO "questiontext" VALUES(8,2,"Ge feedback.");
+INSERT INTO "questiontext" VALUES(9,1,"What do you want to search by?");
+INSERT INTO "questiontext" VALUES(10,2,"Vad vill du söka enligt?");
+INSERT INTO "questiontext" VALUES(11,1,"Search by author.");
+INSERT INTO "questiontext" VALUES(12,2,"Sök bland författare.");
+INSERT INTO "questiontext" VALUES(13,1,"Search by title.");
+INSERT INTO "questiontext" VALUES(14,2,"Sök bland titel.");
+INSERT INTO "questiontext" VALUES(15,1,"Author keywords:");
+INSERT INTO "questiontext" VALUES(16,2,"Sökord författare:");
+INSERT INTO "questiontext" VALUES(17,1,"Title keywords:");
+INSERT INTO "questiontext" VALUES(18,2,"Sökord titel:");
+INSERT INTO "questiontext" VALUES(19,1,"How do you want to browse the library?");
+INSERT INTO "questiontext" VALUES(20,2,"Hur vill du utforska biblioteket?");
+INSERT INTO "questiontext" VALUES(21,1,"Browse by title.");
+INSERT INTO "questiontext" VALUES(22,2,"Utforska bland titlar.");
+INSERT INTO "questiontext" VALUES(23,1,"Browse by Daisy 2 content format.");
+INSERT INTO "questiontext" VALUES(24,2,"Utforska bland Daisy 2 filformat.");
+INSERT INTO "questiontext" VALUES(25,1,"Browse by Daisy 3 content format.");
+INSERT INTO "questiontext" VALUES(26,2,"Utforska bland Daisy 3 filformat.");
+INSERT INTO "questiontext" VALUES(27,1,"How would you rate this service?");
+INSERT INTO "questiontext" VALUES(28,2,"Hur skulle du betygsätta denna tjänst?");
+INSERT INTO "questiontext" VALUES(29,1,"Optional feedback?");
+INSERT INTO "questiontext" VALUES(30,2,"Frivillig feedback?");
+INSERT INTO "questiontext" VALUES(31,1,"Excellent.");
+INSERT INTO "questiontext" VALUES(32,2,"Utmärkt.");
+INSERT INTO "questiontext" VALUES(33,1,"Good.");
+INSERT INTO "questiontext" VALUES(34,2,"Bra.");
+INSERT INTO "questiontext" VALUES(35,1,"Fair.");
+INSERT INTO "questiontext" VALUES(36,2,"Dålig.");
+INSERT INTO "questiontext" VALUES(37,1,"Poor.");
+INSERT INTO "questiontext" VALUES(38,2,"Usel.");
+INSERT INTO "questiontext" VALUES(39,1,"Thank you for your feedback.");
+INSERT INTO "questiontext" VALUES(40,2,"Tack för din feedback.");
+CREATE TABLE "questionaudio" (
+  "id" INTEGER PRIMARY KEY AUTOINCREMENT,
+  "questiontext_id" INTEGER NOT NULL,
+  "size" INTEGER NOT NULL,
+  "length" INTEGER NOT NULL,
+  FOREIGN KEY("questiontext_id") REFERENCES "questiontext"("id") ON DELETE SET NULL ON UPDATE SET NULL
+);
+INSERT INTO questionaudio VALUES(1,1,13817,1303);
+INSERT INTO questionaudio VALUES(2,2,14634,1049);
+INSERT INTO questionaudio VALUES(3,3,13649,1016);
+INSERT INTO questionaudio VALUES(4,4,14255,1358);
+INSERT INTO questionaudio VALUES(5,5,13414,971);
+INSERT INTO questionaudio VALUES(6,6,14323,1427);
+INSERT INTO questionaudio VALUES(7,7,10317,776);
+INSERT INTO questionaudio VALUES(8,8,11936,865);
+INSERT INTO questionaudio VALUES(9,9,16948,1731);
+INSERT INTO questionaudio VALUES(10,10,15906,1495);
+INSERT INTO questionaudio VALUES(11,11,12455,920);
+INSERT INTO questionaudio VALUES(12,12,12857,1475);
+INSERT INTO questionaudio VALUES(13,13,10729,1016);
+INSERT INTO questionaudio VALUES(14,14,11504,1092);
+INSERT INTO questionaudio VALUES(15,15,11760,926);
+INSERT INTO questionaudio VALUES(16,16,13190,1380);
+INSERT INTO questionaudio VALUES(17,17,9871,972);
+INSERT INTO questionaudio VALUES(18,18,9975,997);
+INSERT INTO questionaudio VALUES(19,19,22087,1985);
+INSERT INTO questionaudio VALUES(20,20,21288,2002);
+INSERT INTO questionaudio VALUES(21,21,9715,972);
+INSERT INTO questionaudio VALUES(22,22,13854,1339);
+INSERT INTO questionaudio VALUES(23,23,19397,2018);
+INSERT INTO questionaudio VALUES(24,24,20361,2267);
+INSERT INTO questionaudio VALUES(25,25,19313,2052);
+INSERT INTO questionaudio VALUES(26,26,21900,2292);
+INSERT INTO questionaudio VALUES(27,27,17356,1507);
+INSERT INTO questionaudio VALUES(28,28,21999,2198);
+INSERT INTO questionaudio VALUES(29,29,11525,1027);
+INSERT INTO questionaudio VALUES(30,30,15271,1219);
+INSERT INTO questionaudio VALUES(31,31,8239,635);
+INSERT INTO questionaudio VALUES(32,32,9086,662);
+INSERT INTO questionaudio VALUES(33,33,5465,324);
+INSERT INTO questionaudio VALUES(34,34,8102,447);
+INSERT INTO questionaudio VALUES(35,35,7485,394);
+INSERT INTO questionaudio VALUES(36,36,6234,424);
+INSERT INTO questionaudio VALUES(37,37,5358,318);
+INSERT INTO questionaudio VALUES(38,38,7797,429);
+INSERT INTO questionaudio VALUES(39,39,15523,1368);
+INSERT INTO questionaudio VALUES(40,40,14041,1320);
 CREATE TABLE "user" (
   "id" INTEGER PRIMARY KEY AUTOINCREMENT,
   "username" TEXT NOT NULL,
@@ -368,10 +579,16 @@ INSERT INTO "sqlite_sequence" VALUES('category',4);
 INSERT INTO "sqlite_sequence" VALUES('daisyformat',3);
 INSERT INTO "sqlite_sequence" VALUES('content',3);
 INSERT INTO "sqlite_sequence" VALUES('contentaudio',3);
-INSERT INTO "sqlite_sequence" VALUES('contentlist',4);
+INSERT INTO "sqlite_sequence" VALUES('contentlist',30);
 INSERT INTO "sqlite_sequence" VALUES('contentmetadata',67);
 INSERT INTO "sqlite_sequence" VALUES('contentresource',146);
 INSERT INTO "sqlite_sequence" VALUES('language',2);
+INSERT INTO "sqlite_sequence" VALUES('question',50);
+INSERT INTO "sqlite_sequence" VALUES('questioninput',7);
+INSERT INTO "sqlite_sequence" VALUES('questiontype',5);
+INSERT INTO "sqlite_sequence" VALUES('question_questiontext',48);
+INSERT INTO "sqlite_sequence" VALUES('questiontext',40);
+INSERT INTO "sqlite_sequence" VALUES('questionaudio',40);
 INSERT INTO "sqlite_sequence" VALUES('user',1);
 INSERT INTO "sqlite_sequence" VALUES('userannouncement',2);
 INSERT INTO "sqlite_sequence" VALUES('usercontent',3);

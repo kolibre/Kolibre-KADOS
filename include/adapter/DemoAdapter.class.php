@@ -28,6 +28,16 @@ require_once('include/types/bookmarkSet.class.php');
 
 class DemoAdapter extends Adapter
 {
+    const MENU_DEFAULT = 0;
+    const MENU_SEARCH = 2;
+    const MENU_BROWSE = 3;
+    const MENU_FEEDBACK = 4;
+    const MENU_SEARCH_BY_AUTHOR = 25;
+    const MENU_SEARCH_BY_TITLE = 26;
+    const MENU_BROWSE_BY_TITLE = 34;
+    const MENU_BROWSE_BY_DAISY2 = 35;
+    const MENU_BROWSE_BY_DAISY3 = 36;
+
     // placeholders for storing user information
     private $userLoggingEnabled = false;
 
@@ -40,9 +50,12 @@ class DemoAdapter extends Adapter
     // database connection handler
     private $dbh = null;
 
+    // preferredLang is the users preferred language
+    private $preferredLang = null;
+
     public function __construct($database = null)
     {
-        // stup logger
+        // setup logger
         $this->setupLogger();
 
         // setup database connection
@@ -54,7 +67,7 @@ class DemoAdapter extends Adapter
      */
     public function __wakeup()
     {
-        // stup logger
+        // setup logger
         $this->setupLogger();
 
         // setup database connection
@@ -312,8 +325,65 @@ class DemoAdapter extends Adapter
         return $label;
     }
 
+    public function questionAudioUri($questionId)
+    {
+        $filename = "question_$questionId.ogg";
+        return $this->serviceBaseUri()."media/$filename";
+    }
+
+    public function questionLabel($questionId, $language = 'en')
+    {
+        $questionId = $this->extractId($questionId);
+
+        try
+        {
+            $query = 'SELECT
+                        questiontext.text as text,
+                        language.lang as lang,
+                        questionaudio.size as size,
+                        questionaudio.id as id
+                    FROM question_questiontext
+                    JOIN questiontext ON question_questiontext.questiontext_id = questiontext.id
+                    JOIN language ON questiontext.language_id = language.id
+                    JOIN questionaudio ON questiontext.id = questionaudio.questiontext_id
+                    WHERE question_questiontext.question_id = :questionId';
+            $sth = $this->dbh->prepare($query);
+            $sth->execute(array(':questionId' => $questionId));
+            $rows = $sth->fetchAll(PDO::FETCH_ASSOC);
+        }
+        catch (PDOException $e)
+        {
+            $this->logger->fatal($e->getMessage());
+            throw new AdapterException('Retrieving question label failed');
+        }
+
+        $label = null;
+        foreach ($rows as $row)
+        {
+            $tmpLabel = array();
+            $tmpLabel['text'] = $row['text'];
+            $tmpLabel['lang'] = $row['lang'];
+            $audio = array();
+            $audio['uri'] = $this->questionAudioUri($row['id']);
+            $size = $row['size'];
+            if ($size > 0) $audio['size'] = $size;
+            $tmpLabel['audio'] = $audio;
+            if (is_null($label)) $label = $tmpLabel;
+            if ($row['lang'] == $language)
+            {
+                $label = $tmpLabel;
+                break;
+            }
+        }
+
+        return $label;
+    }
+
     public function label($id, $type, $language = null)
     {
+        // save preferred lang for later use
+        if (is_null($this->preferredLang) && !is_null($language)) $this->preferredLang = $language;
+
         switch ($type)
         {
         case Adapter::LABEL_CONTENTITEM:
@@ -328,6 +398,11 @@ class DemoAdapter extends Adapter
             return $label;
         case Adapter::LABEL_ANNOUNCEMENT:
             $label = $this->announcementLabel($id, $language);
+            return $label;
+        case Adapter::LABEL_INPUTQUESTION:
+        case Adapter::LABEL_CHOICEQUESTION:
+        case Adapter::LABEL_CHOICE:
+            $label = $this->questionLabel($id, $language);
             return $label;
         default:
             return false;
@@ -1130,6 +1205,283 @@ class DemoAdapter extends Adapter
         }
 
         return $bookmarks;
+    }
+
+    public function menuDefault()
+    {
+        return $this->generateMenu(self::MENU_DEFAULT);
+    }
+
+    public function menuSearch()
+    {
+        return $this->generateMenu(self::MENU_SEARCH);
+    }
+
+    public function menuNext($responses)
+    {
+        // NOTE: here we would also store the data from previous
+        // questions but we are not interested in that
+        foreach ($responses as $response)
+        {
+            $questionId = $this->extractId($response['questionId']);
+            try
+            {
+                $query = 'SELECT questiontype.type
+                        FROM question
+                        JOIN questiontype ON question.questiontype_id = questiontype.id
+                        WHERE question.id = :questionId
+                        ORDER BY question.id';
+                $sth = $this->dbh->prepare($query);
+                $values = array();
+                $values[':questionId'] = $questionId;
+                $sth->execute($values);
+                $row = $sth->fetch(PDO::FETCH_ASSOC);
+            }
+            catch (PDOException $e)
+            {
+                $this->logger->fatal($e->getMessage());
+                throw new AdapterException('Failed to query database for menu question type');
+            }
+            try
+            {
+                switch ($row['type'])
+                {
+                    case 'multipleChoiceQuestion';
+                        return $this->generateMenu($this->extractId($response['value']));
+                    case 'inputQuestion':
+                        return $this->generateMenu($questionId, $response['value']);
+                }
+            }
+            catch (PDOException $e)
+            {
+                $this->logger->fatal($e->getMessage());
+                throw new AdapterException('Failed to determine next question');
+            }
+
+            break; // we're not interested in the other answers from the user
+        }
+
+        return $this->generateMenu(self::MENU_DEFAULT, $input); // default to main menu in case next question can't be determined
+    }
+
+    private function generateMenu($parentId, $input = null)
+    {
+        try
+        {
+            // get children for the given parent id
+            $query = 'SELECT
+                        question.id,
+                        questiontype.type
+                    FROM question
+                    JOIN questiontype ON question.questiontype_id = questiontype.id
+                    WHERE parent_id = :parentId
+                    ORDER BY question.id ASC';
+            $sth = $this->dbh->prepare($query);
+            $values = array();
+            $values[':parentId'] = $parentId;
+            $sth->execute($values);
+            $rows = $sth->fetchAll(PDO::FETCH_ASSOC);
+        }
+        catch (PDOException $e)
+        {
+            $this->logger->fatal($e->getMessage());
+            throw new AdapterException('Failed to query database for menu');
+        }
+
+        if (sizeof($rows) == 0)
+        {
+            $msg = "Next menu for parent = '$parentId' not available";
+            $this->logger->warn($msg);
+            throw new AdapterException('No menu found');
+        }
+
+        $questions = array();
+        foreach ($rows as $row)
+        {
+            switch ($row['type'])
+            {
+                case 'multipleChoiceQuestion':
+                    array_push($questions, $this->generateMultipleChoiceQuestion($row['id']));
+                    break;
+                case 'inputQuestion':
+                    array_push($questions, $this->generateInputQuestion($row['id']));
+                    break;
+                case 'contentListRef':
+                    return $this->generateContentListRef($row['id'], $input);
+                case 'label':
+                    return $this->generateLabel($row['id']);
+            }
+        }
+
+        return $questions;
+    }
+
+    private function generateMultipleChoiceQuestion($questionId)
+    {
+        $question = array("type" => "multipleChoiceQuestion", "id" => $this->generateQuestionId($questionId));
+        try
+        {
+            // get allow_multiple_selections
+            $query = 'SELECT allow_multiple_selections FROM questioninput WHERE question_id = :questionId';
+            $sth = $this->dbh->prepare($query);
+            $values = array();
+            $values[':questionId'] = $questionId;
+            $sth->execute($values);
+            $row = $sth->fetch(PDO::FETCH_ASSOC);
+            if (!is_null($row['allow_multiple_selections'])) $question['allowMultipleSelections'] = 1;
+            else $question['allowMultipleSelections'] = 0;
+        }
+        catch (PDOException $e)
+        {
+            $this->logger->fatal($e->getMessage());
+            throw new AdapterException('Failed to query database for menu allow multiple selection');
+        }
+        try
+        {
+            // get choices
+            $query = 'SELECT id FROM question WHERE parent_id = :parentId ORDER BY id ASC';
+            $sth = $this->dbh->prepare($query);
+            $values = array();
+            $values[':parentId'] = $questionId;
+            $sth->execute($values);
+            $rows = $sth->fetchAll(PDO::FETCH_ASSOC);
+            $choices = array();
+            foreach ($rows as $row)
+            {
+                array_push($choices, $this->generateQuestionId($row['id']));
+            }
+            $question["choices"] = $choices;
+        }
+        catch (PDOException $e)
+        {
+            $this->logger->fatal($e->getMessage());
+            throw new AdapterException('Failed to query database for menu choices');
+        }
+
+        return $question;
+    }
+
+    private function generateInputQuestion($questionId)
+    {
+        $question = array("type" => "inputQuestion", "id" => $this->generateQuestionId($questionId));
+        try
+        {
+            $query = 'SELECT * FROM questioninput WHERE question_id = :questionId';
+            $sth = $this->dbh->prepare($query);
+            $values = array();
+            $values[':questionId'] = $questionId;
+            $sth->execute($values);
+            $row = $sth->fetch(PDO::FETCH_ASSOC);
+            $inputTypes = array();
+            if (!is_null($row['text_numeric'])) $inputTypes[] = "TEXT_NUMERIC";
+            if (!is_null($row['text_alpanumeric'])) $inputTypes[] = "TEXT_ALPHANUMERIC";
+            if (!is_null($row['audio'])) $inputTypes[] = "AUDIO";
+            $question["inputTypes"] = $inputTypes;
+            if (!is_null($row['default_value'])) $question["defaultValue"] = $row["defaultValue"];
+        }
+        catch (PDOException $e)
+        {
+            $this->logger->fatal($e->getMessage());
+            throw new AdapterException('Failed to query database for menu input types and default value');
+        }
+        return $question;
+    }
+
+    private function generateContentListRef($questionId, $input = null)
+    {
+        switch ($questionId)
+        {
+            case self::MENU_SEARCH_BY_AUTHOR:
+                $query = "SELECT content_id FROM contentmetadata WHERE key = 'dc:creator' AND value LIKE :pattern";
+                $values = array(':pattern' => "%$input%");
+                $list = 'search';
+                break;
+            case self::MENU_SEARCH_BY_TITLE:
+                $query = "SELECT content_id FROM contentmetadata WHERE key = 'dc:title' AND value LIKE :pattern";
+                $values = array(':pattern' => "%$input%");
+                $list = 'search';
+                break;
+            case self::MENU_BROWSE_BY_TITLE:
+                $query = "SELECT content_id FROM contentmetadata WHERE key = 'dc:title'";
+                $values = null;
+                $list = 'browse';
+                break;
+            case self::MENU_BROWSE_BY_DAISY2:
+                $query = "SELECT content_id FROM contentmetadata WHERE key = 'dc:format' AND value = 'Daisy 2.02'";
+                $values = null;
+                $list = 'browse';
+                break;
+            case self::MENU_BROWSE_BY_DAISY3:
+                $query = "SELECT content_id FROM contentmetadata WHERE key = 'dc:format' AND value = 'ANSI/NIZO Z39.86-2005'";
+                $values = null;
+                $list = 'browse';
+                break;
+            default: // browse by title
+                $query = "SELECT content_id FROM contentmetadata WHERE key = 'dc:title'";
+                $values = null;
+                $list = 'browse';
+        }
+
+        try
+        {
+            // get content matched by user criteria
+            $sth = $this->dbh->prepare($query);
+            $sth->execute($values);
+            $rows = $sth->fetchAll(PDO::FETCH_ASSOC);
+        }
+        catch (PDOException $e)
+        {
+            $this->logger->fatal($e->getMessage());
+            throw new AdapterException('Failed to query content by user criteria');
+        }
+
+        $contentListId = $this->contentListId($list);
+        if ($contentListId < 0)
+            throw new AdapterException('Invalid content list');
+
+        // update user contentlist
+        try
+        {
+            // delete existing content
+            $query = 'DELETE FROM usercontent WHERE user_id = :userId AND contentlist_id = :contentListId';
+            $sth = $this->dbh->prepare($query);
+            $values = array();
+            $values[':userId'] = $this->user;
+            $values[':contentListId'] = $contentListId;
+            $sth->execute($values);
+            // add new content
+            $query = 'INSERT INTO usercontent (user_id, content_id, contentlist_id, return) VALUES (:userId, :contentId, :contentListId, 1)';
+            $sth = $this->dbh->prepare($query);
+            foreach ($rows as $row)
+            {
+                $values = array();
+                $values[':userId'] = $this->user;
+                $values['contentId'] = $row['content_id'];
+                $values[':contentListId'] = $contentListId;
+                $sth->execute($values);
+            }
+        }
+        catch (PDOException $e)
+        {
+            $this->logger->fatal($e->getMessage());
+            throw new AdapterException('Failed to update user contentlist');
+        }
+
+        return $list;
+    }
+
+    private function generateLabel($questionId)
+    {
+        // does not matter which of the menu label constants we pass since they all use the same code
+        //
+        // prefered language is not available in the adapter but we can obtain it by storing the value
+        // from past calls to label function
+        return $this->label($this->generateQuestionId($questionId), Adapter::LABEL_CHOICE, $this->preferredLang);
+    }
+
+    private function generateQuestionId($questionId)
+    {
+        return "que_$questionId";
     }
 }
 

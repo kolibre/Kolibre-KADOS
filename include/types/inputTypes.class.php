@@ -120,7 +120,7 @@ class inputTypes extends AbstractType {
         if ($this->isNoneEmptyArray($this->input, 'input') === false)
             return false;
         if ($this->isArrayOfInstanceOf($this->input, 'input') === false)
-            return;
+            return false;
         foreach ($this->input as $index => $input) {
             if ($input->validate() === false) {
                 $this->error = __CLASS__ . '.' . $input->getError();

@@ -55,6 +55,12 @@ class SystemTestAdapter extends Adapter
             return $label;
         case Adapter::LABEL_ANNOUNCEMENT:
             return $label;
+        case Adapter::LABEL_INPUTQUESTION:
+            return $label;
+        case Adapter::LABEL_CHOICEQUESTION:
+            return $label;
+        case Adapter::LABEL_CHOICE:
+            return $label;
         }
 
         return false;
@@ -214,6 +220,37 @@ class SystemTestAdapter extends Adapter
         if (array_key_exists($contentId, $this->bookmarks))
             return array('bookmarkSet' => $this->bookmarks[$contentId]);
 
+        return false;
+    }
+
+    public function menuDefault()
+    {
+        $mainMenu = array('type' => 'multipleChoiceQuestion', 'id' => 'main-menu', 'choices' => array('search-library', 'give-feedback'));
+        return array($mainMenu);
+    }
+
+    public function menuSearch()
+    {
+        $searchMenu = array('type' => 'multipleChoiceQuestion', 'id' => 'search-by', 'choices' => array('by-author', 'by-title'));
+        return array($searchMenu);
+    }
+
+    public function menuBack()
+    {
+        // not the way to do this but we're only testing!
+        return $this->menuDefault();
+    }
+
+    public function menuNext($responses)
+    {
+        if (count($responses) == 1 && $responses[0]['questionID'] == 'main-menu' && $responses[0]['value'] == 'search-library')
+            return $this->menuSearch();
+        if (count($responses) == 1 && $responses[0]['questionID'] == 'main-menu' && $responses[0]['value'] == 'give-feedback')
+        {
+            $rateQuestion = array('type' => 'multipleChoiceQuestion', 'id' => 'rate-service', 'choices' => array('A', 'B', 'C', 'D', 'E'));
+            $userInput = array('type' => 'inputQuestion', 'id' => 'user-input', 'inputTypes' => array('TEXT_ALPHANUMERIC'));
+            return array($rateQuestion, $userInput);
+        }
         return false;
     }
 }

@@ -1,4 +1,4 @@
-ßs<?php
+<?php
 
 $includePath = dirname(realpath(__FILE__)) . '/types';
 set_include_path(get_include_path() . PATH_SEPARATOR . $includePath);

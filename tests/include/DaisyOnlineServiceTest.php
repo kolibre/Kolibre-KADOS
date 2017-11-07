@@ -28,7 +28,7 @@ class DaisyOnlineServiceTest extends PHPUnit_Framework_TestCase
 {
     protected static $inifile;
     protected static $instance;
-    protected $readingSsytemAttributes;
+    protected $readingSystemAttributes;
 
     public function setUp()
     {

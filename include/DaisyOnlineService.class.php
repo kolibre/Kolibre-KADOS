@@ -1241,7 +1241,7 @@ class DaisyOnlineService
                     case 'back':
                         if (!$this->serviceAttributes['supportsServerSideBack'])
                             throw new SoapFault ('Client', 'server does not support back', '', '', 'getQuestions_invalidParameterFault');
-                            $menus = $this->adapter->menuBack();
+                        $menus = $this->adapter->menuBack();
                         break;
                     default:
                         throw new SoapFault ('Client', 'unkown question id', '', '', 'getQuestions_invalidParameterFault');

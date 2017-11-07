@@ -36,13 +36,18 @@ class DaisyOnlineServiceSystem extends PHPUnit_Framework_TestCase
 
         $settings = array();
         $settings['Service'] = array();
+        $settings['Service']['supportsServerSideBack'] = 1;
+        $settings['Service']['supportsSearch'] = 1;
         $settings['Service']['supportedOptionalOperations'] = array();
         $settings['Service']['supportedOptionalOperations'][] = 'SERVICE_ANNOUNCEMENTS';
         $settings['Service']['supportedOptionalOperations'][] = 'SET_BOOKMARKS';
         $settings['Service']['supportedOptionalOperations'][] = 'GET_BOOKMARKS';
+        $settings['Service']['supportedOptionalOperations'][] = 'DYNAMIC_MENUS';
         $settings['Service']['supportedOptionalOperationsExtra'] = array();
         $settings['Service']['supportedOptionalOperationsExtra'][] = 'PROGRESS_STATE';
         $settings['Service']['supportedOptionalOperationsExtra'][] = 'TERMS_OF_SERVICE';
+        $settings['Service']['supportedOptionalOperationsExtra'][] = 'USER_CREDENTIALS';
+        $settings['Service']['supportedOptionalOperationsExtra'][] = 'ADD_CONTENT';
         $settings['Adapter'] = array();
         $settings['Adapter']['name'] = 'SystemTestAdapter';
         $settings['Adapter']['path'] = realpath(dirname(__FILE__));
@@ -144,6 +149,21 @@ class DaisyOnlineServiceSystem extends PHPUnit_Framework_TestCase
     /**
      * @group daisyonlineservice
      * @group system
+     */
+    public function testGetUserCredentials()
+    {
+        $input = new getUserCredentials(self::$rsa);
+        $output = self::$instance->getUserCredentials($input);
+        $this->assertTrue($output->validate());
+        $this->assertEquals($output->credentials->username, 'username');
+        $this->assertEquals($output->credentials->password, base64_encode('encrypted password'));
+        $this->assertEquals($output->credentials->encryptionScheme, 'RSAES-OAEP');
+    }
+
+    /**
+     * @group daisyonlineservice
+     * @group system
+     * @depends testGetUserCredentials
      */
     public function testSessionEstablishment()
     {
@@ -300,6 +320,77 @@ class DaisyOnlineServiceSystem extends PHPUnit_Framework_TestCase
         $this->assertEquals($output->bookmarkObject->bookmarkSet->lastmark->URI, "uri");
         $this->assertEquals($output->bookmarkObject->bookmarkSet->lastmark->timeOffset, "timeOffset");
         $this->assertNull($output->bookmarkObject->bookmarkSet->lastmark->charOffset);
+    }
+
+    /**
+     * @group daisyonlineservice
+     * @group system
+     * @depends testSessionEstablishment
+     */
+    public function testGetQuestions()
+    {
+        // requst search menu
+        $input = new getQuestions();
+        $input->userResponses = new userResponses(array(new userResponse('search')));
+        $output = self::$instance->getQuestions($input);
+        $this->assertCount(1, $output->questions->multipleChoiceQuestion);
+        $this->assertArrayHasKey(1, $output->questions->multipleChoiceQuestion);
+        $this->assertInstanceOf('multipleChoiceQuestion', $output->questions->multipleChoiceQuestion[1]);
+        $this->assertEquals('search-by', $output->questions->multipleChoiceQuestion[1]->id);
+        $this->assertCount(2, $output->questions->multipleChoiceQuestion[1]->choices->choice);
+        $this->assertNull($output->questions->inputQuestion);
+        $this->assertNull($output->questions->contentListRef);
+        $this->assertNull($output->questions->label);
+
+        // request back
+        $input->userResponses = new userResponses(array(new userResponse('back')));
+        $output = self::$instance->getQuestions($input);
+        $this->assertCount(1, $output->questions->multipleChoiceQuestion);
+        $this->assertArrayHasKey(1, $output->questions->multipleChoiceQuestion);
+        $this->assertInstanceOf('multipleChoiceQuestion', $output->questions->multipleChoiceQuestion[1]);
+        $this->assertEquals('main-menu', $output->questions->multipleChoiceQuestion[1]->id);
+        $this->assertCount(2, $output->questions->multipleChoiceQuestion[1]->choices->choice);
+        $this->assertNull($output->questions->inputQuestion);
+        $this->assertNull($output->questions->contentListRef);
+        $this->assertNull($output->questions->label);
+
+        // request next menu
+        $input->userResponses = new userResponses(array(new userResponse('main-menu', 'give-feedback')));
+        $output = self::$instance->getQuestions($input);
+        $this->assertCount(1, $output->questions->multipleChoiceQuestion);
+        $this->assertArrayHasKey(1, $output->questions->multipleChoiceQuestion);
+        $this->assertInstanceOf('multipleChoiceQuestion', $output->questions->multipleChoiceQuestion[1]);
+        $this->assertCount(1, $output->questions->inputQuestion);
+        $this->assertArrayHasKey(2, $output->questions->inputQuestion);
+        $this->assertInstanceOf('inputQuestion', $output->questions->inputQuestion[2]);
+        $this->assertNull($output->questions->contentListRef);
+        $this->assertNull($output->questions->label);
+    }
+
+    /**
+     * @group daisyonlineservice
+     * @group system
+     * @depends testReturnContent
+     */
+    public function testAddContentToBookshelf()
+    {
+        $bookshelfItemsBefore = 0;
+        $bookshelfItemsAfter = 1;
+
+        // check that bookshelf is empty
+        $input = new getContentList('bookshelf', 0, -1);
+        $output = self::$instance->getContentList($input);
+        $this->assertNull($output->contentList->contentItem);
+
+        // add content to bookshelf
+        $input = new addContentToBookshelf('id_123');
+        $output = self::$instance->addContentToBookshelf($input);
+        $this->assertTrue($output->addContentToBookshelfResult);
+
+        // check that the content exits in bookshelf
+        $input = new getContentList('bookshelf', 0, -1);
+        $output = self::$instance->getContentList($input);
+        $this->assertCount($bookshelfItemsAfter, $output->contentList->contentItem);
     }
 
     /**

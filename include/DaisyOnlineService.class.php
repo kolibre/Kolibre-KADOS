@@ -1045,8 +1045,61 @@ class DaisyOnlineService
     public function addContentToBookshelf($input)
     {
         $this->sessionHandle(__FUNCTION__);
-        throw new SoapFault ('Client', 'addContentToBookshelf not supported', '', '', 'addContentToBookshelf_operationNotSupportedFault');
+        if (!in_array('ADD_CONTENT', $this->optionalOperations))
+            throw new SoapFault ('Client', 'addContentToBookshelf not supported', '', '', 'addContentToBookshelf_operationNotSupportedFault');
 
+        if ($input->validate() === false)
+        {
+            $msg = "request is not valid " . $input->getError();
+            $this->logger->warn($msg);
+            throw new SoapFault ('Client', $input->getError(), '', '', 'addContentToBookshelf_invalidParameterFault');
+        }
+
+        // parameters
+        $contentId = $input->getContentID();
+
+        // check if the requested content exists and is accessible
+        try
+        {
+            if ($this->adapter->contentExists($contentId) === false)
+            {
+                $msg = "User '$this->sessionUsername' tried to add an nonexistent content '$contentId' to bookshlf";
+                $this->logger->warn($msg);
+                $faultString = "content '$contentId' does not exist";
+                throw new SoapFault('Client', $faultString,'', '', 'addContentToBookshelf_invalidParameterFault');
+            }
+
+            if ($this->adapter->contentAccessible($contentId) === false)
+            {
+                $msg = "User '$this->sessionUsername' tried to add an inaccessible content '$contentId' to bookshelf";
+                $this->logger->warn($msg);
+                $faultString = "content '$contentId' not accessible";
+                throw new SoapFault('Client', $faultString,'', '', 'addContentToBookshelf_invalidParameterFault');
+            }
+        }
+        catch (AdapterException $e)
+        {
+            $this->logger->fatal($e->getMessage());
+            throw new SoapFault('Server', 'Internal Server Error', '', '', 'addContentToBookshelf_internalServerErrorFault');
+        }
+
+        // add content to bookshelf
+        try
+        {
+            if ($this->adapter->contentAddBookshelf($contentId) === false)
+            {
+                $msg = "User '$this->sessionUsername' could not add content '$contentId' to bookshelf";
+                $this->logger->warn($msg);
+                throw new SoapFault('Client', 'content could not be added to user bookshelf', '', '', 'addContentToBookshelf_invalidParameterFault');
+            }
+        }
+        catch (AdapterException $e)
+        {
+            $this->logger->fatal($e->getMessage());
+            throw new SoapFault('Server', 'Internal Server Error', '', '', 'addContentToBookshelf_internalServerErrorFault');
+        }
+
+        return new addContentToBookshelfResponse(true);
     }
 
     /**
@@ -1059,6 +1112,100 @@ class DaisyOnlineService
         $this->sessionHandle(__FUNCTION__);
         if (!in_array('DYNAMIC_MENUS', $this->serviceAttributes['supportedOptionalOperations']))
             throw new SoapFault ('Client', 'getQuestions not supported', '', '', 'getQuestions_operationNotSupportedFault');
+
+        if ($input->validate() === false)
+        {
+            $msg = "request is not valid " . $input->getError();
+            $this->logger->warn($msg);
+            throw new SoapFault ('Client', $input->getError(), '', '', 'getQuestions_invalidParameterFault');
+        }
+
+        // parameters
+        $userResponses = $input->getUserResponses();
+
+        try
+        {
+            if (count($userResponses->userResponse) == 1 && is_null($userResponses->userResponse[0]->value) && is_null($userResponses->userResponse[0]->data) && is_null($userResponses->userResponse[0]->data_encoded))
+            {
+                // handle reserved menus
+                switch($userResponses->userResponse[0]->questionID)
+                {
+                    case 'default':
+                        $menus = $this->adapter->menuDefault();
+                        break;
+                    case 'search':
+                        if (!$this->serviceAttributes['supportsSearch'])
+                            throw new SoapFault ('Client', 'server does not support search', '', '', 'getQuestions_invalidParameterFault');
+                        $menus = $this->adapter->menuSearch();
+                        break;
+                    case 'back':
+                        if (!$this->serviceAttributes['supportsServerSideBack'])
+                            throw new SoapFault ('Client', 'server does not support back', '', '', 'getQuestions_invalidParameterFault');
+                        $menus = $this->adapter->menuBack();
+                        break;
+                    default:
+                        throw new SoapFault ('Client', 'unkown question id', '', '', 'getQuestions_invalidParameterFault');
+                }
+            }
+            else
+            {
+                // handle dynamic menus
+                require_once('userResponses_serialize.php');
+                $responses = userResponses_to_array($userResponses);
+                $menus = $this->adapter->menuNext($responses);
+            }
+        }
+        catch (AdapterException $e)
+        {
+            $this->logger->fatal($e->getMessage());
+            throw new SoapFault('Server', 'Internal Server Error', '', '', 'getQuestions_internalServerErrorFault');
+        }
+
+        if ($menus === false)
+            throw new SoapFault ('Server', 'Internal Server Error', '', '', 'getQuestions_internalServerErrorFault');
+
+        // build response
+        $questions = new questions();
+        if (is_string($menus))
+        {
+            $questions->setContentListRef($menus);
+        }
+        if (is_array($menus))
+        {
+            if (array_key_exists('text', $menus))
+            {
+                $label = $this->createLabel($menus);
+                $questions->setLabel($label);
+            }
+            else
+            {
+                foreach ($menus as $menu)
+                {
+                    switch ($menu['type'])
+                    {
+                        case 'multipleChoiceQuestion':
+                            $question = $this->createMultipleChoiceQuestion($menu);
+                            $questions->addMultipleChoiceQuestion($question);
+                            break;
+                        case 'inputQuestion':
+                            $question = $this->createInputQuestion($menu);
+                            $questions->addInputQuestion($question);
+                            break;
+                    }
+                }
+            }
+        }
+        $output = new getQuestionsResponse($questions);
+
+        if ($output->validate() === false)
+        {
+            $msg = "failed to build response " . $output->getError();
+            $this->logger->error($msg);
+            $faultString = 'getQuestionsResponse could not be built';
+            throw new SoapFault('Server', $faultString, '', '', 'getQuestions_internalServerErrorFault');
+        }
+
+        return $output;
     }
 
     /**
@@ -1068,9 +1215,49 @@ class DaisyOnlineService
      */
     public function getUserCredentials($input)
     {
-        $this->sessionHandle(__FUNCTION__);
-        throw new SoapFault ('Client', 'getUserCredentials not supported', '', '', 'getUserCredentials_operationNotSupportedFault');
+        if (!in_array('USER_CREDENTIALS', $this->optionalOperations))
+            throw new SoapFault ('Client', 'getUserCredentials not supported', '', '', 'getUserCredentials_operationNotSupportedFault');
 
+        if ($input->validate() === false)
+        {
+            $msg = "request is not valid " . $input->getError();
+            $this->logger->warn($msg);
+            throw new SoapFault ('Client', $input->getError(), '', '', 'getUserCredentials_invalidParameterFault');
+        }
+
+        try
+        {
+            $manufacturer = $input->getReadingSystemAttributes()->getManufacturer();
+            $model = $input->getReadingSystemAttributes()->getModel();
+            $serialNumber = $input->getReadingSystemAttributes()->getSerialNumber();
+            $version = $input->getReadingSystemAttributes()->getVersion();
+            $credentials = $this->adapter->userCredentials($manufacturer, $model, $serialNumber, $version);
+            if ($credentials === false)
+            {
+                $msg = "No credentials found for reading system with serial '$serialNumber'";
+                $this->logger->warn($msg);
+                throw new SoapFault('Client', 'no credentials found for the given serial', '', '', 'getUserCredentials_invalidParameterFault');
+            }
+        }
+        catch (AdapterException $e)
+        {
+            $this->logger->fatal($e->getMessage());
+            throw new SoapFault('Server', 'Internal Server Error', '', '', 'getUserCredentials_internalServerErrorFault');
+        }
+
+        $username = $credentials['username'];
+        $password = $this->encode_b64($credentials['password']);
+        $output = new getUserCredentialsResponse(new credentials($username,$password,'RSAES-OAEP'));
+
+        if ($output->validate() === false)
+        {
+            $msg = "failed to build response " . $output->getError();
+            $this->logger->error($msg);
+            $faultString = 'getUserCredentialsResponse could not be built';
+            throw new SoapFault('Server', $faultString, '', '', 'getUserCredentials_internalServerErrorFault');
+        }
+
+        return $output;
     }
 
     /**
@@ -1257,6 +1444,21 @@ class DaisyOnlineService
      }
 
     /**
+     * Returns a base64 encoded string
+     * @param string $value the string to encode
+     * @return string
+     */
+    private function encode_b64($value)
+    {
+        if (base64_encode(base64_decode($value)) == $value)
+        {
+            return $value; // already encoded
+        }
+
+        return base64_encode($value);
+    }
+
+    /**
      * Service helper
      *
      * Parses services settings and initializes private service attributes
@@ -1302,7 +1504,7 @@ class DaisyOnlineService
                 $this->serviceAttributes['supportsServerSideBack'] = true;
             else
             {
-                $msg = "Reserved parameter 'search' supported in settings but DYNAMIC_MENUS not supported";
+                $msg = "Reserved parameter 'back' supported in settings but DYNAMIC_MENUS not supported";
                 $this->logger->warn($msg);
             }
         }
@@ -1313,7 +1515,7 @@ class DaisyOnlineService
                 $this->serviceAttributes['supportsSearch'] = true;
             else
             {
-                $msg = "Reserved parameter 'back' supported in settings but DYNAMIC_MENUS not supported";
+                $msg = "Reserved parameter 'search' supported in settings but DYNAMIC_MENUS not supported";
                 $this->logger->warn($msg);
             }
         }
@@ -1835,6 +2037,117 @@ class DaisyOnlineService
 
         $announcement = new announcement($label, $id, $type, $priority);
         return $announcement;
+    }
+
+    private function createMultipleChoiceQuestion($menuArray)
+    {
+        $label = null;
+        $choices = null;
+        $id = null;
+        $allowMultipleSelections = null;
+
+        // id [mandatory]
+        if (array_key_exists('id', $menuArray) === false)
+            $this->logger->error("Required field 'id' is missing in multipleChoiceQuestion");
+        else
+            $id = $menuArray['id'];
+
+        // allowsMultipleSelection [optional]
+        if (array_key_exists('allowsMultipleSelections', $menuArray) === true)
+            $allowMultipleSelections = menuArray('allowsMultipleSelections') ? true : false;
+
+        // label [mandatory]
+        try
+        {
+            $labelArray = $this->adapter->label($id, Adapter::LABEL_CHOICEQUESTION, $this->getClientLangCode());
+            if (is_array($labelArray))
+                $label = $this->createLabel($labelArray);
+        }
+        catch (AdapterException $e)
+        {
+            $this->logger->fatal($e->getMessage());
+        }
+
+        // choices [mandatory]
+        if (array_key_exists('choices', $menuArray) === false)
+            $this->logger->error("Required field 'choices' is missing in multipleChoiceQuestion");
+        else
+        {
+            if (is_array($menuArray['choices']) === false)
+                $this->logger->error("element 'choices' is not an array");
+            else
+            {
+                $choices = new choices();
+                foreach ($menuArray['choices'] as $choice)
+                {
+                    try
+                    {
+                        $labelArray = $this->adapter->label($id, Adapter::LABEL_CHOICE, $this->getClientLangCode());
+                        if (is_array($labelArray))
+                        {
+                            $choiceLabel = $this->createLabel($labelArray);
+                            $choices->addChoice(new choice($choiceLabel, $choice));
+                        }
+                    }
+                    catch (AdapterException $e)
+                    {
+                        $this->logger->fatal($e->getMessage());
+                    }
+                }
+            }
+        }
+
+        return new multipleChoiceQuestion($label, $choices, $id, $allowMultipleSelections);
+    }
+
+    private function createInputQuestion($menuArray)
+    {
+        $label = null;
+        $inputTypes = null;
+        $id = null;
+        $defaultValue = null; // added in protocol version 2
+
+        // id [mandatory]
+        if (array_key_exists('id', $menuArray) === false)
+            $this->logger->error("Required field 'id' is missing in multipleChoiceQuestion");
+        else
+            $id = $menuArray['id'];
+
+        // defaultValue [optional]
+        if (array_key_exists('defaultValue', $menuArray) === true && $this->protocolVersion() == 2)
+            $defaultValue = $menuArray['defaultValue'];
+
+        // inputTypes [mandatory]
+        if (array_key_exists('inputTypes', $menuArray) === false)
+            $this->logger->error("Required field 'inputTypes' is missing in multipleChoiceQuestion");
+        else
+        {
+            if (is_array($menuArray['inputTypes']) === false)
+                $this->logger->error("element 'inputTypes' is not an array");
+            else
+            {
+                $inputTypes = new inputTypes();
+                foreach ($menuArray['inputTypes'] as $input)
+                    $inputTypes->addInput(new input($input));
+            }
+        }
+
+        // label [mandatory]
+        try
+        {
+            $labelArray = $this->adapter->label($id, Adapter::LABEL_INPUTQUESTION, $this->getClientLangCode());
+            if (is_array($labelArray))
+                $label = $this->createLabel($labelArray);
+        }
+        catch (AdapterException $e)
+        {
+            $this->logger->fatal($e->getMessage());
+        }
+
+        if ($this->protocolVersion() == 2)
+            return new inputQuestion($inputTypes, $label, $id, $defaultValue);
+
+        return new inputQuestion($inputTypes, $label, $id);
     }
 
     /**

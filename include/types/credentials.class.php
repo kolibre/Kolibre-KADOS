@@ -128,7 +128,6 @@ class credentials extends AbstractType {
         if ($this->isNoneEmptyString($this->password, 'password') === false)
             return false;
 
-
         // encrytionScheme must match string "RSAES-OAEP"
         $allowedValues = array("RSAES-OAEP");
         if ($this->isString($this->encryptionScheme, 'encryptionScheme', $allowedValues) === false)

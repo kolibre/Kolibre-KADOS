@@ -292,7 +292,9 @@ class DemoAdapterTest extends PHPUnit_Framework_TestCase
         $this->assertEquals('en', $label['lang']);
         $this->assertArrayHasKey('audio', $label);
         $this->assertArrayHasKey('uri', $label['audio']);
+        $this->assertContains('announcement_1.ogg', $label['audio']['uri']);
         $this->assertArrayHasKey('size', $label['audio']);
+        $this->assertEquals(24677, $label['audio']['size']);
         $label = self::$adapter->label(1, Adapter::LABEL_ANNOUNCEMENT, 'sv');
         $this->assertArrayHasKey('text', $label);
         $this->assertContains('Välkommen', $label['text']);
@@ -300,7 +302,9 @@ class DemoAdapterTest extends PHPUnit_Framework_TestCase
         $this->assertEquals('sv', $label['lang']);
         $this->assertArrayHasKey('audio', $label);
         $this->assertArrayHasKey('uri', $label['audio']);
+        $this->assertContains('announcement_2.ogg', $label['audio']['uri']);
         $this->assertArrayHasKey('size', $label['audio']);
+        $this->assertEquals(27392, $label['audio']['size']);
     }
 
     public function testAnnouncements()
@@ -476,6 +480,170 @@ class DemoAdapterTest extends PHPUnit_Framework_TestCase
         $this->assertCount(1, $bookmarkSetDecoded->bookmark);
         $this->assertNotNull($bookmarkSetDecoded->hilite);
         $this->assertCount(1, $bookmarkSetDecoded->hilite);
+    }
+
+    public function testLabelQuestions()
+    {
+        $label = self::$adapter->label(1, Adapter::LABEL_CHOICEQUESTION);
+        $this->assertArrayHasKey('text', $label);
+        $this->assertContains('What would you like to do?', $label['text']);
+        $this->assertArrayHasKey('lang', $label);
+        $this->assertEquals('en', $label['lang']);
+        $this->assertArrayHasKey('audio', $label);
+        $this->assertArrayHasKey('uri', $label['audio']);
+        $this->assertContains("question_1.ogg", $label['audio']['uri']);
+        $this->assertArrayHasKey('size', $label['audio']);
+        $this->assertEquals(13817, $label['audio']['size']);
+        $label = self::$adapter->label('que_2', Adapter::LABEL_CHOICE, 'sv');
+        $this->assertArrayHasKey('text', $label);
+        $this->assertContains('Söka i biblioteket.', $label['text']);
+        $this->assertArrayHasKey('lang', $label);
+        $this->assertEquals('sv', $label['lang']);
+        $this->assertArrayHasKey('audio', $label);
+        $this->assertArrayHasKey('uri', $label['audio']);
+        $this->assertContains("question_4.ogg", $label['audio']['uri']);
+        $this->assertArrayHasKey('size', $label['audio']);
+        $this->assertEquals(14255, $label['audio']['size']);
+        $label = self::$adapter->label(40, Adapter::LABEL_INPUTQUESTION);
+        $this->assertArrayHasKey('text', $label);
+        $this->assertContains('How would you rate this service?', $label['text']);
+        $this->assertArrayHasKey('lang', $label);
+        $this->assertEquals('en', $label['lang']);
+        $this->assertArrayHasKey('audio', $label);
+        $this->assertArrayHasKey('uri', $label['audio']);
+        $this->assertContains("question_27.ogg", $label['audio']['uri']);
+        $this->assertArrayHasKey('size', $label['audio']);
+        $this->assertEquals(17356, $label['audio']['size']);
+    }
+
+    public function testMenuDefault()
+    {
+        $menu = self::$adapter->menuDefault();
+        $this->assertCount(1, $menu);
+        $this->assertArrayHasKey('type', $menu[0]);
+        $this->assertEquals('multipleChoiceQuestion', $menu[0]['type']);
+        $this->assertArrayHasKey('id', $menu[0]);
+        $this->assertEquals('que_1', $menu[0]['id']);
+        $this->assertArrayHasKey('choices', $menu[0]);
+        $this->assertCount(3, $menu[0]['choices']);
+        $this->assertEquals('que_2', $menu[0]['choices'][0]);
+        $this->assertEquals('que_3', $menu[0]['choices'][1]);
+        $this->assertEquals('que_4', $menu[0]['choices'][2]);
+        $this->assertArrayHasKey('allowMultipleSelections', $menu[0]);
+        $this->assertEquals(0, $menu[0]['allowMultipleSelections']);
+    }
+
+    public function testMenuSearch()
+    {
+        $menu = self::$adapter->menuSearch();
+        $this->assertCount(1, $menu);
+        $this->assertArrayHasKey('type', $menu[0]);
+        $this->assertEquals('multipleChoiceQuestion', $menu[0]['type']);
+        $this->assertArrayHasKey('id', $menu[0]);
+        $this->assertEquals('que_20', $menu[0]['id']);
+        $this->assertArrayHasKey('choices', $menu[0]);
+        $this->assertCount(2, $menu[0]['choices']);
+        $this->assertEquals('que_21', $menu[0]['choices'][0]);
+        $this->assertEquals('que_22', $menu[0]['choices'][1]);
+        $this->assertArrayHasKey('allowMultipleSelections', $menu[0]);
+        $this->assertEquals(0, $menu[0]['allowMultipleSelections']);
+    }
+
+    public function testMenuNext()
+    {
+        // label endpoint for feedback, either en or sv label might be returned
+        $responses = array(array('questionId' => 'que_40', 'value' => 'que_42')); // rate excellent
+        $label = self::$adapter->menuNext($responses);
+        $this->assertArrayHasKey('text', $label);
+        $this->assertArrayHasKey('lang', $label);
+        $this->assertArrayHasKey('audio', $label);
+        $this->assertArrayHasKey('uri', $label['audio']);
+        $this->assertContainsAny(array('question_39.ogg', 'question_40.ogg'), $label['audio']['uri']);
+        $this->assertArrayHasKey('size', $label['audio']);
+        $responses = array(array('questionId' => 'que_41', 'value' => 'this rocks')); // optional feedback 'this rocks'
+        $label = self::$adapter->menuNext($responses);
+        $this->assertArrayHasKey('text', $label);
+        $this->assertArrayHasKey('lang', $label);
+        $this->assertArrayHasKey('audio', $label);
+        $this->assertArrayHasKey('uri', $label['audio']);
+        $this->assertContainsAny(array('question_39.ogg', 'question_40.ogg'), $label['audio']['uri']);
+        $this->assertArrayHasKey('size', $label['audio']);
+
+        // feedback menu
+        $responses = array(array('questionId' => 'que_1', 'value' => 'que_4')); // select feedback
+        $menu = self::$adapter->menuNext($responses);
+        $this->assertCount(2, $menu);
+        $this->assertArrayHasKey('type', $menu[0]);
+        $this->assertEquals('multipleChoiceQuestion', $menu[0]['type']);
+        $this->assertArrayHasKey('id', $menu[0]);
+        $this->assertEquals('que_40', $menu[0]['id']);
+        $this->assertArrayHasKey('choices', $menu[0]);
+        $this->assertCount(4, $menu[0]['choices']);
+        $this->assertEquals('que_42', $menu[0]['choices'][0]);
+        $this->assertEquals('que_43', $menu[0]['choices'][1]);
+        $this->assertEquals('que_44', $menu[0]['choices'][2]);
+        $this->assertEquals('que_45', $menu[0]['choices'][3]);
+        $this->assertArrayHasKey('allowMultipleSelections', $menu[0]);
+        $this->assertEquals(0, $menu[0]['allowMultipleSelections']);
+        $this->assertArrayHasKey('type', $menu[1]);
+        $this->assertEquals('inputQuestion', $menu[1]['type']);
+        $this->assertArrayHasKey('id', $menu[1]);
+        $this->assertEquals('que_41', $menu[1]['id']);
+        $this->assertArrayHasKey('inputTypes', $menu[1]);
+        $this->assertCount(1, $menu[1]['inputTypes']);
+        $this->assertEquals('TEXT_ALPHANUMERIC', $menu[1]['inputTypes'][0]);
+        $this->assertArrayNotHasKey('defaultValue', $menu[1]);
+
+        // search endpoint
+        $this->assertCount(0, self::$adapter->contentList('search'));
+        $responses = array(array('questionId' => 'que_24', 'value' => 'light')); // search by title 'light'
+        $contentListRef = self::$adapter->menuNext($responses);
+        $this->assertEquals('search', $contentListRef);
+        $this->assertCount(1, self::$adapter->contentList('search'));
+        $responses = array(array('questionId' => 'que_24', 'value' => 'zorro')); // search by title 'zorro'
+        $contentListRef = self::$adapter->menuNext($responses);
+        $this->assertEquals('search', $contentListRef);
+        $this->assertCount(0, self::$adapter->contentList('search'));
+        $responses = array(array('questionId' => 'que_23', 'value' => 'Henry James')); // search by author 'Henry James'
+        $contentListRef = self::$adapter->menuNext($responses);
+        $this->assertEquals('search', $contentListRef);
+        $this->assertCount(1, self::$adapter->contentList('search'));
+        $responses = array(array('questionId' => 'que_23', 'value' => 'zorro')); // search by author 'zorro'
+        $contentListRef = self::$adapter->menuNext($responses);
+        $this->assertEquals('search', $contentListRef);
+        $this->assertCount(0, self::$adapter->contentList('search'));
+
+        // browse endpoint
+        $this->assertCount(0, self::$adapter->contentList('browse'));
+        $responses = array(array('questionId' => 'que_30', 'value' => 'que_31')); // browse by title
+        $contentListRef = self::$adapter->menuNext($responses);
+        $this->assertEquals('browse', $contentListRef);
+        $this->assertCount(3, self::$adapter->contentList('browse'));
+        $responses = array(array('questionId' => 'que_30', 'value' => 'que_32')); // browse by daisy2
+        $contentListRef = self::$adapter->menuNext($responses);
+        $this->assertEquals('browse', $contentListRef);
+        $this->assertCount(2, self::$adapter->contentList('browse'));
+        $responses = array(array('questionId' => 'que_30', 'value' => 'que_33')); // browse by daisy3
+        $contentListRef = self::$adapter->menuNext($responses);
+        $this->assertEquals('browse', $contentListRef);
+        $this->assertCount(1, self::$adapter->contentList('browse'));
+    }
+
+    private function assertContainsAny($needles, $haystack)
+    {
+        $result = false;
+        foreach ($needles as $needle)
+        {
+            if (strpos($haystack, $needle) !== false)
+            {
+                $result = true;
+                break;
+            }
+        }
+
+        $needles = implode(' or ', $needles);
+        $msg = "Failed asserting that $haystack' contains any of '$needles'.";
+        $this->assertTrue($result, $msg);
     }
 }
 

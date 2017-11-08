@@ -155,6 +155,97 @@ class questions extends AbstractType {
         $this->label = NULL;
     }
 
+    /****************************** get set methods for arrays **********************************/
+
+    /**
+     * get the ith element of multipleChoiceQuestion
+     */
+     function getMultipleChoiceQuestionAt($i) {
+        if (array_key_exists($i, $this->multipleChoiceQuestion))
+            return $this->multipleChoiceQuestion[$i];
+        else return NULL;
+    }
+
+    /**
+     * set the ith elemenent of multipleChoiceQuestion
+     */
+    function setMultipleChoiceQuestionAt($i, $_multipleChoiceQuestion) {
+        $this->multipleChoiceQuestion[$i] = $_multipleChoiceQuestion;
+    }
+
+    /**
+     * add to multipleChoiceQuestion
+     */
+    function addMultipleChoiceQuestion($_multipleChoiceQuestion) {
+        if (is_array($this->multipleChoiceQuestion))
+            $this->setMultipleChoiceQuestionAt($this->nextChoiceIndex(), $_multipleChoiceQuestion);
+        else {
+            $this->multipleChoiceQuestion = array();
+            $this->addMultipleChoiceQuestion($_multipleChoiceQuestion);
+        }
+    }
+
+    /**
+     * remove the ith element of multipleChoiceQuestion
+     */
+    function removeMultipleChoiceQuestionAt($i) {
+        if (array_key_exists($i, $this->multipleChoiceQuestion))
+            unset($this->multipleChoiceQuestion[$i]);
+    }
+
+    /**
+     * get the ith element of inputQuestion
+     */
+     function getInputQuestionAt($i) {
+        if (array_key_exists($i, $this->inputQuestion))
+            return $this->inputQuestion[$i];
+        else return NULL;
+    }
+
+    /**
+     * set the ith elemenent of inputQuestion
+     */
+    function setInputQuestionAt($i, $_inputQuestion) {
+        $this->inputQuestion[$i] = $_inputQuestion;
+    }
+
+    /**
+     * add to inputQuestion
+     */
+    function addInputQuestion($_inputQuestion) {
+        if (is_array($this->inputQuestion))
+            $this->setInputQuestionAt($this->nextChoiceIndex(), $_inputQuestion);
+        else {
+            $this->inputQuestion = array();
+            $this->addInputQuestion($_inputQuestion);
+        }
+    }
+
+    /**
+     * remove the ith element of inputQuestion
+     */
+     function removeInputQuestionAt($i) {
+        if (array_key_exists($i, $this->inputQuestion))
+            unset($this->inputQuestion[$i]);
+    }
+
+    /**
+     * returns the next index to use for choices
+     */
+     private function nextChoiceIndex() {
+        $index = 0;
+        if (is_array($this->multipleChoiceQuestion) && count($this->multipleChoiceQuestion) > 0) {
+            $maxIndex = max(array_keys($this->multipleChoiceQuestion));
+            if ($maxIndex > $index) $index = $maxIndex;
+        }
+        if (is_array($this->inputQuestion) && count($this->inputQuestion) > 0) {
+            $maxIndex = max(array_keys($this->inputQuestion));
+            if ($maxIndex > $index) $index = $maxIndex;
+        }
+
+        return ++$index;
+    }
+
     /******************** validator methods ********************/
 
     /**
@@ -257,6 +348,12 @@ class questions extends AbstractType {
                 $this->error = __CLASS__ . ".contentListRef can not be set when label is set";
                 return false;
             }
+        }
+
+        // check that either multipleChoiceQuestion, inputQuestion, contentListRef or label is set
+        if (is_null($this->multipleChoiceQuestion) && is_null($this->inputQuestion) && is_null($this->contentListRef) && is_null($this->label)) {
+            $this->error = __CLASS__ . " no required element set";
+            return false;
         }
 
         return true;

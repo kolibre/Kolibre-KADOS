@@ -533,6 +533,11 @@ INSERT INTO "user" VALUES(3,'user2','password',1);
 INSERT INTO "user" VALUES(4,'user3','password',1);
 INSERT INTO "user" VALUES(5,'user4','password',1);
 INSERT INTO "user" VALUES(6,'user5','password',1);
+INSERT INTO "user" VALUES(7,'user6','password',1);
+INSERT INTO "user" VALUES(8,'user7','password',1);
+INSERT INTO "user" VALUES(9,'user8','password',1);
+INSERT INTO "user" VALUES(10,'user9','password',1);
+INSERT INTO "user" VALUES(11,'user10','password',1);
 CREATE TABLE "userannouncement" (
   "id" INTEGER PRIMARY KEY AUTOINCREMENT,
   "user_id" INTEGER NOT NULL,
@@ -619,7 +624,7 @@ INSERT INTO "sqlite_sequence" VALUES('questiontype',5);
 INSERT INTO "sqlite_sequence" VALUES('question_questiontext',48);
 INSERT INTO "sqlite_sequence" VALUES('questiontext',40);
 INSERT INTO "sqlite_sequence" VALUES('questionaudio',40);
-INSERT INTO "sqlite_sequence" VALUES('user',6);
+INSERT INTO "sqlite_sequence" VALUES('user',11);
 INSERT INTO "sqlite_sequence" VALUES('userannouncement',12);
 INSERT INTO "sqlite_sequence" VALUES('usercontent',18);
 CREATE INDEX index_foreignkey_content_daisyformat ON "content" (daisyformat_id);

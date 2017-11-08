@@ -137,6 +137,8 @@ This service implements the DAISY Online Delivery protocol version 2 as specifie
 <li>user9:password</li>
 <li>user10:password</li>
 </ul>
+<p>The dynamic menus provided with this service can be used to explore the demo library, consisting of only three sample contents, and add contents to a user's own content list. It's also possible to provide feedback but we don't not store nor evaluate the feedback. It's only for pure demonstration of dynamic menus. Below is an illustration of the dynamic menu structure.</p>
+<img src="dynamic-menus-structure.png" alt="Dynamic menu structure"/>
 <p>The service is also pre-configured to reset itself to its default state every day at 0:00 CET</p>
 <div>
 </body>

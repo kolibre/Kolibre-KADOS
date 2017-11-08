@@ -19,6 +19,7 @@
  */
 
 require_once('AbstractType.class.php');
+require_once('readingSystemAttributes.class.php');
 
 class getUserCredentials extends AbstractType {
 

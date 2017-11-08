@@ -159,8 +159,9 @@ class DaisyOnlineServiceSession extends PHPUnit_Framework_TestCase
         $input = new getQuestions(new userResponses(array(new userResponse('default'))));
         $this->assertTrue($this->callOperation('getQuestions', $input, 'noActiveSessionFault'));
         $input = new getUserCredentials();
-        $this->assertTrue($this->callOperation('getUserCredentials', $input, 'noActiveSessionFault'));
+        $this->assertTrue($this->callOperation('getUserCredentials', $input, 'operationNotSupportedFault')); // does not require a valid session
         $input = new getKeyExchangeObject('requestedKeyName');
+        $this->assertTrue($this->callOperation('getKeyExchangeObject', $input, 'noActiveSessionFault'));
         $input = new getTermsOfService();
         $this->assertTrue($this->callOperation('getTermsOfService', $input, 'noActiveSessionFault'));
         $input = new acceptTermsOfService();

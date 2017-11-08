@@ -22,8 +22,6 @@ $includePath = dirname(realpath(__FILE__)) . '/../../../include/types';
 set_include_path(get_include_path() . PATH_SEPARATOR . $includePath);
 
 require_once('logOn.class.php');
-require_once('config.class.php');
-require_once('readingSystemAttributes.class.php');
 
 class logOnTest extends PHPUnit_Framework_TestCase
 {
@@ -113,6 +111,10 @@ class logOnTest extends PHPUnit_Framework_TestCase
         $this->assertTrue($instance->validate());
     }
 
+    /**
+     * @group logOn
+     * @group validate
+     */
     public function testReadingSystemAttributes()
     {
         $readingSystemAttributes = $this->readingSystemAttributes;

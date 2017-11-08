@@ -397,7 +397,7 @@ abstract class Adapter
      * Check if the specified content exists
      *
      * This method is required and must be implemented for a basic service.
-     * It is invoked by the service when operations getContentMetadata, issueContent, getContentResources or returnContent is called.
+     * It is invoked by the service when operations getContentMetadata, issueContent, getContentResources, returnContent or addContentToBookshelf is called.
      *
      * @param string $contentId The identifier for the content
      * @return boolean Returns True if the content exists, otherwise False.
@@ -410,7 +410,7 @@ abstract class Adapter
      * Check if the specified content is accessible for the current user
      *
      * This method is required and must be implemented for a basic service.
-     * It is invoked by the service when operations getContentMetadata, issueContent, getContentResources or returnContent is called.
+     * It is invoked by the service when operations getContentMetadata, issueContent, getContentResources, returnContent or addContentToBookshelf is called.
      *
      * @param string $contentId The identifier for the content
      * @return boolean Returns True if the content is accessible, otherwise False.
@@ -536,6 +536,23 @@ abstract class Adapter
      * @throws AdapterException
      */
     abstract public function contentIssue($contentId);
+
+    /**
+     * Add the speciified content to the users bookshelf
+     *
+     * This method is optional and does not require implementation.
+     * It is invoked by the service when addContentToBookshelf operation is called.
+     * If the service supports ADD_CONTENT, this method must be implemented.
+     *
+     * @param string $contentId the identifier for the content
+     * @return boolean Returns True if the content is added, otherwise False.
+     *
+     * @throws AdapterException
+     */
+    public function contentAddBookshelf($contentId)
+    {
+        return false;
+    }
 
     /**
      * Retrieve resources for the specified content
@@ -796,19 +813,19 @@ abstract class Adapter
      * It is invoked by the service when getQuestions operation is called.
      * If the service supports DYNAMIC_MENUS, this method must be implemented.
      *
-     * @param array $response An associative array containing the reponses from a previous question.
+     * @param array $responses An associative array containing the reponses from a previous question.
      * <p>Example of an associative array</p>
      * <pre>
      * Array
      * (
      *     [0] => Array
      *     (
-     *         [questionId] => "question 1"
+     *         [questionID] => "question 1"
      *         [value] => "value is always a string"
      *     )
      *     [1] => Array
      *     (
-     *         [questionId] => "question 2"
+     *         [questionID] => "question 2"
      *         [base64] => "base64 encoded binary data"
      *     )
      * )
@@ -822,33 +839,44 @@ abstract class Adapter
      *     [0] => Array
      *     (
      *         [type] => "multipleChoiceQuestion"
-     *         [questionId] => "question 1"
+     *         [id] => "question 1"
      *         [choices] => Array
      *         (
      *             [0] => "choice 1"
      *             [1] => "choice 2"
      *             [2] => "choice 3"
      *         )
+     *         [allowMultipleSelections] = 1
      *     )
      *     [1] => Array
      *     (
-     *        [type] => "inputQuestions"
-     *        [questionId] => "question 2"
+     *        [type] => "inputQuestion"
+     *        [id] => "question 2"
+     *        [inputTypes] = Array
+     *        (
+     *            [0] => "TEXT_ALPHANUMERIC"
+     *        )
      *     )
      *     [2] => Array
      *     (
-     *        [type] => "inputQuestions"
-     *        [questionId] => "question 3"
+     *        [type] => "inputQuestion"
+     *        [id] => "question 3"
+     *        [inputTypes] = Array
+     *        (
+     *            [0] => "TEXT_ALPHANUMERIC"
+     *        )
+     *        [defaultValue] => "value"
      *     )
      *     [3] => Array
      *     (
      *         [type] => "multipleChoiceQuestion"
-     *         [questionId] => "question 4"
+     *         [id] => "question 4"
      *         [choices] => Array
      *         (
      *             [0] => "choice 1"
      *             [1] => "choice 2"
      *         )
+     *         [allowMultipleSelections] = 0
      *     )
      * )
      * </pre>
@@ -856,7 +884,7 @@ abstract class Adapter
      *
      * @throws AdapterException
      */
-    public function menuNext($response)
+    public function menuNext($responses)
     {
         return array();
     }
@@ -875,13 +903,14 @@ abstract class Adapter
      * Array
      * (
      *      [type] => "multipleChoiceQuestion"
-     *      [questionId] => "question 1"
+     *      [id] => "question 1"
      *      [choices] => Array
      *      (
      *          [0] => "choice 1"
      *          [1] => "choice 2"
      *          [2] => "choice 3"
      *      )
+     *      [allowMultipleSelections] = 0
      * )
      * </pre>
      *

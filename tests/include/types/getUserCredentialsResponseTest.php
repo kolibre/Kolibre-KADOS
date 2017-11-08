@@ -25,22 +25,19 @@ require_once('getUserCredentialsResponse.class.php');
 
 class getUserCredentialsResponseTest extends PHPUnit_Framework_TestCase
 {
-    /**
-     * @group getUserCredentialsResponse
-     * @group validate
-     */
+   /**
+    * @group getUserCredentialsResponse
+    * @group validate
+    */
     public function testCredentials()
     {
-        $credentials = new credentials('username','password','RSAES-OAEP');
-        $this->assertTrue($credentials->validate());
-
         $instance = new getUserCredentialsResponse();
         $this->assertFalse($instance->validate());
         $this->assertContains('getUserCredentialsResponse.credentials', $instance->getError());
         $instance->credentials = 'credentials';
         $this->assertFalse($instance->validate());
         $this->assertContains('getUserCredentialsResponse.credentials', $instance->getError());
-        $instance->credentials = $credentials;
+        $instance->credentials = new credentials('username','password','RSAES-OAEP');
         $this->assertTrue($instance->validate());
     }
 }

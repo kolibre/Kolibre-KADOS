@@ -29,7 +29,7 @@ class addContentToBookshelfTest extends PHPUnit_Framework_TestCase
      * @group addContentToBookshelf
      * @group validate
      */
-    public function testUsername()
+    public function testContentID()
     {
         $instance = new addContentToBookshelf(null);
         $this->assertFalse($instance->validate());
@@ -43,7 +43,6 @@ class addContentToBookshelfTest extends PHPUnit_Framework_TestCase
         $instance->contentID = 'contentID';
         $this->assertTrue($instance->validate());
     }
-
 }
 
 ?>

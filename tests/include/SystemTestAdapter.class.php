@@ -28,7 +28,7 @@ class SystemTestAdapter extends Adapter
     protected $sessionActive = true;
     protected $contentLists = array('bookshelf' => array('id_1','id_2'));
     protected $announcements = array('ann_1','ann_2','ann_3');
-    protected $bookmarks = array();
+    protected $bookmarks = array('id_1' => "{\"title\":{\"text\":\"dc:title\"}, \"uid\":\"dc:identifier\", \"lastmark\":{\"ncxRef\":\"ncxRef\", \"URI\":\"uri\", \"charOffset\":10}, \"bookmark\":[{\"ncxRef\":\"ncxRef\",\"URI\":\"uri\",\"timeOffset\":\"00:00:00\"}]}");
 
     public function startSession()
     {
@@ -54,6 +54,12 @@ class SystemTestAdapter extends Adapter
         case Adapter::LABEL_CONTENTITEM:
             return $label;
         case Adapter::LABEL_ANNOUNCEMENT:
+            return $label;
+        case Adapter::LABEL_INPUTQUESTION:
+            return $label;
+        case Adapter::LABEL_CHOICEQUESTION:
+            return $label;
+        case Adapter::LABEL_CHOICE:
             return $label;
         }
 
@@ -154,6 +160,13 @@ class SystemTestAdapter extends Adapter
         return true;
     }
 
+    public function contentAddBookshelf($contentId)
+    {
+        if (!in_array($contentId, $this->contentLists['bookshelf']))
+            array_push($this->contentLists['bookshelf'], $contentId);
+        return true;
+    }
+
     public function contentResources($contentId, $accessMethod = null)
     {
         $resources = array();
@@ -228,6 +241,49 @@ class SystemTestAdapter extends Adapter
             return array('bookmarkSet' => $this->bookmarks[$contentId]);
 
         return false;
+    }
+
+    public function menuDefault()
+    {
+        $mainMenu = array('type' => 'multipleChoiceQuestion', 'id' => 'main-menu', 'choices' => array('search-library', 'give-feedback'));
+        return array($mainMenu);
+    }
+
+    public function menuSearch()
+    {
+        $searchMenu = array('type' => 'multipleChoiceQuestion', 'id' => 'search-by', 'choices' => array('by-author', 'by-title'));
+        return array($searchMenu);
+    }
+
+    public function menuBack()
+    {
+        // not the way to do this but we're only testing!
+        return $this->menuDefault();
+    }
+
+    public function menuNext($responses)
+    {
+        if (count($responses) == 1 && $responses[0]['questionID'] == 'main-menu' && $responses[0]['value'] == 'search-library')
+            return $this->menuSearch();
+        if (count($responses) == 1 && $responses[0]['questionID'] == 'main-menu' && $responses[0]['value'] == 'give-feedback')
+        {
+            $rateQuestion = array('type' => 'multipleChoiceQuestion', 'id' => 'rate-service', 'choices' => array('A', 'B', 'C', 'D', 'E'));
+            $userInput = array('type' => 'inputQuestion', 'id' => 'user-input', 'inputTypes' => array('TEXT_ALPHANUMERIC'));
+            return array($rateQuestion, $userInput);
+        }
+        return false;
+    }
+
+    public function menuContentQuestion($contentId)
+    {
+        if ($contentId == "id_1")
+            return array('type' => 'multipleChoiceQuestion', 'id' => 'options_ids', 'choices' => array('option_1', 'option_2'));
+        return array();
+    }
+
+    public function userCredentials($manufacturer, $model, $serialNumber, $version)
+    {
+        return array('username' => 'username', 'password' => 'encrypted password');
     }
 
     public function termsOfService()

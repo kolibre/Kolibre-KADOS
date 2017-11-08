@@ -28,6 +28,49 @@ class DaisyOnlineServiceTest extends PHPUnit_Framework_TestCase
 {
     protected static $inifile;
     protected static $instance;
+    protected $readingSystemAttributes;
+
+    public function setUp()
+    {
+        // build readingSystemAttributes
+        $accessConfig = "STREAM_ONLY";
+        $supportsMultipleSelections = false;
+        $supportsAdvancedDynamicMenus = false;
+        $preferredUILanguage = 'preferredUILanguage';
+        $bandwidth = null;
+        $supportedContentFormats = new supportedContentFormats();
+        $supportedContentProtectionFormats = new supportedContentProtectionFormats();
+        $keyRing = null;
+        $supportedMimeTypes = new supportedMimeTypes();
+        $supportedInputTypes = new supportedInputTypes();
+        $requiresAudioLabels = false;
+        $additionalTransferProtocols = null;
+        $config = new config(
+            $accessConfig,
+            $supportsMultipleSelections,
+            $supportsAdvancedDynamicMenus,
+            $preferredUILanguage,
+            $bandwidth,
+            $supportedContentFormats,
+            $supportedContentProtectionFormats,
+            $keyRing,
+            $supportedMimeTypes,
+            $supportedInputTypes,
+            $requiresAudioLabels,
+            $additionalTransferProtocols);
+        $manufacturer = 'manufacturer';
+        $model = 'model';
+        $serialNumber = null;
+        $version = 'version';
+        $readingSystemAttributes = new readingSystemAttributes(
+            $manufacturer,
+            $model,
+            $serialNumber,
+            $version,
+            $config);
+        $this->assertTrue($readingSystemAttributes->validate());
+        $this->readingSystemAttributes = $readingSystemAttributes;
+    }
 
     public static function setUpBeforeClass()
     {
@@ -36,12 +79,19 @@ class DaisyOnlineServiceTest extends PHPUnit_Framework_TestCase
 
         $settings = array();
         $settings['Service'] = array();
+        $settings['Service']['serviceProvider'] = 'serviceProvider';
+        $settings['Service']['service'] = 'service';
+        $settings['Service']['accessConfig'] = 'STREAM_AND_RESTRICTED_DOWNLOAD';
         $settings['Service']['supportedOptionalOperations'] = array();
         $settings['Service']['supportedOptionalOperations'][] = 'SERVICE_ANNOUNCEMENTS';
         $settings['Service']['supportedOptionalOperations'][] = 'SET_BOOKMARKS';
         $settings['Service']['supportedOptionalOperations'][] = 'GET_BOOKMARKS';
+        $settings['Service']['supportedOptionalOperations'][] = 'DYNAMIC_MENUS';
         $settings['Service']['supportedOptionalOperationsExtra'] = array();
         $settings['Service']['supportedOptionalOperationsExtra'][] = 'PROGRESS_STATE';
+        $settings['Service']['supportedOptionalOperationsExtra'][] = 'USER_CREDENTIALS';
+        $settings['Service']['supportedOptionalOperationsExtra'][] = 'ADD_CONTENT';
+        $settings['Service']['announcementsPullFrequency'] = 60;
         $settings['Adapter'] = array();
         $settings['Adapter']['name'] = 'TestAdapter';
         $settings['Adapter']['path'] = realpath(dirname(__FILE__));
@@ -107,58 +157,28 @@ class DaisyOnlineServiceTest extends PHPUnit_Framework_TestCase
      */
     public function testLogOn()
     {
-        // build readingSystemAttributes
-        $accessConfig = "STREAM_ONLY";
-        $supportsMultipleSelections = false;
-        $supportsAdvancedDynamicMenus = false;
-        $preferredUILanguage = 'preferredUILanguage';
-        $bandwidth = null;
-        $supportedContentFormats = new supportedContentFormats();
-        $supportedContentProtectionFormats = new supportedContentProtectionFormats();
-        $keyRing = null;
-        $supportedMimeTypes = new supportedMimeTypes();
-        $supportedInputTypes = new supportedInputTypes();
-        $requiresAudioLabels = false;
-        $additionalTransferProtocols = null;
-        $config = new config(
-            $accessConfig,
-            $supportsMultipleSelections,
-            $supportsAdvancedDynamicMenus,
-            $preferredUILanguage,
-            $bandwidth,
-            $supportedContentFormats,
-            $supportedContentProtectionFormats,
-            $keyRing,
-            $supportedMimeTypes,
-            $supportedInputTypes,
-            $requiresAudioLabels,
-            $additionalTransferProtocols);
-
-        $manufacturer = 'manufacturer';
-        $model = 'model';
-        $serialNumber = null;
-        $version = 'version';
-        $readingSystemAttributes = new readingSystemAttributes(
-            $manufacturer,
-            $model,
-            $serialNumber,
-            $version,
-            $config);
-        $this->assertTrue($readingSystemAttributes->validate());
-
         // adapter throws exception on authenticate
-        $input = new logOn('exception', 'exception', $readingSystemAttributes);
+        $input = new logOn('exception', 'exception', $this->readingSystemAttributes);
         $this->assertTrue($this->callOperation('logOn', $input, 'internalServerErrorFault'));
 
         // adapter returns false on authenticate
-        $input = new logOn('invalid', 'invalid', $readingSystemAttributes);
+        $input = new logOn('invalid', 'invalid', $this->readingSystemAttributes);
         $this->assertTrue($this->callOperation('logOn', $input, 'unauthorizedFault'));
 
         // adapter returns true on authenticate
-        $input = new logOn('valid', 'valid', $readingSystemAttributes);
+        $input = new logOn('valid', 'valid', $this->readingSystemAttributes);
         $output = self::$instance->logOn($input);
         $this->assertInstanceOf('serviceAttributes',$output->serviceAttributes);
-
+        $this->assertEquals('serviceProvider', $output->serviceAttributes->serviceProvider->id);
+        $this->assertEquals('service', $output->serviceAttributes->service->id);
+        $this->assertEquals(false, $output->serviceAttributes->supportsServerSideBack);
+        $this->assertEquals(false, $output->serviceAttributes->supportsSearch);
+        $this->assertNull($output->serviceAttributes->supportedUplinkAudioCodecs->codec);
+        $this->assertEquals(false, $output->serviceAttributes->supportsAudioLabels);
+        $this->assertCount(4, $output->serviceAttributes->supportedOptionalOperations->operation);
+        $this->assertEquals('STREAM_AND_RESTRICTED_DOWNLOAD', $output->serviceAttributes->accessConfig);
+        $this->assertEquals(60, $output->serviceAttributes->announcementsPullFrequency);
+        $this->assertEquals(true, $output->serviceAttributes->progressStateOperationAllowed);
     }
 
     /**
@@ -539,6 +559,160 @@ class DaisyOnlineServiceTest extends PHPUnit_Framework_TestCase
         $this->assertEquals($output->bookmarkObject->bookmarkSet->lastmark->URI, "uri");
         $this->assertEquals($output->bookmarkObject->bookmarkSet->lastmark->timeOffset, "00:00");
         $this->assertNull($output->bookmarkObject->bookmarkSet->lastmark->charOffset);
+    }
+
+    /**
+     * @group daisyonlineservice
+     * @group operation
+     */
+    public function testGetQuestions()
+    {
+        // request is not valid
+        $input = new getQuestions();
+        $this->assertTrue($this->callOperation('getQuestions', $input, 'invalidParameterFault'));
+
+        // search not supported by server
+        $input->userResponses = new userResponses(array(new userResponse('search')));
+        $this->assertTrue($this->callOperation('getQuestions', $input, 'invalidParameterFault'));
+
+        // back not supported by server
+        $input->userResponses = new userResponses(array(new userResponse('back')));
+        $this->assertTrue($this->callOperation('getQuestions', $input, 'invalidParameterFault'));
+
+        // unkown question id
+        $input->userResponses = new userResponses(array(new userResponse('unkown')));
+        $this->assertTrue($this->callOperation('getQuestions', $input, 'invalidParameterFault'));
+
+        // adapter throws exception on menuNext
+        $input->userResponses = new userResponses(array(new userResponse('exception-menu-next', 'value')));
+        $this->assertTrue($this->callOperation('getQuestions', $input, 'internalServerErrorFault'));
+
+        // adapter returns false
+        $input->userResponses = new userResponses(array(new userResponse('false', 'value')));
+        $this->assertTrue($this->callOperation('getQuestions', $input, 'internalServerErrorFault'));
+
+        // default menu is returned
+        $input->userResponses = new userResponses(array(new userResponse('default')));
+        $output = self::$instance->getQuestions($input);
+        $this->assertCount(1, $output->questions->multipleChoiceQuestion);
+        $this->assertArrayHasKey(1, $output->questions->multipleChoiceQuestion);
+        $this->assertInstanceOf('multipleChoiceQuestion', $output->questions->multipleChoiceQuestion[1]);
+        $this->assertEquals('main-menu', $output->questions->multipleChoiceQuestion[1]->id);
+        $this->assertCount(2, $output->questions->multipleChoiceQuestion[1]->choices->choice);
+        $this->assertNull($output->questions->inputQuestion);
+        $this->assertNull($output->questions->contentListRef);
+        $this->assertNull($output->questions->label);
+
+        // next menu is returned
+        $input->userResponses = new userResponses(array(new userResponse('main-menu', 'give-feedback')));
+        $output = self::$instance->getQuestions($input);
+        $this->assertCount(1, $output->questions->multipleChoiceQuestion);
+        $this->assertArrayHasKey(1, $output->questions->multipleChoiceQuestion);
+        $this->assertInstanceOf('multipleChoiceQuestion', $output->questions->multipleChoiceQuestion[1]);
+        $this->assertEquals('rate-service', $output->questions->multipleChoiceQuestion[1]->id);
+        $this->assertCount(5, $output->questions->multipleChoiceQuestion[1]->choices->choice);
+        $this->assertCount(1, $output->questions->inputQuestion);
+        $this->assertArrayHasKey(2, $output->questions->inputQuestion);
+        $this->assertInstanceOf('inputQuestion', $output->questions->inputQuestion[2]);
+        $this->assertEquals('user-input', $output->questions->inputQuestion[2]->id);
+        $this->assertCount(1, $output->questions->inputQuestion[2]->inputTypes->input);
+        $this->assertEquals('default-value', $output->questions->inputQuestion[2]->defaultValue);
+        $this->assertNull($output->questions->contentListRef);
+        $this->assertNull($output->questions->label);
+
+        // content list endpoint is returned
+        $input->userResponses = new userResponses(array(new userResponse('content-list-endpoint', 'value')));
+        $output = self::$instance->getQuestions($input);
+        $this->assertNull($output->questions->multipleChoiceQuestion);
+        $this->assertNull($output->questions->inputQuestion);
+        $this->assertEquals($output->questions->contentListRef, "content-list-ref");
+        $this->assertNull($output->questions->label);
+
+        // label endpoint is returned
+        $input->userResponses = new userResponses(array(new userResponse('label-endpoint', 'value')));
+        $output = self::$instance->getQuestions($input);
+        $this->assertNull($output->questions->multipleChoiceQuestion);
+        $this->assertNull($output->questions->inputQuestion);
+        $this->assertNull($output->questions->contentListRef);
+        $this->assertInstanceOf('label', $output->questions->label);
+        $this->assertEquals($output->questions->label->text, 'text');
+        $this->assertInstanceOf('audio', $output->questions->label->audio);
+        $this->assertEquals($output->questions->label->audio->uri, 'uri');
+        $this->assertEquals($output->questions->label->audio->rangeBegin, 0);
+        $this->assertEquals($output->questions->label->audio->rangeEnd, 1);
+        $this->assertEquals($output->questions->label->audio->size, 2);
+        $this->assertEquals($output->questions->label->lang, 'en');
+        $this->assertEquals($output->questions->label->dir, 'ltr');
+    }
+
+    /**
+     * @group daisyonlineservice
+     * @group operation
+     */
+    public function testAddContentToBookshelf()
+    {
+        // request is not valid
+        $input = new addContentToBookshelf();
+        $this->assertTrue($this->callOperation('addContentToBookshelf', $input, 'invalidParameterFault'));
+
+        // adapter throws exception on contentExists
+        $input = new addContentToBookshelf('exception-content-exists');
+        $this->assertTrue($this->callOperation('addContentToBookshelf', $input, 'internalServerErrorFault'));
+
+        // adapter returns false on contentExists
+        $input = new addContentToBookshelf('invalid-content-exists');
+        $this->assertTrue($this->callOperation('addContentToBookshelf', $input, 'invalidParameterFault'));
+
+        // adapter throws exception on contentAccessible
+        $input = new addContentToBookshelf('exception-content-accessible');
+        $this->assertTrue($this->callOperation('addContentToBookshelf', $input, 'internalServerErrorFault'));
+
+        // adapter returns false on contentAccessible
+        $input = new addContentToBookshelf('invalid-content-accessible');
+        $this->assertTrue($this->callOperation('addContentToBookshelf', $input, 'invalidParameterFault'));
+
+        // adapter throws exception on contentAddBookshelf
+        $input = new addContentToBookshelf('exception-add-bookshelf');
+        $this->assertTrue($this->callOperation('addContentToBookshelf', $input, 'internalServerErrorFault'));
+
+        // adapter returns false on contentAddBookshelf
+        $input = new addContentToBookshelf('invalid-add-bookshelf');
+        $this->assertTrue($this->callOperation('addContentToBookshelf', $input, 'invalidParameterFault'));
+
+        // add successful
+        $input = new addContentToBookshelf('valid-add-bookshelf');
+        $output = self::$instance->addContentToBookshelf($input);
+        $this->assertTrue($output->addContentToBookshelfResult);
+    }
+
+    /**
+     * @group daisyonlineservice
+     * @group operation
+     */
+    public function testGetUserCredentials()
+    {
+        $readingSystemAttributes = $this->readingSystemAttributes;
+
+        // request is not valid
+        $input = new getUserCredentials();
+        $this->assertTrue($this->callOperation('getUserCredentials', $input, 'invalidParameterFault'));
+
+        // adapter throws exception
+        $readingSystemAttributes->setSerialNumber('exception');
+        $input = new getUserCredentials($readingSystemAttributes);
+        $this->assertTrue($this->callOperation('getUserCredentials', $input, 'internalServerErrorFault'));
+
+        // adapter returns false
+        $readingSystemAttributes->setSerialNumber('invalid');
+        $this->assertTrue($this->callOperation('getUserCredentials', $input, 'invalidParameterFault'));
+
+        // adapter returns true
+        $readingSystemAttributes->setSerialNumber('valid');
+        $input = new getUserCredentials($readingSystemAttributes);
+        $output = self::$instance->getUserCredentials($input);
+        $this->assertEquals($output->credentials->username, 'username');
+        $this->assertEquals($output->credentials->password, base64_encode('encrypted password'));
+        $this->assertEquals($output->credentials->encryptionScheme, 'RSAES-OAEP');
     }
 
     /**

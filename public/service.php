@@ -115,13 +115,22 @@ This service implements the DAISY Online Delivery protocol as specified in the T
 <div class="note">
 <h4>Note</h4>
 <p>This is a demo service hosted by Kolibre and free to use for testing and demonstration purposes.</p>
-<p>The service is pre-configured with five user accounts each containing three sample content. See list below for usernames and passwords</p>
+<p>The service is pre-configured with 10 user accounts. Five accounts each with three sample contents populated in contents lists and five accounts with empty content lists that can be populated through the dynamic menus. See lists below for usernames and passwords</p>
+<p>User accounts with populated content lists:</p>
 <ul>
 <li>user1:password</li>
 <li>user2:password</li>
 <li>user3:password</li>
 <li>user4:password</li>
 <li>user5:password</li>
+</ul>
+<p>User accounts with empty content lists:</p>
+<ul>
+<li>user6:password</li>
+<li>user7:password</li>
+<li>user8:password</li>
+<li>user9:password</li>
+<li>user10:password</li>
 </ul>
 <p>If a user tries to return a content, the service will respond with a successful response, but the content will appear in the list of new content when the list is requested.</p>
 <p>The service is also pre-configured to reset itself to its default state every day at 0:00 CET</p>

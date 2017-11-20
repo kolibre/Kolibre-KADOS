@@ -1824,7 +1824,7 @@ class DaisyOnlineService
                 {
                     try
                     {
-                        $labelArray = $this->adapter->label($id, Adapter::LABEL_CHOICE, $this->getClientLangCode());
+                        $labelArray = $this->adapter->label($choice, Adapter::LABEL_CHOICE, $this->getClientLangCode());
                         if (is_array($labelArray))
                         {
                             $choiceLabel = $this->createLabel($labelArray);

@@ -1246,7 +1246,7 @@ class DemoAdapter extends Adapter
         // questions but we are not interested in that
         foreach ($responses as $response)
         {
-            $questionId = $this->extractId($response['questionId']);
+            $questionId = $this->extractId($response['questionID']);
             try
             {
                 $query = 'SELECT questiontype.type

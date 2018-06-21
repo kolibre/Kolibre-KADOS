@@ -1367,15 +1367,36 @@ class DaisyOnlineService
     /**
      * Service helper
      *
+     * Checks if the environment variable specified by name is defined
+     * and returns it's value, otherwise returns the default value.
+     *
+     * @param string $name Name of the environment variable.
+     * @param mixed $default The default value if environment variable not defined.
+     * @return mixed
+     */
+    private function getEnvValue($name, $default)
+    {
+        if (array_key_exists($name, $_ENV))
+            return $_ENV[$name];
+        return $default;
+    }
+
+    /**
+     * Service helper
+     *
      * Parses services settings and initializes private service attributes
      *
      * @param array $settings Service settings from service.ini
      */
     private function setupServiceAttributes($settings)
     {
-        if (array_key_exists('serviceProvider', $settings))
+        if (array_key_exists('DODP_SERVICE_PROVIDER', $_ENV))
+            $this->serviceAttributes['serviceProvider'] = $_ENV['DODP_SERVICE_PROVIDER'];
+        else if (array_key_exists('serviceProvider', $settings))
             $this->serviceAttributes['serviceProvider'] = $settings['serviceProvider'];
-        if (array_key_exists('service', $settings))
+        if (array_key_exists('DODP_SERVICE', $_ENV))
+            $this->serviceAttributes['service'] = $_ENV['DODP_SERVICE'];
+        else if (array_key_exists('service', $settings))
             $this->serviceAttributes['service'] = $settings['service'];
         $this->serviceAttributes['supportedContentSelectionMethods'] = array();
         if (array_key_exists('supportedContentSelectionMethods', $settings))
@@ -1395,18 +1416,43 @@ class DaisyOnlineService
         if (array_key_exists('supportedOptionalOperations', $settings))
         {
             if (in_array('SERVICE_ANNOUNCEMENTS', $settings['supportedOptionalOperations']))
-                array_push($this->serviceAttributes['supportedOptionalOperations'], 'SERVICE_ANNOUNCEMENTS');
+            {
+                if ($this->getEnvValue('DODP_SUPPORTED_OPTIONAL_OPERATIONS_SERVICE_ANNOUNCEMENTS', 1) == 1)
+                    array_push($this->serviceAttributes['supportedOptionalOperations'], 'SERVICE_ANNOUNCEMENTS');
+            }
             if (in_array('SET_BOOKMARKS', $settings['supportedOptionalOperations']))
-                array_push($this->serviceAttributes['supportedOptionalOperations'], 'SET_BOOKMARKS');
+            {
+                if ($this->getEnvValue('DODP_SUPPORTED_OPTIONAL_OPERATIONS_SET_BOOKMARKS', 1) == 1)
+                    array_push($this->serviceAttributes['supportedOptionalOperations'], 'SET_BOOKMARKS');
+            }
             if (in_array('GET_BOOKMARKS', $settings['supportedOptionalOperations']))
-                array_push($this->serviceAttributes['supportedOptionalOperations'], 'GET_BOOKMARKS');
+            {
+                if ($this->getEnvValue('DODP_SUPPORTED_OPTIONAL_OPERATIONS_GET_BOOKMARKS', 1) == 1)
+                    array_push($this->serviceAttributes['supportedOptionalOperations'], 'GET_BOOKMARKS');
+            }
             if (in_array('DYNAMIC_MENUS', $settings['supportedOptionalOperations']))
-                array_push($this->serviceAttributes['supportedOptionalOperations'], 'DYNAMIC_MENUS');
+            {
+                if ($this->getEnvValue('DODP_SUPPORTED_OPTIONAL_OPERATIONS_DYNAMIC_MENUS', 1) == 1)
+                    array_push($this->serviceAttributes['supportedOptionalOperations'], 'DYNAMIC_MENUS');
+            }
             if (in_array('PDTB2_KEY_PROVISION', $settings['supportedOptionalOperations']))
-                array_push($this->serviceAttributes['supportedOptionalOperations'], 'PDTB2_KEY_PROVISION');
+            {
+                if ($this->getEnvValue('DODP_SUPPORTED_OPTIONAL_OPERATIONS_SERVICE_PDTB2_KEY_PROVISION', 1) == 1)
+                    array_push($this->serviceAttributes['supportedOptionalOperations'], 'PDTB2_KEY_PROVISION');
+            }
         }
         $this->serviceAttributes['supportsServerSideBack'] = false;
-        if (array_key_exists('supportsServerSideBack', $settings))
+        if ($this->getEnvValue('DODP_SUPPORTS_SERVER_SIDE_BACK', 0) == 1)
+        {
+            if (in_array('DYNAMIC_MENUS', $this->serviceAttributes['supportedOptionalOperations']))
+                $this->serviceAttributes['supportsServerSideBack'] = true;
+            else
+            {
+                $msg = "Reserved parameter 'back' supported in env but DYNAMIC_MENUS not supported";
+                $this->logger->warn($msg);
+            }
+        }
+        else if (array_key_exists('supportsServerSideBack', $settings))
         {
             if (in_array('DYNAMIC_MENUS', $this->serviceAttributes['supportedOptionalOperations']))
                 $this->serviceAttributes['supportsServerSideBack'] = true;
@@ -1417,7 +1463,17 @@ class DaisyOnlineService
             }
         }
         $this->serviceAttributes['supportsSearch'] = false;
-        if (array_key_exists('supportsSearch', $settings))
+        if ($this->getEnvValue('DODP_SUPPORTS_SEARCH', 0) == 1)
+        {
+            if (in_array('DYNAMIC_MENUS', $this->serviceAttributes['supportedOptionalOperations']))
+                $this->serviceAttributes['supportsSearch'] = true;
+            else
+            {
+                $msg = "Reserved parameter 'search' supported in env but DYNAMIC_MENUS not supported";
+                $this->logger->warn($msg);
+            }
+        }
+        else if (array_key_exists('supportsSearch', $settings))
         {
             if (in_array('DYNAMIC_MENUS', $this->serviceAttributes['supportedOptionalOperations']))
                 $this->serviceAttributes['supportsSearch'] = true;
@@ -1428,7 +1484,17 @@ class DaisyOnlineService
             }
         }
         $this->serviceAttributes['supportedUplinkAudioCodecs'] = array();
-        if (array_key_exists('supportedUplinkAudioCodecs', $settings))
+        if ($this->getEnvValue('DODP_SUPPORTED_UPLINK_AUDIO_CODES', '') != '')
+        {
+            if (in_array('DYNAMIC_MENUS', $this->serviceAttributes['supportedOptionalOperations']))
+                $this->serviceAttributes['supportedUplinkAudioCodecs'] = explode($_ENV['DODP_SUPPORTED_UPLINK_AUDIO_CODES']);
+            else
+            {
+                $msg = "Uplink audio codes specified in env but DYNAMIC_MENUS not supported";
+                $this->logger->warn($msg);
+            }
+        }
+        else if (array_key_exists('supportedUplinkAudioCodecs', $settings))
         {
             if (in_array('DYNAMIC_MENUS', $this->serviceAttributes['supportedOptionalOperations']))
                 $this->serviceAttributes['supportedUplinkAudioCodecs'] = $settings['supportedUplinkAudioCodecs'];
@@ -1439,7 +1505,9 @@ class DaisyOnlineService
             }
         }
         $this->serviceAttributes['supportsAudioLabels'] = false;
-        if (array_key_exists('supportsAudioLabels', $settings))
+        if ($this->getEnvValue('DODP_SUPPORTS_AUDIO_LABELS', 0) == 1)
+            $this->serviceAttributes['supportsServerSideBack'] = true;
+        else if (array_key_exists('supportsAudioLabels', $settings))
             $this->serviceAttributes['supportsAudioLabels'] = true;
     }
 
@@ -1452,14 +1520,22 @@ class DaisyOnlineService
      */
     private function setupAdapter($settings)
     {
-        if (!array_key_exists('name', $settings))
+        if ($this->getEnvValue('KADOS_ADAPTER_NAME', '') != '')
+            $adapterClass = $_ENV['KADOS_ADAPTER_NAME'];
+        else if (!array_key_exists('name', $settings))
         {
             $this->logger->fatal('No adapter specified in settings file');
             die('No adapter specified in settings file');
         }
-        $adapterClass = $settings['name'];
+        else
+            $adapterClass = $settings['name'];
 
-        if (array_key_exists('path', $settings))
+        if ($this->getEnvValue('KADOS_ADAPTER_PATH', '') != '')
+        {
+            $path = $_ENV['KADOS_ADAPTER_PATH'];
+            $this->includeAdapter($path, $adapterClass);
+        }
+        else if (array_key_exists('path', $settings))
         {
             $path = $settings['path'];
             $this->includeAdapter($path, $adapterClass);

@@ -27,6 +27,8 @@ set_include_path(get_include_path() . PATH_SEPARATOR . dirname(__FILE__) . '/../
 require_once('vendor/autoload.php');
 Logger::configure(dirname(__FILE__) . '/../log4php.xml');
 $serviceLogger = Logger::getLogger('kolibre.daisyonline.service');
+// TODO: change log level if defined in environment
+$serviceLogger->setLevel(LoggerLevel::getLevelError());
 
 // Include DaisyOnlineService class
 require_once('DaisyOnlineService.class.php');

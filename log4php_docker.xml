@@ -1,0 +1,11 @@
+<configuration xmlns="http://logging.apache.org/log4php/">
+    <appender name="stdout" class="LoggerAppenderConsole">
+        <layout class="LoggerLayoutPattern">
+            <param name="conversionPattern" value="%d %c:%L [%p] %m%n"/>
+        </layout>
+    </appender>
+    <root>
+        <level value="DEBUG" />
+        <appender_ref ref="stdout" />
+    </root>
+</configuration>

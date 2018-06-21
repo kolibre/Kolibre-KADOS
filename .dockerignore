@@ -1,0 +1,9 @@
+Dockerfile*
+.dockerignore
+.git
+tests
+composer.lock
+data/db/demo.db
+data/service.log
+README.md
+vendor

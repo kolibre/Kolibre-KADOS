@@ -353,6 +353,17 @@ class DaisyOnlineServiceSystem extends PHPUnit_Framework_TestCase
         $this->assertNull($output->questions->inputQuestion);
         $this->assertNull($output->questions->contentListRef);
         $this->assertNull($output->questions->label);
+        // allow value to be an empty string as some reading system manufactures sends it through
+        $input->userResponses = new userResponses(array(new userResponse('search', '')));
+        $output = self::$instance->getQuestions($input);
+        $this->assertCount(1, $output->questions->multipleChoiceQuestion);
+        $this->assertArrayHasKey(1, $output->questions->multipleChoiceQuestion);
+        $this->assertInstanceOf('multipleChoiceQuestion', $output->questions->multipleChoiceQuestion[1]);
+        $this->assertEquals('search-by', $output->questions->multipleChoiceQuestion[1]->id);
+        $this->assertCount(2, $output->questions->multipleChoiceQuestion[1]->choices->choice);
+        $this->assertNull($output->questions->inputQuestion);
+        $this->assertNull($output->questions->contentListRef);
+        $this->assertNull($output->questions->label);
 
         // request back
         $input->userResponses = new userResponses(array(new userResponse('back')));

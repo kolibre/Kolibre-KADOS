@@ -1136,10 +1136,10 @@ class DaisyOnlineService
 
         try
         {
-            if (count($userResponses->userResponse) == 1 && is_null($userResponses->userResponse[0]->value) && is_null($userResponses->userResponse[0]->data) && is_null($userResponses->userResponse[0]->data_encoded))
+            if (count($userResponses->userResponse) == 1 && (is_null($userResponses->userResponse[0]->value) || (is_string($userResponses->userResponse[0]->value) && strlen($userResponses->userResponse[0]->value) == 0)) && is_null($userResponses->userResponse[0]->data) && is_null($userResponses->userResponse[0]->data_encoded))
             {
                 // handle reserved menus
-                switch($userResponses->userResponse[0]->questionID)
+                switch ($userResponses->userResponse[0]->questionID)
                 {
                     case 'default':
                         $menus = $this->adapter->menuDefault();

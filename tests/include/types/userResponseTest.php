@@ -74,6 +74,10 @@ class userResponseTest extends PHPUnit_Framework_TestCase
         $instance->data_encoded = 'data_encoded';
         $this->assertFalse($instance->validate());
         $this->assertContains('userResponse.data_encoded', $instance->getError());
+        $instance->data_encoded = null;
+        $this->assertTrue($instance->validate());
+        $instance->value = '';
+        $this->assertTrue($instance->validate());
 
         // reserved value search
         $instance = new userResponse('search');
@@ -88,6 +92,10 @@ class userResponseTest extends PHPUnit_Framework_TestCase
         $instance->data_encoded = 'data_encoded';
         $this->assertFalse($instance->validate());
         $this->assertContains('userResponse.data_encoded', $instance->getError());
+        $instance->data_encoded = null;
+        $this->assertTrue($instance->validate());
+        $instance->value = '';
+        $this->assertTrue($instance->validate());
 
         // reserved value back
         $instance = new userResponse('back');
@@ -102,6 +110,10 @@ class userResponseTest extends PHPUnit_Framework_TestCase
         $instance->data_encoded = 'data_encoded';
         $this->assertFalse($instance->validate());
         $this->assertContains('userResponse.data_encoded', $instance->getError());
+        $instance->data_encoded = null;
+        $this->assertTrue($instance->validate());
+        $instance->value = '';
+        $this->assertTrue($instance->validate());
     }
 
     /**

@@ -796,7 +796,7 @@ class DemoAdapter extends Adapter
     {
         $contentId = $this->extractId($contentId);
 
-        if ($this->contentInList($contentId, 'new') || $this->contentInList($contentId, 'issued'))
+        if ($this->contentInList($contentId, 'new') || $this->contentInList($contentId, 'issued') || $this->contentInList($contentId, 'search') || $this->contentInList($contentId, 'browse'))
             return true;
 
         return false;
@@ -806,24 +806,43 @@ class DemoAdapter extends Adapter
     {
         $contentId = $this->extractId($contentId);
 
-        if ($this->contentInList($contentId, 'expired') || $this->contentInList($contentId, 'returned'))
+        if ($this->contentInList($contentId, 'search') || $this->contentInList($contentId, 'browse'))
+        {
+            // do nothing, database is updated later on
+        }
+        else if ($this->contentInList($contentId, 'expired') || $this->contentInList($contentId, 'returned'))
             return false;
 
         if ($this->contentInList($contentId, 'issued'))
             return true;
 
-        if ($this->contentInList($contentId, 'new'))
+        if ($this->contentInList($contentId, 'new') || $this->contentInList($contentId, 'search') || $this->contentInList($contentId, 'browse'))
         {
             try
             {
-                $query = 'UPDATE usercontent SET contentlist_id = :listId, updated_at = :timestamp
-                    WHERE user_id = :userId AND content_id = :contentId';
+                // get first row (in list new, search or browse) containing the content 
+                $contentListIds = array($this->contentListId('new'), $this->contentListId('search'), $this->contentListId('browse'));
+                $contentListIdValues = implode(',', $contentListIds); // variable substitution in PDO prepared statements doesn't support arrays
+                $query = "SELECT id FROM usercontent
+                    WHERE user_id = :userId AND content_id = :contentId AND contentlist_id IN ($contentListIdValues) ORDER BY contentlist_id";
                 $sth = $this->dbh->prepare($query);
                 $values = array();
-                $values[':listId'] = $this->contentListId('issued');
-                $values[':timestamp'] = date('Y-m-d H:i:s');
                 $values[':userId'] = $this->user;
                 $values[':contentId'] = $contentId;
+                $sth->execute($values);
+                $row = $sth->fetch(PDO::FETCH_ASSOC);
+                if ($row === false)
+                {
+                    $this->logger->error("Content with id '$contentId' for user with id '$this->user' not found in new, search or browse list");
+                    return false;
+                }
+                // update contentlist_id for the returned row
+                $query = 'UPDATE usercontent SET contentlist_id = :contentListId, updated_at = :timestamp WHERE id = :id';
+                $sth = $this->dbh->prepare($query);
+                $values = array();
+                $values[':contentListId'] = $this->contentListId('issued');
+                $values[':timestamp'] = date('Y-m-d H:i:s');
+                $values[':id'] = $row['id'];
                 if ($sth->execute($values) === false)
                 {
                     $this->logger->error("Issuing content with id '$contentId' for user with id '$this->user' failed");

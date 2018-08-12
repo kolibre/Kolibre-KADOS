@@ -629,6 +629,23 @@ class DemoAdapterTest extends PHPUnit_Framework_TestCase
         $this->assertCount(1, self::$adapter->contentList('browse'));
     }
 
+    public function testAddContent()
+    {
+        // add content to booskhelf
+        $issuedBefore = count(self::$adapter->contentList('issued'));
+        $responses = array(array('questionID' => 'que_24', 'value' => 'light')); // search by title 'light'
+        $contentListRef = self::$adapter->menuNext($responses);
+        $this->assertEquals('search', $contentListRef);
+        $this->assertCount(1, self::$adapter->contentList('search'));
+        $responses = array(array('questionID' => 'que_30', 'value' => 'que_31')); // browse by title
+        $contentListRef = self::$adapter->menuNext($responses);
+        $this->assertEquals('browse', $contentListRef);
+        $this->assertCount(3, self::$adapter->contentList('browse'));
+        $this->assertTrue(self::$adapter->contentIssue('con_1')); // issue content
+        $issuedAfter = count(self::$adapter->contentList('issued'));
+        $this->assertEquals($issuedBefore+1, $issuedAfter);
+    }
+
     private function assertContainsAny($needles, $haystack)
     {
         $result = false;

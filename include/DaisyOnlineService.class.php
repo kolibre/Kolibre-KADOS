@@ -233,7 +233,7 @@ class DaisyOnlineService
      * Service helper getServiceBaseUri
      * @return string
      */
-    public static function getServiceBaseUri($allowencrypted = false)
+    public static function getServiceBaseUri($allowencrypted = true)
     {
         $protocol = 'http';
         if ($allowencrypted === true)

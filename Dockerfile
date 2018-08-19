@@ -1,6 +1,5 @@
-# FROM php:5.6-apache-stretch
-
-FROM php:7.2-apache-stretch
+ARG PHP_VERSION=5.6
+FROM php:${PHP_VERSION}-apache-stretch
 COPY . /var/www
 
 RUN apt-get update && \

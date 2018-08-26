@@ -632,6 +632,23 @@ class DemoAdapterTest extends PHPUnit_Framework_TestCase
         $this->assertTrue(self::$adapter->contentAddBookshelf(2));
         $this->assertTrue(self::$adapter->contentAddBookshelf('con_2'));
     }
+
+    public function testAddContentViaDynamicMenus()
+    {
+        // add content to booskhelf
+        $bookshelfBefore = count(self::$adapter->contentList('bookshelf'));
+        $responses = array(array('questionID' => 'que_24', 'value' => 'light')); // search by title 'light'
+        $contentListRef = self::$adapter->menuNext($responses);
+        $this->assertEquals('search', $contentListRef);
+        $this->assertCount(1, self::$adapter->contentList('search'));
+        $responses = array(array('questionID' => 'que_30', 'value' => 'que_31')); // browse by title
+        $contentListRef = self::$adapter->menuNext($responses);
+        $this->assertEquals('browse', $contentListRef);
+        $this->assertCount(3, self::$adapter->contentList('browse'));
+        $this->assertTrue(self::$adapter->contentAddBookshelf('con_1')); // add content
+        $bookshelfAfter = count(self::$adapter->contentList('bookshelf'));
+        $this->assertEquals($bookshelfBefore+1, $bookshelfAfter);
+    }
 }
 
 ?>

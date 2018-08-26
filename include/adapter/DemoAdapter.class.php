@@ -544,7 +544,7 @@ class DemoAdapter extends Adapter
 
         try
         {
-            $query = 'SELECT * FROM usercontent WHERE user_id = :userId AND contentlist_id = :listId ORDER BY updated_at DESC';
+            $query = 'SELECT * FROM usercontent WHERE user_id = :userId AND contentlist_id = :listId AND returned = 0 ORDER BY updated_at DESC';
             $sth = $this->dbh->prepare($query);
             $sth->execute(array(':userId' => $this->user, ':listId' => $listId));
             $content = $sth->fetchAll(PDO::FETCH_ASSOC);
@@ -1559,7 +1559,34 @@ class DemoAdapter extends Adapter
     {
         $contentId = $this->extractId($contentId);
 
-        if ($this->contentInList($contentId, 'bookshelf')) return true;
+        // check if content already in list and not returned
+        if ($this->contentInList($contentId, 'bookshelf'))
+        {
+            try
+            {
+                $query = "SELECT returned FROM usercontent WHERE user_id = :userId AND content_id = :contentId";
+                $sth = $this->dbh->prepare($query);
+                $values = array();
+                $values[':userId'] = $this->user;
+                $values[':contentId'] = $contentId;
+                if ($sth->execute($values) === false)
+                {
+                    $this->logger->error("Checking return status for content with id '$contentId' for user with id '$this->user' failed");
+                    return false;
+                }
+
+                $row = $sth->fetch(PDO::FETCH_ASSOC);
+                if ($row['returned'] == 0)
+                {
+                    return true;
+                }
+            }
+            catch (PDOException $e)
+            {
+                $this->logger->fatal($e->getMessage());
+                throw new AdapterException('Checking return status for content before adding to bookshelf failed');
+            }
+        }
 
         try
         {

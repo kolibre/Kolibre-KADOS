@@ -573,7 +573,7 @@ CREATE TABLE "usercontent" (
   "content_id" INTEGER  NOT NULL,
   "contentlist_id" INTEGER  NOT NULL,
   "return" INTEGER NOT NULL,
-  "returned" INTEGER NOT NULL DEFAULT '1',
+  "returned" INTEGER NOT NULL DEFAULT '0',
   "return_at" NUMERIC DEFAULT NULL,
   "updated_at" NUMERIC NOT NULL DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY("user_id") REFERENCES "user"("id") ON DELETE SET NULL ON UPDATE SET NULL,

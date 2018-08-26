@@ -26,6 +26,28 @@ set_include_path(get_include_path() . PATH_SEPARATOR . dirname(__FILE__) . '/../
 // Setup logging
 require_once('vendor/autoload.php');
 Logger::configure(dirname(__FILE__) . '/../log4php.xml');
+if (array_key_exists('KADOS_LOG_LEVEL', $_ENV))
+{
+    $rootLogger = Logger::getRootLogger();
+    switch ($_ENV['KADOS_LOG_LEVEL'])
+    {
+        case 'DEBUG':
+            $rootLogger->setLevel(LoggerLevel::getLevelDebug());
+            break;
+        case 'INFO':
+            $rootLogger->setLevel(LoggerLevel::getLevelInfo());
+            break;
+        case 'WARNING':
+            $rootLogger->setLevel(LoggerLevel::getLevelWarn());
+            break;
+        case 'ERROR':
+            $rootLogger->setLevel(LoggerLevel::getLevelError());
+            break;
+        case 'FATAL':
+            $rootLogger->setLevel(LoggerLevel::getLevelFatal());
+            break;
+    }
+}
 $serviceLogger = Logger::getLogger('kolibre.daisyonline.service');
 
 // Include DaisyOnlineService class

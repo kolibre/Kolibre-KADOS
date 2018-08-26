@@ -57,7 +57,7 @@ require_once('getKeyExchangeObjectResponse.class.php');
 
 class DaisyOnlineService
 {
-    const VERSION = '0.1.2';
+    const VERSION = '0.1.3';
 
     private $serviceAttributes = array();
     private $readingSystemAttributes = null;

@@ -629,7 +629,7 @@ class DemoAdapterTest extends PHPUnit_Framework_TestCase
         $this->assertCount(1, self::$adapter->contentList('browse'));
     }
 
-    public function testAddContent()
+    public function testAddContentViaDynamicMenus()
     {
         // add content to booskhelf
         $issuedBefore = count(self::$adapter->contentList('issued'));

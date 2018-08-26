@@ -555,7 +555,7 @@ class DemoAdapter extends Adapter
 
         try
         {
-            $query = 'SELECT * FROM usercontent WHERE user_id = :userId AND contentlist_id = :listId ORDER BY updated_at DESC';
+            $query = 'SELECT * FROM usercontent WHERE user_id = :userId AND contentlist_id = :listId AND returned = 0 ORDER BY updated_at DESC';
             $sth = $this->dbh->prepare($query);
             $sth->execute(array(':userId' => $this->user, ':listId' => $listId));
             $content = $sth->fetchAll(PDO::FETCH_ASSOC);
@@ -849,7 +849,7 @@ class DemoAdapter extends Adapter
     {
         $contentId = $this->extractId($contentId);
 
-        if ($this->contentInList($contentId, 'new') || $this->contentInList($contentId, 'issued'))
+        if ($this->contentInList($contentId, 'new') || $this->contentInList($contentId, 'issued') || $this->contentInList($contentId, 'search') || $this->contentInList($contentId, 'browse'))
             return true;
 
         return false;
@@ -857,12 +857,60 @@ class DemoAdapter extends Adapter
 
     public function contentIssue($contentId)
     {
-        // This adapter function was desinged for the first DaisyOnline specification
-        // and not needed in in version 2.x of the speification, but it's not remove
-        // from the adapter API to maintain backwards compatibility.
+        $contentId = $this->extractId($contentId);
 
-        // Hence we always return true
-        return true;
+        if ($this->contentInList($contentId, 'search') || $this->contentInList($contentId, 'browse'))
+        {
+            // do nothing, database is updated later on
+        }
+        else if ($this->contentInList($contentId, 'expired') || $this->contentInList($contentId, 'returned'))
+            return false;
+
+        if ($this->contentInList($contentId, 'issued'))
+            return true;
+
+        if ($this->contentInList($contentId, 'new') || $this->contentInList($contentId, 'search') || $this->contentInList($contentId, 'browse'))
+        {
+            try
+            {
+                // get first row (in list new, search or browse) containing the content 
+                $contentListIds = array($this->contentListId('new'), $this->contentListId('search'), $this->contentListId('browse'));
+                $contentListIdValues = implode(',', $contentListIds); // variable substitution in PDO prepared statements doesn't support arrays
+                $query = "SELECT id FROM usercontent
+                    WHERE user_id = :userId AND content_id = :contentId AND contentlist_id IN ($contentListIdValues) ORDER BY contentlist_id";
+                $sth = $this->dbh->prepare($query);
+                $values = array();
+                $values[':userId'] = $this->user;
+                $values[':contentId'] = $contentId;
+                $sth->execute($values);
+                $row = $sth->fetch(PDO::FETCH_ASSOC);
+                if ($row === false)
+                {
+                    $this->logger->error("Content with id '$contentId' for user with id '$this->user' not found in new, search or browse list");
+                    return false;
+                }
+                // update contentlist_id for the returned row
+                $query = 'UPDATE usercontent SET contentlist_id = :contentListId, updated_at = :timestamp WHERE id = :id';
+                $sth = $this->dbh->prepare($query);
+                $values = array();
+                $values[':contentListId'] = $this->contentListId('issued');
+                $values[':timestamp'] = date('Y-m-d H:i:s');
+                $values[':id'] = $row['id'];
+                if ($sth->execute($values) === false)
+                {
+                    $this->logger->error("Issuing content with id '$contentId' for user with id '$this->user' failed");
+                    return false;
+                }
+                return true;
+            }
+            catch (PDOException $e)
+            {
+                $this->logger->fatal($e->getMessage());
+                throw new AdapterException('Issuing content failed');
+            }
+        }
+
+        return false;
     }
 
     public function contentResources($contentId, $accessMethod = null)
@@ -1257,7 +1305,7 @@ class DemoAdapter extends Adapter
         // questions but we are not interested in that
         foreach ($responses as $response)
         {
-            $questionId = $this->extractId($response['questionId']);
+            $questionId = $this->extractId($response['questionID']);
             try
             {
                 $query = 'SELECT questiontype.type
@@ -1522,7 +1570,34 @@ class DemoAdapter extends Adapter
     {
         $contentId = $this->extractId($contentId);
 
-        if ($this->contentInList($contentId, 'bookshelf')) return true;
+        // check if content already in list and not returned
+        if ($this->contentInList($contentId, 'bookshelf'))
+        {
+            try
+            {
+                $query = "SELECT returned FROM usercontent WHERE user_id = :userId AND content_id = :contentId";
+                $sth = $this->dbh->prepare($query);
+                $values = array();
+                $values[':userId'] = $this->user;
+                $values[':contentId'] = $contentId;
+                if ($sth->execute($values) === false)
+                {
+                    $this->logger->error("Checking return status for content with id '$contentId' for user with id '$this->user' failed");
+                    return false;
+                }
+
+                $row = $sth->fetch(PDO::FETCH_ASSOC);
+                if ($row['returned'] == 0)
+                {
+                    return true;
+                }
+            }
+            catch (PDOException $e)
+            {
+                $this->logger->fatal($e->getMessage());
+                throw new AdapterException('Checking return status for content before adding to bookshelf failed');
+            }
+        }
 
         try
         {

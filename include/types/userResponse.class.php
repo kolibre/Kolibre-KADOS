@@ -122,7 +122,7 @@ class userResponse extends AbstractType {
         // the value of questionID is other then 'default' or 'search' or 'back'
         $reservedValues = array('default', 'search', 'back');
         if (in_array($this->questionID, $reservedValues)) {
-            if (!is_null($this->value)) {
+            if (!is_null($this->value) && (is_string($this->value) && strlen($this->value) != 0)) {
                 $this->error = __CLASS__ . ".value must no be set when questionID is '$this->questionID'";
                 return false;
             }

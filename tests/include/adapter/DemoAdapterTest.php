@@ -529,7 +529,7 @@ class DemoAdapterTest extends PHPUnit_Framework_TestCase
     public function testMenuNext()
     {
         // label endpoint for feedback, either en or sv label might be returned
-        $responses = array(array('questionId' => 'que_40', 'value' => 'que_42')); // rate excellent
+        $responses = array(array('questionID' => 'que_40', 'value' => 'que_42')); // rate excellent
         $label = self::$adapter->menuNext($responses);
         $this->assertArrayHasKey('text', $label);
         $this->assertArrayHasKey('lang', $label);
@@ -537,7 +537,7 @@ class DemoAdapterTest extends PHPUnit_Framework_TestCase
         $this->assertArrayHasKey('uri', $label['audio']);
         $this->assertContainsAny(array('question_39.ogg', 'question_40.ogg'), $label['audio']['uri']);
         $this->assertArrayHasKey('size', $label['audio']);
-        $responses = array(array('questionId' => 'que_41', 'value' => 'this rocks')); // optional feedback 'this rocks'
+        $responses = array(array('questionID' => 'que_41', 'value' => 'this rocks')); // optional feedback 'this rocks'
         $label = self::$adapter->menuNext($responses);
         $this->assertArrayHasKey('text', $label);
         $this->assertArrayHasKey('lang', $label);
@@ -547,7 +547,7 @@ class DemoAdapterTest extends PHPUnit_Framework_TestCase
         $this->assertArrayHasKey('size', $label['audio']);
 
         // feedback menu
-        $responses = array(array('questionId' => 'que_1', 'value' => 'que_4')); // select feedback
+        $responses = array(array('questionID' => 'que_1', 'value' => 'que_4')); // select feedback
         $menu = self::$adapter->menuNext($responses);
         $this->assertCount(2, $menu);
         $this->assertArrayHasKey('type', $menu[0]);
@@ -573,34 +573,34 @@ class DemoAdapterTest extends PHPUnit_Framework_TestCase
 
         // search endpoint
         $this->assertCount(0, self::$adapter->contentList('search'));
-        $responses = array(array('questionId' => 'que_24', 'value' => 'light')); // search by title 'light'
+        $responses = array(array('questionID' => 'que_24', 'value' => 'light')); // search by title 'light'
         $contentListRef = self::$adapter->menuNext($responses);
         $this->assertEquals('search', $contentListRef);
         $this->assertCount(1, self::$adapter->contentList('search'));
-        $responses = array(array('questionId' => 'que_24', 'value' => 'zorro')); // search by title 'zorro'
+        $responses = array(array('questionID' => 'que_24', 'value' => 'zorro')); // search by title 'zorro'
         $contentListRef = self::$adapter->menuNext($responses);
         $this->assertEquals('search', $contentListRef);
         $this->assertCount(0, self::$adapter->contentList('search'));
-        $responses = array(array('questionId' => 'que_23', 'value' => 'Henry James')); // search by author 'Henry James'
+        $responses = array(array('questionID' => 'que_23', 'value' => 'Henry James')); // search by author 'Henry James'
         $contentListRef = self::$adapter->menuNext($responses);
         $this->assertEquals('search', $contentListRef);
         $this->assertCount(1, self::$adapter->contentList('search'));
-        $responses = array(array('questionId' => 'que_23', 'value' => 'zorro')); // search by author 'zorro'
+        $responses = array(array('questionID' => 'que_23', 'value' => 'zorro')); // search by author 'zorro'
         $contentListRef = self::$adapter->menuNext($responses);
         $this->assertEquals('search', $contentListRef);
         $this->assertCount(0, self::$adapter->contentList('search'));
 
         // browse endpoint
         $this->assertCount(0, self::$adapter->contentList('browse'));
-        $responses = array(array('questionId' => 'que_30', 'value' => 'que_31')); // browse by title
+        $responses = array(array('questionID' => 'que_30', 'value' => 'que_31')); // browse by title
         $contentListRef = self::$adapter->menuNext($responses);
         $this->assertEquals('browse', $contentListRef);
         $this->assertCount(3, self::$adapter->contentList('browse'));
-        $responses = array(array('questionId' => 'que_30', 'value' => 'que_32')); // browse by daisy2
+        $responses = array(array('questionID' => 'que_30', 'value' => 'que_32')); // browse by daisy2
         $contentListRef = self::$adapter->menuNext($responses);
         $this->assertEquals('browse', $contentListRef);
         $this->assertCount(2, self::$adapter->contentList('browse'));
-        $responses = array(array('questionId' => 'que_30', 'value' => 'que_33')); // browse by daisy3
+        $responses = array(array('questionID' => 'que_30', 'value' => 'que_33')); // browse by daisy3
         $contentListRef = self::$adapter->menuNext($responses);
         $this->assertEquals('browse', $contentListRef);
         $this->assertCount(1, self::$adapter->contentList('browse'));
@@ -631,6 +631,23 @@ class DemoAdapterTest extends PHPUnit_Framework_TestCase
         $this->assertTrue(self::$adapter->contentAddBookshelf('con_1'));
         $this->assertTrue(self::$adapter->contentAddBookshelf(2));
         $this->assertTrue(self::$adapter->contentAddBookshelf('con_2'));
+    }
+
+    public function testAddContentViaDynamicMenus()
+    {
+        // add content to booskhelf
+        $bookshelfBefore = count(self::$adapter->contentList('bookshelf'));
+        $responses = array(array('questionID' => 'que_24', 'value' => 'light')); // search by title 'light'
+        $contentListRef = self::$adapter->menuNext($responses);
+        $this->assertEquals('search', $contentListRef);
+        $this->assertCount(1, self::$adapter->contentList('search'));
+        $responses = array(array('questionID' => 'que_30', 'value' => 'que_31')); // browse by title
+        $contentListRef = self::$adapter->menuNext($responses);
+        $this->assertEquals('browse', $contentListRef);
+        $this->assertCount(3, self::$adapter->contentList('browse'));
+        $this->assertTrue(self::$adapter->contentAddBookshelf('con_1')); // add content
+        $bookshelfAfter = count(self::$adapter->contentList('bookshelf'));
+        $this->assertEquals($bookshelfBefore+1, $bookshelfAfter);
     }
 }
 

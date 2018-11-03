@@ -90,6 +90,23 @@ abstract class Adapter
     public $deviceVersion = null;
 
     /**
+     * Placeholder to store the protocol version
+     *
+     * @var int $protocolVersion The Daisy Online Deliver Protocol version
+     */
+    public $protocolVersion = null;
+
+
+    /**
+     * Enum for protocol version 1
+     */
+    const DODP_V1 = 1;
+    /**
+     * Enum for protocol version 2
+     */
+    const DODP_V2 = 2;
+
+    /**
      * Enum for retrieving a service attribute label
      */
     const LABEL_SERVICE = 1;
@@ -210,6 +227,18 @@ abstract class Adapter
      */
     const STATE_FINISH = 4;
 
+    /**
+     * Set protocol version
+     *
+     * This method id optional and does not require implementation.
+     * It is invoked by the service during logOn to inform the adapter which version
+     * of the daisy online specification is used.
+     *
+     * @param int $version Protocol version. Must be one of the defined DODP_ values.
+    */
+    public function setProtocolVersion($version)
+    {
+    }
 
     /**
      * Store the SOAP request and response for an invoke of a service operation.

@@ -299,6 +299,9 @@ class DaisyOnlineService
             throw new SoapFault('Client', $input->getError(), '', '', 'logOn_invalidParameterFault');
         }
 
+        // set protocol version
+        $this->adapter->setProtocolVersion(Adapter::DODP_V2);
+
         $username = $input->getUsername();
         $password = $input->getPassword();
         $readingSystemAttributes = $input->getReadingSystemAttributes();

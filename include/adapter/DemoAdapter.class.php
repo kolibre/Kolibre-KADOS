@@ -114,6 +114,11 @@ class DemoAdapter extends Adapter
         }
     }
 
+    public function setProtocolVersion($version)
+    {
+        $this->protocolVersion = $version;
+    }
+
     public function logSoapRequestAndResponse($request, $response, $timestamp, $ip)
     {
         if ($this->userLoggingEnabled === false) return;

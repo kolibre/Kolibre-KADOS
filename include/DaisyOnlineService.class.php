@@ -284,6 +284,9 @@ class DaisyOnlineService
             return new logOnResponse(false);
         }
 
+        // set protocol version
+        $this->adapter->setProtocolVersion(Adapter::DODP_V1);
+
         $username = $input->getUsername();
         $password = $input->getPassword();
 

@@ -38,6 +38,7 @@ class DemoAdapterTest extends PHPUnit_Framework_TestCase
         $command = "sqlite3 " . self::$database . " < $dump";
         exec($command, $output);
         self::$adapter = new DemoAdapter(self::$database);
+        self::$adapter->setProtocolVersion(Adapter::DODP_V2);
     }
 
     public static function tearDownAfterClass()

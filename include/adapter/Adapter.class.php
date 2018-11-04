@@ -359,7 +359,7 @@ abstract class Adapter
      * It is invoked by the service when operations getContentList and getContentResources is called.
      *
      * @param string $contentId The identifier of the content
-     * @return mixed Returns False if not supported, otherwise a date string including time zone with format 'YYYY-MM-DDThh:mm:ss+hh:mm' or 'YYYY-MM-DDThh:mmZ'
+     * @return mixed Returns False if not supported, otherwise a date string. For v1 the format is 'YYYY-MM-DDThh:mm:ss'. The v2 the string must include time zone with format 'YYYY-MM-DDThh:mm:ss+hh:mm' or 'YYYY-MM-DDThh:mm:ssZhh:mm:ssZ'
      *
      * @throws AdapterException
      */
@@ -374,7 +374,7 @@ abstract class Adapter
      * @param string $contentId The identifier of the content
      * @return mixed Returns False if no dates exists, otherwise returns an associative array.
      *
-     * <p>The associative array must contain the keys 'first' and 'last' and the value must be a date string including time zone.
+     * <p>The associative array must contain the keys 'first' and 'last' and the value must be a date string including time zone with format 'YYYY-MM-DDThh:mm:ss+hh:mm' or 'YYYY-MM-DDThh:mm:ssZhh:mm:ssZ.
      * Example of an array>/p>
      * <pre>
      * Array
@@ -468,7 +468,7 @@ abstract class Adapter
      * Retrieve a category for the specified content
      *
      * This method is optional and does not require implementation.
-     * It is invoked by the service when getContentList operation is called.
+     * It is invoked by the service when operations getContentMetadata or getContentList is called.
      *
      * @param string $contentId The identifier of the content
      * @return mixed Returns False if not supported, otherwise a string with the category as value. Recommended values are BOOK, MAGAZINE, NEWSPAPER and OTHER.
@@ -500,10 +500,10 @@ abstract class Adapter
      * Retrieve a return date for the specified content
      *
      * This method is optional and does not require implementation.
-     * It is invoked by the service when operations getContentListor is called.
+     * It is invoked by the service when operations getContentMetadata, getContentResources or getContentList is called.
      *
      * @param string $contentId The identifier for the content
-     * @return mixed Returns False if content does not require return, otherwise a date string including time zone with format 'YYYY-MM-DDThh:mm:ss+hh:mm' or 'YYYY-MM-DDThh:mm:ssZhh:mm:ssZ'
+     * @return mixed Returns False if content does not require return, otherwise a date string. For v1 the format is 'YYYY-MM-DDThh:mm:ss'. The v2 the string must include time zone with format 'YYYY-MM-DDThh:mm:ss+hh:mm' or 'YYYY-MM-DDThh:mm:ssZhh:mm:ssZ'
      *
      * @throws AdapterException
      */

@@ -146,7 +146,7 @@ class DemoAdapterTest extends PHPUnit_Framework_TestCase
         $dateBefore = self::$adapter->contentReturnDate(1);
         sleep(1);
         $dateAfter = self::$adapter->contentReturnDate(1);
-        $this->assertFalse($dateBefore == $dateAfter);
+        $this->assertEquals($dateBefore, $dateAfter);
     }
 
     public function testContentMetadata()

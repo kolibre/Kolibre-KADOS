@@ -711,10 +711,30 @@ class DemoAdapter extends Adapter
     public function isValidDate($date)
     {
         if (is_null($date)) return false;
-        $pattern = $this->protocolVersion == Adapter::DODP_V2 ? '/\d{4}\-\d{2}\-\d{2}T\d{2}:\d{2}:\d{2}(\+\d{2}:\d{2}|Z)/' : '/\d{4}\-\d{2}\-\d{2}[ T]\d{2}:\d{2}:\d{2}/';
-        if (preg_match($pattern, $date) == 0) return false;
         if ($date == '0000-00-00 00:00:00') return false;
-        return true;
+        $patternV1 = '/\d{4}\-\d{2}\-\d{2}[ T]\d{2}:\d{2}:\d{2}/';
+        $patternV2 = '/\d{4}\-\d{2}\-\d{2}T\d{2}:\d{2}:\d{2}(\+\d{2}:\d{2}|Z)/';
+        if (preg_match($patternV1, $date) == 1 || preg_match($patternV2, $date) == 1) return true;
+        return false;
+    }
+
+    private function dateFormatByProtocol($date)
+    {
+        $patternV1 = '/\d{4}\-\d{2}\-\d{2}[ T]\d{2}:\d{2}:\d{2}/';
+        $patternV2 = '/\d{4}\-\d{2}\-\d{2}T\d{2}:\d{2}:\d{2}(\+\d{2}:\d{2}|Z)/';
+        switch ($this->protocolVersion)
+        {
+            case Adapter::DODP_V1:
+                if (preg_match($patternV2, $date) == 1) return substr($date, 0, 19);
+                return $date;
+                break;
+            case Adapter::DODP_V2:
+                if (preg_match($patternV2, $date) == 1) return $date;
+                return $date . "Z";
+                break;
+            default:
+                return $date;
+        }
     }
 
     public function contentReturnDate($contentId)
@@ -723,9 +743,13 @@ class DemoAdapter extends Adapter
 
         try
         {
-            $query = 'SELECT return, return_at FROM usercontent WHERE user_id = :userId AND content_id = :contentId';
+            $query = 'SELECT return, return_at FROM usercontent WHERE user_id = :userId AND content_id = :contentId AND returned = :returned';
             $sth = $this->dbh->prepare($query);
-            $sth->execute(array(':userId' => $this->user, ':contentId' => $contentId));
+            $values = array();
+            $values[':userId'] = $this->user;
+            $values[':contentId'] = $contentId;
+            $values[':returned'] = 0;
+            $sth->execute($values);
             $row = $sth->fetch(PDO::FETCH_ASSOC);
         }
         catch (PDOException $e)
@@ -746,20 +770,33 @@ class DemoAdapter extends Adapter
         if ($this->isValidDate($returnDate) === false)
         {
             $timestamp = time() + $this->loanDuration;
-            $dateFormat = $this->protocolVersion == Adapter::DODP_V2 ? 'Y-m-d\TH:i:sP' : 'Y-m-d\TH:i:s';
-            $returnDate = date($dateFormat, $timestamp);
-            // mark content as not returned and set return date if content has been issued
-            if ($this->contentInList($contentId, 'issued') === true)
+            $returnDate = date('Y-m-d\TH:i:sP', $timestamp);
+            $updateReturnDate = false;
+            $listName = $this->protocolVersion == Adapter::DODP_V2 ? 'bookshelf' : 'issued';
+            if ($this->contentInList($contentId, $listName) === true) $updateReturnDate = true;
+            if ($this->protocolVersion == Adapter::DODP_V1)
+            {
+                if ($this->contentInList($contentId, 'new') === true)
+                {
+                    $listName = 'new';
+                    $updateReturnDate = true;
+                }
+            }
+            if ($this->contentInList($contentId, $listName) === true)
+            // mark content as not returned and set return date for content
+            if ($updateReturnDate)
             {
                 try
                 {
                     $query = 'UPDATE usercontent SET return_at = :datetime, returned = 0
-                        WHERE user_id = :userId AND content_id = :contentId';
+                        WHERE user_id = :userId AND content_id = :contentId AND contentlist_id = :listId AND return_at IS NULL';
+                    if ($this->protocolVersion == Adapter::DODP_V1) $query = str_replace('contentlist_id', 'contentlist_id_v1', $query);
                     $sth = $this->dbh->prepare($query);
                     $values = array();
                     $values[':datetime'] = $returnDate;
                     $values[':userId'] = $this->user;
                     $values[':contentId'] = $contentId;
+                    $values[':listId'] = $this->contentListId($listName);
                     if ($sth->execute($values) === false)
                     {
                         $this->logger->error("Updating return date for content with id '$contentId' for user with id '$this->user' failed");
@@ -774,7 +811,7 @@ class DemoAdapter extends Adapter
             }
         }
 
-        return $returnDate;
+        return $this->dateFormatByProtocol($returnDate);
     }
 
     public function contentMetadata($contentId)

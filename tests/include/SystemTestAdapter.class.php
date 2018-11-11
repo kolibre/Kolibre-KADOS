@@ -94,6 +94,17 @@ class SystemTestAdapter extends Adapter
         return $contentList;
     }
 
+    public function contentLastModifiedDate($contentId)
+    {
+        return false;
+    }
+
+    public function contentAccessMethod($contentId)
+    {
+        // Only part in protocol version 2
+        return "";
+    }
+
     public function contentExists($contentId)
     {
         return true;
@@ -147,7 +158,7 @@ class SystemTestAdapter extends Adapter
         return true;
     }
 
-    public function contentResources($contentId)
+    public function contentResources($contentId, $accessMethod = null)
     {
         $resources = array();
         $resource = array();

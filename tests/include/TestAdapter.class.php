@@ -145,6 +145,12 @@ class TestAdapter extends Adapter
         return '1970-01-01T00:00:00';
     }
 
+    public function contentAccessMethod($contentId)
+    {
+        // Only part in protocol version 2
+        return "";
+    }
+
     public function contentExists($contentId)
     {
         if ($contentId == 'exception-content-exists')
@@ -244,7 +250,7 @@ class TestAdapter extends Adapter
         return true;
     }
 
-    public function contentResources($contentId)
+    public function contentResources($contentId, $accessMethod = NULL)
     {
         if ($contentId == 'exception-content-resources')
             throw new AdapterException('Error in adapter');

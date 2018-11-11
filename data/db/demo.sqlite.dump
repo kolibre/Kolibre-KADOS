@@ -71,10 +71,10 @@ CREATE TABLE "contentlist" (
   "id" INTEGER PRIMARY KEY AUTOINCREMENT,
   "name" TEXT NOT NULL
 );
-INSERT INTO "contentlist" VALUES(1,'new');
-INSERT INTO "contentlist" VALUES(2,'issued');
-INSERT INTO "contentlist" VALUES(3,'expired');
-INSERT INTO "contentlist" VALUES(4,'returned');
+INSERT INTO "contentlist" VALUES(1,'bookshelf');
+INSERT INTO "contentlist" VALUES(2,'new');
+INSERT INTO "contentlist" VALUES(3,'issued');
+INSERT INTO "contentlist" VALUES(4,'expired');
 INSERT INTO "contentlist" VALUES(20,'search');
 INSERT INTO "contentlist" VALUES(30,'browse');
 CREATE TABLE "contentmetadata" (
@@ -521,13 +521,22 @@ INSERT INTO questionaudio VALUES(37,37,5358,318);
 INSERT INTO questionaudio VALUES(38,38,7797,429);
 INSERT INTO questionaudio VALUES(39,39,15523,1368);
 INSERT INTO questionaudio VALUES(40,40,14041,1320);
+CREATE TABLE "state" (
+  "id" INTEGER PRIMARY KEY AUTOINCREMENT,
+  "state" TEXT NOT NULL
+);
+INSERT INTO "state" VALUES(1,'START');
+INSERT INTO "state" VALUES(2,'PAUSE');
+INSERT INTO "state" VALUES(3,'RESUME');
+INSERT INTO "state" VALUES(4,'FINISH');
 CREATE TABLE "user" (
   "id" INTEGER PRIMARY KEY AUTOINCREMENT,
   "username" TEXT NOT NULL,
   "password" TEXT NOT NULL,
+  "terms_accepted" INTEGER NOT NULL DEFAULT '0',
   "log" INTEGER NOT NULL DEFAULT '0'
 );
-INSERT INTO "user" VALUES(1,'kolibre','kolibre',1);
+INSERT INTO "user" VALUES(1,'kolibre','kolibre',0,1);
 CREATE TABLE "userannouncement" (
   "id" INTEGER PRIMARY KEY AUTOINCREMENT,
   "user_id" INTEGER NOT NULL,
@@ -552,17 +561,20 @@ CREATE TABLE "usercontent" (
   "user_id" INTEGER  NOT NULL,
   "content_id" INTEGER  NOT NULL,
   "contentlist_id" INTEGER  NOT NULL,
+  "contentlist_id_v1" INTEGER NOT NULL DEFAULT 3,
   "return" INTEGER NOT NULL,
   "returned" INTEGER NOT NULL DEFAULT '0',
   "return_at" NUMERIC DEFAULT NULL,
+  "state_id" INTEGER DEFAULT NULL,
   "updated_at" NUMERIC NOT NULL DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY("user_id") REFERENCES "user"("id") ON DELETE SET NULL ON UPDATE SET NULL,
   FOREIGN KEY("content_id") REFERENCES "content"("id") ON DELETE SET NULL ON UPDATE SET NULL,
-  FOREIGN KEY("contentlist_id") REFERENCES "contentlist"("id") ON DELETE SET NULL ON UPDATE SET NULL
+  FOREIGN KEY("contentlist_id") REFERENCES "contentlist"("id") ON DELETE SET NULL ON UPDATE SET NULL,
+  FOREIGN KEY("state_id") REFERENCES "state"("id") ON DELETE SET NULL ON UPDATE SET NULL
 );
-INSERT INTO "usercontent" VALUES(1,1,1,1,1,1,NULL,'0000-00-00 00:00:00');
-INSERT INTO "usercontent" VALUES(2,1,2,1,1,1,NULL,'0000-00-00 00:00:00');
-INSERT INTO "usercontent" VALUES(3,1,3,1,1,1,NULL,'0000-00-00 00:00:00');
+INSERT INTO "usercontent" VALUES(1,1,1,1,2,1,0,NULL,NULL,'0000-00-00 00:00:00');
+INSERT INTO "usercontent" VALUES(2,1,2,1,2,1,0,NULL,NULL,'0000-00-00 00:00:00');
+INSERT INTO "usercontent" VALUES(3,1,3,1,2,1,0,NULL,NULL,'0000-00-00 00:00:00');
 CREATE TABLE "userlog" (
   "id" INTEGER PRIMARY KEY AUTOINCREMENT,
   "user_id" INTEGER  NOT NULL,
@@ -589,6 +601,7 @@ INSERT INTO "sqlite_sequence" VALUES('questiontype',5);
 INSERT INTO "sqlite_sequence" VALUES('question_questiontext',48);
 INSERT INTO "sqlite_sequence" VALUES('questiontext',40);
 INSERT INTO "sqlite_sequence" VALUES('questionaudio',40);
+INSERT INTO "sqlite_sequence" VALUES('state',4);
 INSERT INTO "sqlite_sequence" VALUES('user',1);
 INSERT INTO "sqlite_sequence" VALUES('userannouncement',2);
 INSERT INTO "sqlite_sequence" VALUES('usercontent',3);

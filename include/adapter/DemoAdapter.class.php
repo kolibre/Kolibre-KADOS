@@ -549,7 +549,8 @@ class DemoAdapter extends Adapter
 
         try
         {
-            $query = 'SELECT * FROM usercontent WHERE user_id = :userId AND contentlist_id = :listId ORDER BY updated_at DESC';
+            $query = 'SELECT * FROM usercontent WHERE user_id = :userId AND contentlist_id = :listId AND returned = 0 ORDER BY updated_at DESC';
+            if ($this->protocolVersion == Adapter::DODP_V1) $query = str_replace('contentlist_id', 'contentlist_id_v1', $query);
             $sth = $this->dbh->prepare($query);
             $sth->execute(array(':userId' => $this->user, ':listId' => $listId));
             $content = $sth->fetchAll(PDO::FETCH_ASSOC);
@@ -591,6 +592,50 @@ class DemoAdapter extends Adapter
             $this->logger->debug("Content items after filtering: " . sizeof($contentList));
 
         return $contentList;
+    }
+
+    public function contentLastModifiedDate($contentId)
+    {
+        // TODO: implement demo cases
+        $date = $this->protocolVersion == Adapter::DODP_V2 ? '1970-01-01T00:00:00+00:00' : '1970-01-01T00:00:00';
+        return $date;
+    }
+
+    public function contentAccessMethod($contentId)
+    {
+        // TODO: implement demo cases
+        return Adapter::ACCESS_STREAM_AND_DOWNLOAD_AUTOMATIC_ALLOWED;
+    }
+
+    public function contentAccessState($contentId, $state)
+    {
+        $contentId = $this->extractId($contentId);
+
+        try
+        {
+            // update state
+            $query = "UPDATE usercontent SET state_id = :state WHERE user_id = :userId AND content_id = :contentId";
+            $sth = $this->dbh->prepare($query);
+            $values = array();
+            $values[':state'] = $state;
+            $values[':userId'] = $this->user;
+            $values[':contentId'] = $contentId;
+            if ($sth->execute($values) === false)
+            {
+                $this->logger->error("Updating progress state to '$state' with id '$contentId' for user with id '$this->user' failed");
+                return false;
+            }
+            if ($sth->rowCount() != 1) return false;
+            return true;
+        }
+        catch (PDOException $e)
+        {
+            $this->logger->fatal($e->getMessage());
+            throw new AdapterException('Updating progress failed');
+        }
+
+        return false;
+
     }
 
     public function contentExists($contentId)
@@ -666,7 +711,7 @@ class DemoAdapter extends Adapter
     public function isValidDate($date)
     {
         if (is_null($date)) return false;
-        $pattern = '/\d{4}-\d{2}-\d{2}[ T]\d{2}:\d{2}:\d{2}/';
+        $pattern = $this->protocolVersion == Adapter::DODP_V2 ? '/\d{4}\-\d{2}\-\d{2}T\d{2}:\d{2}:\d{2}(\+\d{2}:\d{2}|Z)/' : '/\d{4}\-\d{2}\-\d{2}[ T]\d{2}:\d{2}:\d{2}/';
         if (preg_match($pattern, $date) == 0) return false;
         if ($date == '0000-00-00 00:00:00') return false;
         return true;
@@ -701,8 +746,8 @@ class DemoAdapter extends Adapter
         if ($this->isValidDate($returnDate) === false)
         {
             $timestamp = time() + $this->loanDuration;
-            $returnDate = date('Y-m-d H:i:s', $timestamp);
-
+            $dateFormat = $this->protocolVersion == Adapter::DODP_V2 ? 'Y-m-d\TH:i:sP' : 'Y-m-d\TH:i:s';
+            $returnDate = date($dateFormat, $timestamp);
             // mark content as not returned and set return date if content has been issued
             if ($this->contentInList($contentId, 'issued') === true)
             {
@@ -783,6 +828,7 @@ class DemoAdapter extends Adapter
             $query = 'SELECT contentlist.name FROM usercontent
                 JOIN contentlist ON usercontent.contentlist_id = contentlist.id
                 WHERE user_id = :userId AND content_id = :contentId AND contentlist.name = :list';
+            if ($this->protocolVersion == Adapter::DODP_V1) $query = str_replace('contentlist_id', 'contentlist_id_v1', $query);
             $sth = $this->dbh->prepare($query);
             $sth->execute(array(':userId' => $this->user, ':contentId' => $contentId, ':list' => $list));
             $row = $sth->fetch(PDO::FETCH_ASSOC);
@@ -818,8 +864,36 @@ class DemoAdapter extends Adapter
         else if ($this->contentInList($contentId, 'expired') || $this->contentInList($contentId, 'returned'))
             return false;
 
+        // check if content already in list and not returned
         if ($this->contentInList($contentId, 'issued'))
-            return true;
+        {
+            try
+            {
+                $query = "SELECT returned FROM usercontent WHERE user_id = :userId AND content_id = :contentId AND contentlist_id_v1 = :listId AND returned = :returned";
+                $sth = $this->dbh->prepare($query);
+                $values = array();
+                $values[':userId'] = $this->user;
+                $values[':contentId'] = $contentId;
+                $values[':listId'] = $this->contentListId('issued');
+                $values[':returned'] = 0;
+                if ($sth->execute($values) === false)
+                {
+                    $this->logger->error("Checking return status for content with id '$contentId' for user with id '$this->user' failed");
+                    return false;
+                }
+
+                $rows = $sth->fetchAll(PDO::FETCH_ASSOC);
+                if (count($rows) >= 1)
+                {
+                    return true;
+                }
+            }
+            catch (PDOException $e)
+            {
+                $this->logger->fatal($e->getMessage());
+                throw new AdapterException('Checking return status for content before adding to bookshelf failed');
+            }
+        }
 
         if ($this->contentInList($contentId, 'new') || $this->contentInList($contentId, 'search') || $this->contentInList($contentId, 'browse'))
         {
@@ -829,7 +903,7 @@ class DemoAdapter extends Adapter
                 $contentListIds = array($this->contentListId('new'), $this->contentListId('search'), $this->contentListId('browse'));
                 $contentListIdValues = implode(',', $contentListIds); // variable substitution in PDO prepared statements doesn't support arrays
                 $query = "SELECT id FROM usercontent
-                    WHERE user_id = :userId AND content_id = :contentId AND contentlist_id IN ($contentListIdValues) ORDER BY contentlist_id";
+                    WHERE user_id = :userId AND content_id = :contentId AND contentlist_id_v1 IN ($contentListIdValues) ORDER BY contentlist_id_v1";
                 $sth = $this->dbh->prepare($query);
                 $values = array();
                 $values[':userId'] = $this->user;
@@ -841,8 +915,8 @@ class DemoAdapter extends Adapter
                     $this->logger->error("Content with id '$contentId' for user with id '$this->user' not found in new, search or browse list");
                     return false;
                 }
-                // update contentlist_id for the returned row
-                $query = 'UPDATE usercontent SET contentlist_id = :contentListId, updated_at = :timestamp WHERE id = :id';
+                // update contentlist_id_v1 for the returned row
+                $query = 'UPDATE usercontent SET contentlist_id_v1 = :contentListId, updated_at = :timestamp WHERE id = :id';
                 $sth = $this->dbh->prepare($query);
                 $values = array();
                 $values[':contentListId'] = $this->contentListId('issued');
@@ -865,15 +939,15 @@ class DemoAdapter extends Adapter
         return false;
     }
 
-    public function contentResources($contentId)
+    public function contentResources($contentId, $accessMethod = null)
     {
-        $contentId = $this->extractId($contentId);
-
-        if ($this->contentInList($contentId, 'issued') === false)
+        if ($this->protocolVersion == Adapter::DODP_V1 && $this->contentInList($contentId, 'issued') === false)
         {
             $this->logger->warn("Resources requested for non-issued content");
             return array();
         }
+
+        $contentId = $this->extractId($contentId);
 
         try
         {
@@ -903,6 +977,8 @@ class DemoAdapter extends Adapter
             $contentResource['mimeType'] = $resource['mimetype'];
             $contentResource['size'] = $resource['bytes'];
             $contentResource['localURI'] = $resource['filename'];
+            $lastModified = $this->protocolVersion == Adapter::DODP_V2 ? '1970-01-01T00:00:00+00:00' : '1970-01-01T00:00:00';
+            $contentResource['lastModifiedDate'] = $lastModified;
             array_push($contentResources, $contentResource);
         }
 
@@ -940,17 +1016,33 @@ class DemoAdapter extends Adapter
     {
         $contentId = $this->extractId($contentId);
 
-        if ($this->contentInList($contentId, 'returned'))
-            return true;
-
-        if ($this->contentInList($contentId, 'issued'))
+        $contentList = $this->protocolVersion == Adapter::DODP_V2 ? 'bookshelf' : 'issued';
+        if ($this->contentInList($contentId, $contentList))
         {
             try
             {
-                $query = 'UPDATE usercontent SET returned = 1, contentlist_id = :listId WHERE user_id = :userId AND content_id = :contentId';
+                // check if content already is returned
+                $query = "SELECT returned FROM usercontent WHERE user_id = :userId AND content_id = :contentId";
                 $sth = $this->dbh->prepare($query);
                 $values = array();
-                $values[':listId'] = $this->contentListId('returned');
+                $values[':userId'] = $this->user;
+                $values[':contentId'] = $contentId;
+                if ($sth->execute($values) === false)
+                {
+                    $this->logger->error("Checking return status for content with id '$contentId' for user with id '$this->user' failed");
+                    return false;
+                }
+
+                $row = $sth->fetch(PDO::FETCH_ASSOC);
+                if ($row['returned'] == 1)
+                {
+                    return true;
+                }
+
+                // mark as returned
+                $query = "UPDATE usercontent SET returned = 1 WHERE user_id = :userId AND content_id = :contentId";
+                $sth = $this->dbh->prepare($query);
+                $values = array();
                 $values[':userId'] = $this->user;
                 $values[':contentId'] = $contentId;
                 if ($sth->execute($values) === false)
@@ -1468,13 +1560,14 @@ class DemoAdapter extends Adapter
         {
             // delete existing content
             $query = 'DELETE FROM usercontent WHERE user_id = :userId AND contentlist_id = :contentListId';
+            if ($this->protocolVersion == Adapter::DODP_V1) $query = str_replace('contentlist_id', 'contentlist_id_v1', $query);
             $sth = $this->dbh->prepare($query);
             $values = array();
             $values[':userId'] = $this->user;
             $values[':contentListId'] = $contentListId;
             $sth->execute($values);
             // add new content
-            $query = 'INSERT INTO usercontent (user_id, content_id, contentlist_id, return) VALUES (:userId, :contentId, :contentListId, 1)';
+            $query = 'INSERT INTO usercontent (user_id, content_id, contentlist_id, contentlist_id_v1, return) VALUES (:userId, :contentId, :contentListId, :contentListIdV1, 1)';
             $sth = $this->dbh->prepare($query);
             foreach ($rows as $row)
             {
@@ -1482,6 +1575,7 @@ class DemoAdapter extends Adapter
                 $values[':userId'] = $this->user;
                 $values['contentId'] = $row['content_id'];
                 $values[':contentListId'] = $contentListId;
+                $values[':contentListIdV1'] = $contentListId;
                 $sth->execute($values);
             }
         }
@@ -1506,6 +1600,119 @@ class DemoAdapter extends Adapter
     private function generateQuestionId($questionId)
     {
         return "que_$questionId";
+    }
+
+    public function contentAddBookshelf($contentId)
+    {
+        $contentId = $this->extractId($contentId);
+
+        // check if content already in list and not returned
+        if ($this->contentInList($contentId, 'bookshelf'))
+        {
+            try
+            {
+                $query = "SELECT returned FROM usercontent WHERE user_id = :userId AND content_id = :contentId";
+                $sth = $this->dbh->prepare($query);
+                $values = array();
+                $values[':userId'] = $this->user;
+                $values[':contentId'] = $contentId;
+                if ($sth->execute($values) === false)
+                {
+                    $this->logger->error("Checking return status for content with id '$contentId' for user with id '$this->user' failed");
+                    return false;
+                }
+
+                $row = $sth->fetch(PDO::FETCH_ASSOC);
+                if ($row['returned'] == 0)
+                {
+                    return true;
+                }
+            }
+            catch (PDOException $e)
+            {
+                $this->logger->fatal($e->getMessage());
+                throw new AdapterException('Checking return status for content before adding to bookshelf failed');
+            }
+        }
+
+        try
+        {
+            $query = 'INSERT INTO usercontent (user_id,content_id,contentlist_id,return) VALUES(:userId, :contentId, :contentListId, :return)';
+            $sth = $this->dbh->prepare($query);
+            $values = array();
+            $values[':userId'] = $this->user;
+            $values[':contentId'] = $contentId;
+            $values[':contentListId'] = $this->contentListId('bookshelf');
+            $values[':return'] = 0;
+            if ($sth->execute($values) === false)
+            {
+                $this->logger->error("Adding content '$contentId' to bookshelf for user with id '$this->user' failed");
+                return false;
+            }
+        }
+        catch (PDOException $e)
+        {
+            $this->logger->fatal($e->getMessage());
+            throw new AdapterException('Adding content to bookshelf failed');
+        }
+        return true;
+    }
+
+    public function termsOfService()
+    {
+        $label = array();
+        $label['text'] = "Welcome to the Kolibre demo Daisy Online service. This service is free to use for all.";
+        $label['lang'] = "en";
+        $audio = array();
+        $audio['uri'] = $this->serviceBaseUri()."media/terms_of_service.ogg";
+        $audio['size'] = 43874;
+        $label['audio'] = $audio;
+        return $label;
+    }
+
+    public function termsOfServiceAccept()
+    {
+        try
+        {
+            // mark terms as accepted
+            $query = "UPDATE user SET terms_accepted = 1 WHERE id = :userId";
+            $sth = $this->dbh->prepare($query);
+            $values = array();
+            $values[':userId'] = $this->user;
+            if ($sth->execute($values) === false)
+            {
+                $this->logger->error("Marking terms as accpeted for user with id '$this->user' failed");
+                return false;
+            }
+            if ($sth->rowCount() != 1) return false;
+            return true;
+        }
+        catch (PDOException $e)
+        {
+            $this->logger->fatal($e->getMessage());
+            throw new AdapterException('Mark terms as accepted failed');
+        }
+
+        return false;
+    }
+
+    public function termsOfServiceAccepted()
+    {
+        try
+        {
+            $query = 'SELECT id FROM user WHERE id = :userId AND terms_accepted = 1';
+            $sth = $this->dbh->prepare($query);
+            $sth->execute(array(':userId' => $this->user));
+            $row = $sth->fetch(PDO::FETCH_ASSOC);
+        }
+        catch (PDOException $e)
+        {
+            $this->logger->fatal($e->getMessage());
+            throw new AdapterException('Checking if terms are accepted');
+        }
+
+        if ($row === false) return false;
+        return true;
     }
 }
 

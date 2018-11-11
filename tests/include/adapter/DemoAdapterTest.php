@@ -38,6 +38,7 @@ class DemoAdapterTest extends PHPUnit_Framework_TestCase
         $command = "sqlite3 " . self::$database . " < $dump";
         exec($command, $output);
         self::$adapter = new DemoAdapter(self::$database);
+        self::$adapter->setProtocolVersion(Adapter::DODP_V1);
     }
 
     public static function tearDownAfterClass()
@@ -57,7 +58,6 @@ class DemoAdapterTest extends PHPUnit_Framework_TestCase
         $this->assertTrue(self::$adapter->contentListExists('new'));
         $this->assertTrue(self::$adapter->contentListExists('issued'));
         $this->assertTrue(self::$adapter->contentListExists('expired'));
-        $this->assertTrue(self::$adapter->contentListExists('returned'));
     }
 
     public function testContentListId()
@@ -66,7 +66,6 @@ class DemoAdapterTest extends PHPUnit_Framework_TestCase
         $this->assertGreaterThan(0, self::$adapter->contentListId('new'));
         $this->assertGreaterThan(0, self::$adapter->contentListId('issued'));
         $this->assertGreaterThan(0, self::$adapter->contentListId('expired'));
-        $this->assertGreaterThan(0, self::$adapter->contentListId('returned'));
     }
 
     public function testSupportedContentFormats()
@@ -88,7 +87,6 @@ class DemoAdapterTest extends PHPUnit_Framework_TestCase
         $this->assertCount(3, self::$adapter->contentList('new'));
         $this->assertEmpty(self::$adapter->contentList('issued'));
         $this->assertEmpty(self::$adapter->contentList('expired'));
-        $this->assertEmpty(self::$adapter->contentList('returned'));
 
         // filtered
         $this->assertCount(2, self::$adapter->contentList('new', array('Daisy 2.02')));

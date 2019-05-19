@@ -447,12 +447,12 @@ class KobraAdapterTest extends PHPUnit_Framework_TestCase
 
     public function testContentAccessState()
     {
-        $this->assertFalse(self::$adapter->contentAccessState(10, 'START'));
-        $this->assertFalse(self::$adapter->contentAccessState('con_10', 'START'));
-        $this->assertTrue(self::$adapter->contentAccessState(1, 'START'));
-        $this->assertTrue(self::$adapter->contentAccessState('con_1', 'START'));
-        $this->assertTrue(self::$adapter->contentAccessState(2, 'START'));
-        $this->assertTrue(self::$adapter->contentAccessState('con_2', 'START'));
+        $this->assertFalse(self::$adapter->contentAccessState(10, Adapter::STATE_START));
+        $this->assertFalse(self::$adapter->contentAccessState('con_10', Adapter::STATE_START));
+        $this->assertTrue(self::$adapter->contentAccessState(1, Adapter::STATE_START));
+        $this->assertTrue(self::$adapter->contentAccessState('con_1', Adapter::STATE_START));
+        $this->assertTrue(self::$adapter->contentAccessState(2, Adapter::STATE_START));
+        $this->assertTrue(self::$adapter->contentAccessState('con_2', Adapter::STATE_START));
     }
 
     public function testTermsOfService()

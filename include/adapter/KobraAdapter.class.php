@@ -26,7 +26,7 @@ require_once('Adapter.class.php');
 require_once('include/bookmarkSet_serialize.php');
 require_once('include/types/bookmarkSet.class.php');
 
-class DemoAdapter extends Adapter
+class KobraAdapter extends Adapter
 {
     const MENU_DEFAULT = 0;
     const MENU_SEARCH = 2;
@@ -52,6 +52,9 @@ class DemoAdapter extends Adapter
 
     // preferredLang is the users preferred language
     private $preferredLang = null;
+
+    // the secret key for decrypting passwords in database
+    private $secretKey = null;
 
     public function __construct($database = null)
     {
@@ -89,7 +92,7 @@ class DemoAdapter extends Adapter
 
     private function setupLogger()
     {
-        $this->logger = Logger::getLogger('kolibre.daisyonline.demoadapter');
+        $this->logger = Logger::getLogger('kolibre.daisyonline.kobraadapter');
     }
 
     private function setupDatabase($database = null)
@@ -114,6 +117,10 @@ class DemoAdapter extends Adapter
         {
             $this->logger->fatal($e->getMessage());
         }
+    }
+
+    public function setSecretKey($secret) {
+        $this->secretKey = $secret;
     }
 
     public function setProtocolVersion($version)
@@ -206,7 +213,7 @@ class DemoAdapter extends Adapter
 
         try
         {
-            $query = 'SELECT size FROM contentaudio WHERE id = :contentId';
+            $query = 'SELECT size FROM content_audios WHERE id = :contentId';
             $sth = $this->dbh->prepare($query);
             $sth->execute(array(':contentId' => $contentId));
             $row = $sth->fetch(PDO::FETCH_ASSOC);
@@ -232,7 +239,7 @@ class DemoAdapter extends Adapter
 
         try
         {
-            $query = 'SELECT title FROM content WHERE id = :contentId';
+            $query = 'SELECT title FROM contents WHERE id = :contentId';
             $sth = $this->dbh->prepare($query);
             $sth->execute(array(':contentId' => $contentId));
             $row = $sth->fetch(PDO::FETCH_ASSOC);
@@ -258,7 +265,7 @@ class DemoAdapter extends Adapter
 
         try
         {
-            $query = 'SELECT value FROM contentmetadata WHERE content_id = :contentId AND key = :key';
+            $query = 'SELECT value FROM content_metadata WHERE content_id = :contentId AND key = :key';
             $sth = $this->dbh->prepare($query);
             $sth->execute(array(':contentId' => $contentId, ':key' => 'dc:language'));
             $row = $sth->fetch(PDO::FETCH_ASSOC);
@@ -291,15 +298,15 @@ class DemoAdapter extends Adapter
         try
         {
             $query = 'SELECT
-                        announcementtext.text as text,
-                        language.lang as lang,
-                        announcementaudio.size as size,
-                        announcementaudio.id as id
-                    FROM announcement
-                    JOIN announcementtext ON announcement.id = announcementtext.announcement_id
-                    JOIN language ON announcementtext.language_id = language.id
-                    JOIN announcementaudio ON announcementtext.id = announcementaudio.announcementtext_id
-                    WHERE announcement.id = :announcementId';
+                        announcement_texts.text as text,
+                        languages.lang as lang,
+                        announcement_audios.size as size,
+                        announcement_audios.id as id
+                    FROM announcements
+                    JOIN announcement_texts ON announcements.id = announcement_texts.announcement_id
+                    JOIN languages ON announcement_texts.language_id = languages.id
+                    JOIN announcement_audios ON announcement_texts.id = announcement_audios.announcement_text_id
+                    WHERE announcements.id = :announcementId';
             $sth = $this->dbh->prepare($query);
             $sth->execute(array(':announcementId' => $announcementId));
             $rows = $sth->fetchAll(PDO::FETCH_ASSOC);
@@ -345,15 +352,15 @@ class DemoAdapter extends Adapter
         try
         {
             $query = 'SELECT
-                        questiontext.text as text,
-                        language.lang as lang,
-                        questionaudio.size as size,
-                        questionaudio.id as id
-                    FROM question_questiontext
-                    JOIN questiontext ON question_questiontext.questiontext_id = questiontext.id
-                    JOIN language ON questiontext.language_id = language.id
-                    JOIN questionaudio ON questiontext.id = questionaudio.questiontext_id
-                    WHERE question_questiontext.question_id = :questionId';
+                        question_texts.text as text,
+                        languages.lang as lang,
+                        question_audios.size as size,
+                        question_audios.id as id
+                    FROM question_question_texts
+                    JOIN question_texts ON question_question_texts.question_text_id = question_texts.id
+                    JOIN languages ON question_texts.language_id = languages.id
+                    JOIN question_audios ON question_texts.id = question_audios.question_text_id
+                    WHERE question_question_texts.question_id = :questionId';
             $sth = $this->dbh->prepare($query);
             $sth->execute(array(':questionId' => $questionId));
             $rows = $sth->fetchAll(PDO::FETCH_ASSOC);
@@ -416,13 +423,30 @@ class DemoAdapter extends Adapter
         }
     }
 
+    private function decrypt_gcm($cipher, $key, $data)
+    {
+        $tag_length = 16;
+        $iv = substr(base64_decode($data), 0, openssl_cipher_iv_length($cipher));
+        $tag = substr(base64_decode($data), openssl_cipher_iv_length($cipher), $tag_length);
+        $data = substr(base64_decode($data), openssl_cipher_iv_length($cipher) + $tag_length);
+        $plaintext = openssl_decrypt($data, $cipher, $key, OPENSSL_RAW_DATA, $iv, $tag);
+        return $plaintext;
+    }
+
+    public function decrypt($encrypted)
+    {
+        $hashed_key = substr(hash('sha256', $this->secretKey), 0, 32);
+        $decrypted = $this->decrypt_gcm('aes-256-gcm', $hashed_key, $encrypted);
+        return $decrypted;
+    }
+
     public function authenticate($username, $password)
     {
         try
         {
-            $query = 'SELECT * FROM user WHERE username = :username AND password = :password';
+            $query = 'SELECT * FROM users WHERE username = :username';
             $sth = $this->dbh->prepare($query);
-            $values = array(':username' => $username, ':password' => $password);
+            $values = array(':username' => $username);
             $sth->execute($values);
             $users = $sth->fetchAll(PDO::FETCH_ASSOC);
         }
@@ -434,19 +458,34 @@ class DemoAdapter extends Adapter
 
         if (sizeof($users) == 0)
         {
-            $msg = "No user found with username = '$username' and password = '********'";
+            $msg = "No user found with username = '$username'";
             $this->logger->warn($msg);
             return false;
         }
         else if (sizeof($users) > 1)
         {
             $count = sizeof($users);
-            $msg = "$count users found with username = '$username' and password = '********'";
+            $msg = "$count users found with username = '$username'";
             $this->logger->error($msg);
             return false;
         }
 
-        $this->user = $users[0]['id'];
+        $user = $users[0];
+        $decrypted_password = $this->decrypt(trim($user['password']));
+        if (is_string($decrypted_password))
+        {
+            if ($decrypted_password != $password) {
+                $msg = "provided password for user '$username' did not match with database";
+                $this->logger->warn($msg);
+                return false;
+            }
+        } else
+        {
+            $this->logger->error("password could not be decrypted");
+            return false;
+        }
+
+        $this->user = $user['id'];
         if ($users[0]['log'] == 1)
             $this->userLoggingEnabled = true;
 
@@ -457,7 +496,7 @@ class DemoAdapter extends Adapter
     {
         try
         {
-            $query = 'SELECT name FROM contentlist WHERE name = :name';
+            $query = 'SELECT name FROM content_lists WHERE name = :name';
             $sth = $this->dbh->prepare($query);
             $sth->execute(array(':name' => $list));
             $row = $sth->fetch(PDO::FETCH_ASSOC);
@@ -477,7 +516,7 @@ class DemoAdapter extends Adapter
     {
         try
         {
-            $query = 'SELECT id FROM contentlist WHERE name = :name';
+            $query = 'SELECT id FROM content_lists WHERE name = :name';
             $sth = $this->dbh->prepare($query);
             $sth->execute(array(':name' => $list));
             $row = $sth->fetch(PDO::FETCH_ASSOC);
@@ -501,7 +540,7 @@ class DemoAdapter extends Adapter
     {
         try
         {
-            $query = 'SELECT * FROM daisyformat';
+            $query = 'SELECT * FROM daisy_formats';
             $sth = $this->dbh->prepare($query);
             $sth->execute();
             $formats = $sth->fetchAll(PDO::FETCH_ASSOC);
@@ -525,7 +564,7 @@ class DemoAdapter extends Adapter
 
         try
         {
-            $query = 'SELECT daisyformat_id FROM content WHERE id = :contentId';
+            $query = 'SELECT daisy_format_id FROM contents WHERE id = :contentId';
             $sth = $this->dbh->prepare($query);
             $sth->execute(array(':contentId' => $contentId));
             $row = $sth->fetch(PDO::FETCH_ASSOC);
@@ -542,7 +581,7 @@ class DemoAdapter extends Adapter
             return -1;
         }
 
-        return $row['daisyformat_id'];
+        return $row['daisy_format_id'];
     }
 
     public function contentList($list, $contentFormats = null, $protectionFormats = null, $mimeTypes = null)
@@ -551,8 +590,8 @@ class DemoAdapter extends Adapter
 
         try
         {
-            $query = 'SELECT * FROM usercontent WHERE user_id = :userId AND contentlist_id = :listId AND returned = 0 ORDER BY updated_at DESC';
-            if ($this->protocolVersion == Adapter::DODP_V1) $query = str_replace('contentlist_id', 'contentlist_id_v1', $query);
+            $query = 'SELECT * FROM user_contents WHERE user_id = :userId AND content_list_id = :listId AND returned = 0 ORDER BY updated_at DESC';
+            if ($this->protocolVersion == Adapter::DODP_V1) $query = str_replace('content_list_id', 'content_list_v1_id', $query);
             $sth = $this->dbh->prepare($query);
             $sth->execute(array(':userId' => $this->user, ':listId' => $listId));
             $content = $sth->fetchAll(PDO::FETCH_ASSOC);
@@ -616,7 +655,7 @@ class DemoAdapter extends Adapter
         try
         {
             // update state
-            $query = "UPDATE usercontent SET state_id = :state WHERE user_id = :userId AND content_id = :contentId";
+            $query = "UPDATE user_contents SET state_id = :state WHERE user_id = :userId AND content_id = :contentId";
             $sth = $this->dbh->prepare($query);
             $values = array();
             $values[':state'] = $state;
@@ -646,7 +685,7 @@ class DemoAdapter extends Adapter
 
         try
         {
-            $query = 'SELECT id FROM content WHERE id = :contentId';
+            $query = 'SELECT id FROM contents WHERE id = :contentId';
             $sth = $this->dbh->prepare($query);
             $sth->execute(array(':contentId' => $contentId));
             $row = $sth->fetch(PDO::FETCH_ASSOC);
@@ -667,7 +706,7 @@ class DemoAdapter extends Adapter
 
         try
         {
-            $query = 'SELECT id FROM usercontent WHERE user_id = :userId AND content_id = :contentId';
+            $query = 'SELECT id FROM user_contents WHERE user_id = :userId AND content_id = :contentId';
             $sth = $this->dbh->prepare($query);
             $sth->execute(array(':userId' => $this->user, ':contentId' => $contentId));
             $row = $sth->fetch(PDO::FETCH_ASSOC);
@@ -688,9 +727,9 @@ class DemoAdapter extends Adapter
 
         try
         {
-            $query = 'SELECT category.name FROM content
-                JOIN category ON content.category_id = category.id
-                WHERE content.id = :contentId';
+            $query = 'SELECT categories.name FROM contents
+                JOIN categories ON contents.category_id = categories.id
+                WHERE contents.id = :contentId';
             $sth = $this->dbh->prepare($query);
             $sth->execute(array(':contentId' => $contentId));
             $row = $sth->fetch(PDO::FETCH_ASSOC);
@@ -745,7 +784,7 @@ class DemoAdapter extends Adapter
 
         try
         {
-            $query = 'SELECT return, return_at FROM usercontent WHERE user_id = :userId AND content_id = :contentId AND returned = :returned';
+            $query = 'SELECT return, return_at FROM user_contents WHERE user_id = :userId AND content_id = :contentId AND returned = :returned';
             $sth = $this->dbh->prepare($query);
             $values = array();
             $values[':userId'] = $this->user;
@@ -762,7 +801,7 @@ class DemoAdapter extends Adapter
 
         if ($row === false)
         {
-            $this->logger->warn("No usercontent found for user id '$this->user' and content id '$contentId'");
+            $this->logger->warn("No user content found for user id '$this->user' and content id '$contentId'");
             return false;
         }
 
@@ -790,9 +829,9 @@ class DemoAdapter extends Adapter
             {
                 try
                 {
-                    $query = 'UPDATE usercontent SET return_at = :datetime, returned = 0
-                        WHERE user_id = :userId AND content_id = :contentId AND contentlist_id = :listId AND return_at IS NULL';
-                    if ($this->protocolVersion == Adapter::DODP_V1) $query = str_replace('contentlist_id', 'contentlist_id_v1', $query);
+                    $query = 'UPDATE user_contents SET return_at = :datetime, returned = 0
+                        WHERE user_id = :userId AND content_id = :contentId AND content_list_id = :listId AND return_at IS NULL';
+                    if ($this->protocolVersion == Adapter::DODP_V1) $query = str_replace('content_list_id', 'content_list_v1_id', $query);
                     $sth = $this->dbh->prepare($query);
                     $values = array();
                     $values[':datetime'] = $returnDate;
@@ -808,7 +847,7 @@ class DemoAdapter extends Adapter
                 catch (PDOException $e)
                 {
                     $this->logger->fatal($e->getMessage());
-                    throw new AdapterException('Updating return data and status failed');
+                    throw new AdapterException('Updating return date and status failed');
                 }
             }
         }
@@ -822,7 +861,7 @@ class DemoAdapter extends Adapter
 
         try
         {
-            $query = 'SELECT key, value FROM contentmetadata WHERE content_id = :contentId';
+            $query = 'SELECT key, value FROM content_metadata WHERE content_id = :contentId';
             $sth = $this->dbh->prepare($query);
             $sth->execute(array(':contentId' => $contentId));
             $metadata = $sth->fetchAll(PDO::FETCH_ASSOC);
@@ -839,7 +878,7 @@ class DemoAdapter extends Adapter
 
         try
         {
-            $query = 'SELECT SUM(bytes) as size FROM contentresource WHERE content_id = :contentId';
+            $query = 'SELECT SUM(bytes) as size FROM content_resources WHERE content_id = :contentId';
             $sth = $this->dbh->prepare($query);
             $sth->execute(array(':contentId' => $contentId));
             $row = $sth->fetch(PDO::FETCH_ASSOC);
@@ -864,10 +903,10 @@ class DemoAdapter extends Adapter
 
         try
         {
-            $query = 'SELECT contentlist.name FROM usercontent
-                JOIN contentlist ON usercontent.contentlist_id = contentlist.id
-                WHERE user_id = :userId AND content_id = :contentId AND contentlist.name = :list';
-            if ($this->protocolVersion == Adapter::DODP_V1) $query = str_replace('contentlist_id', 'contentlist_id_v1', $query);
+            $query = 'SELECT content_lists.name FROM user_contents
+                JOIN content_lists ON user_contents.content_list_id = content_lists.id
+                WHERE user_id = :userId AND content_id = :contentId AND content_lists.name = :list';
+            if ($this->protocolVersion == Adapter::DODP_V1) $query = str_replace('contentlist_id', 'content_list_v1_id', $query);
             $sth = $this->dbh->prepare($query);
             $sth->execute(array(':userId' => $this->user, ':contentId' => $contentId, ':list' => $list));
             $row = $sth->fetch(PDO::FETCH_ASSOC);
@@ -908,7 +947,7 @@ class DemoAdapter extends Adapter
         {
             try
             {
-                $query = "SELECT returned FROM usercontent WHERE user_id = :userId AND content_id = :contentId AND contentlist_id_v1 = :listId AND returned = :returned";
+                $query = "SELECT returned FROM user_contents WHERE user_id = :userId AND content_id = :contentId AND content_list_v1_id = :listId AND returned = :returned";
                 $sth = $this->dbh->prepare($query);
                 $values = array();
                 $values[':userId'] = $this->user;
@@ -941,8 +980,8 @@ class DemoAdapter extends Adapter
                 // get first row (in list new, search or browse) containing the content 
                 $contentListIds = array($this->contentListId('new'), $this->contentListId('search'), $this->contentListId('browse'));
                 $contentListIdValues = implode(',', $contentListIds); // variable substitution in PDO prepared statements doesn't support arrays
-                $query = "SELECT id FROM usercontent
-                    WHERE user_id = :userId AND content_id = :contentId AND contentlist_id_v1 IN ($contentListIdValues) ORDER BY contentlist_id_v1";
+                $query = "SELECT id FROM user_contents
+                    WHERE user_id = :userId AND content_id = :contentId AND content_list_v1_id IN ($contentListIdValues) ORDER BY content_list_v1_id";
                 $sth = $this->dbh->prepare($query);
                 $values = array();
                 $values[':userId'] = $this->user;
@@ -954,8 +993,8 @@ class DemoAdapter extends Adapter
                     $this->logger->error("Content with id '$contentId' for user with id '$this->user' not found in new, search or browse list");
                     return false;
                 }
-                // update contentlist_id_v1 for the returned row
-                $query = 'UPDATE usercontent SET contentlist_id_v1 = :contentListId, updated_at = :timestamp WHERE id = :id';
+                // update content_list_v1_id for the returned row
+                $query = 'UPDATE user_contents SET content_list_v1_id = :contentListId, updated_at = :timestamp WHERE id = :id';
                 $sth = $this->dbh->prepare($query);
                 $values = array();
                 $values[':contentListId'] = $this->contentListId('issued');
@@ -990,7 +1029,7 @@ class DemoAdapter extends Adapter
 
         try
         {
-            $query = 'SELECT filename, bytes, mimetype FROM contentresource WHERE content_id = :contentId';
+            $query = 'SELECT file_name, bytes, mime_type FROM content_resources WHERE content_id = :contentId';
             $sth = $this->dbh->prepare($query);
             $sth->execute(array(':contentId' => $contentId));
             $resources = $sth->fetchAll(PDO::FETCH_ASSOC);
@@ -1011,11 +1050,11 @@ class DemoAdapter extends Adapter
         foreach ($resources as $resource)
         {
             $contentResource = array();
-            $uri = $this->serviceBaseUri() . "content/$contentId/" . $resource['filename'];
+            $uri = $this->serviceBaseUri() . "content/$contentId/" . $resource['file_name'];
             $contentResource['uri'] = $uri;
-            $contentResource['mimeType'] = $resource['mimetype'];
+            $contentResource['mimeType'] = $resource['mime_type'];
             $contentResource['size'] = $resource['bytes'];
-            $contentResource['localURI'] = $resource['filename'];
+            $contentResource['localURI'] = $resource['file_name'];
             $lastModified = $this->protocolVersion == Adapter::DODP_V2 ? '1970-01-01T00:00:00+00:00' : '1970-01-01T00:00:00';
             $contentResource['lastModifiedDate'] = $lastModified;
             array_push($contentResources, $contentResource);
@@ -1030,7 +1069,7 @@ class DemoAdapter extends Adapter
 
         try
         {
-            $query = 'SELECT return FROM usercontent WHERE user_id = :userId AND content_id = :contentId';
+            $query = 'SELECT return FROM user_contents WHERE user_id = :userId AND content_id = :contentId';
             $sth = $this->dbh->prepare($query);
             $sth->execute(array(':userId' => $this->user, ':contentId' => $contentId));
             $row = $sth->fetch(PDO::FETCH_ASSOC);
@@ -1043,7 +1082,7 @@ class DemoAdapter extends Adapter
 
         if ($row === false)
         {
-            $this->logger->warn("No usercontent found for user id '$this->user' and content id '$contentId'");
+            $this->logger->warn("No user content found for user id '$this->user' and content id '$contentId'");
             return false;
         }
 
@@ -1061,7 +1100,7 @@ class DemoAdapter extends Adapter
             try
             {
                 // check if content already is returned
-                $query = "SELECT returned FROM usercontent WHERE user_id = :userId AND content_id = :contentId";
+                $query = "SELECT returned FROM user_contents WHERE user_id = :userId AND content_id = :contentId";
                 $sth = $this->dbh->prepare($query);
                 $values = array();
                 $values[':userId'] = $this->user;
@@ -1079,7 +1118,7 @@ class DemoAdapter extends Adapter
                 }
 
                 // mark as returned
-                $query = "UPDATE usercontent SET returned = 1 WHERE user_id = :userId AND content_id = :contentId";
+                $query = "UPDATE user_contents SET returned = 1 WHERE user_id = :userId AND content_id = :contentId";
                 $sth = $this->dbh->prepare($query);
                 $values = array();
                 $values[':userId'] = $this->user;
@@ -1105,7 +1144,7 @@ class DemoAdapter extends Adapter
     {
         try
         {
-            $query = 'SELECT * FROM userannouncement WHERE user_id = :userId AND read_at IS NULL ORDER BY updated_at DESC';
+            $query = 'SELECT * FROM user_announcements WHERE user_id = :userId AND read_at IS NULL ORDER BY updated_at DESC';
             $sth = $this->dbh->prepare($query);
             $sth->execute(array(':userId' => $this->user));
             $rows = $sth->fetchAll(PDO::FETCH_ASSOC);
@@ -1132,7 +1171,7 @@ class DemoAdapter extends Adapter
 
         try
         {
-            $query = 'SELECT type,priority FROM announcement WHERE id = :announcementId';
+            $query = 'SELECT category as type,priority FROM announcements WHERE id = :announcementId';
             $sth = $this->dbh->prepare($query);
             if ($sth->execute(array(':announcementId' => $announcementId)) === false)
             {
@@ -1157,7 +1196,7 @@ class DemoAdapter extends Adapter
 
         try
         {
-            $query = 'SELECT * FROM userannouncement WHERE user_id = :userId AND announcement_id = :announcementId';
+            $query = 'SELECT * FROM user_announcements WHERE user_id = :userId AND announcement_id = :announcementId';
             $sth = $this->dbh->prepare($query);
             $values = array();
             $values[':userId'] = $this->user;
@@ -1182,7 +1221,7 @@ class DemoAdapter extends Adapter
         try
         {
             // check if announcement already marked as read
-            $query = "SELECT read_at FROM userannouncement WHERE user_id = :userId AND announcement_id = :announcementId";
+            $query = "SELECT read_at FROM user_announcements WHERE user_id = :userId AND announcement_id = :announcementId";
             $sth = $this->dbh->prepare($query);
             $values = array();
             $values[':userId'] = $this->user;
@@ -1200,7 +1239,7 @@ class DemoAdapter extends Adapter
             }
 
             // mark as read
-            $query = "UPDATE userannouncement SET read_at = :timeNow WHERE user_id = :userId AND announcement_id = :announcementId";
+            $query = "UPDATE user_announcements SET read_at = :timeNow WHERE user_id = :userId AND announcement_id = :announcementId";
             $sth = $this->dbh->prepare($query);
             $values = array();
             $values[':timeNow'] = date('c');
@@ -1228,7 +1267,7 @@ class DemoAdapter extends Adapter
         try
         {
             // check if bookmark exists
-            $query = 'SELECT * FROM userbookmark WHERE user_id = :userId AND content_id = :contentId';
+            $query = 'SELECT * FROM user_bookmarks WHERE user_id = :userId AND content_id = :contentId';
             $sth = $this->dbh->prepare($query);
             $values = array();
             $values[':userId'] = $this->user;
@@ -1245,7 +1284,7 @@ class DemoAdapter extends Adapter
 
         if ($bookmarkExists)
         {
-            $storedBookmarkSet = bookmarkSet_from_json($row['bookmarkset']);
+            $storedBookmarkSet = bookmarkSet_from_json($row['bookmark_set']);
             $bookmarkSet = bookmarkSet_from_json($bookmark);
             switch ($action)
             {
@@ -1284,15 +1323,20 @@ class DemoAdapter extends Adapter
 
         try
         {
-            if ($bookmarkExists)
-               $query = 'UPDATE userbookmark SET bookmarkset = :bookmarkset WHERE user_id = :userId AND content_id = :contentId';
-            else
-                $query = 'INSERT INTO userbookmark (user_id, content_id, bookmarkset) VALUES(:userId, :contentId, :bookmarkset)';
-            $sth = $this->dbh->prepare($query);
             $values = array();
             $values[':userId'] = $this->user;
             $values[':contentId'] = $contentId;
             $values[':bookmarkset'] = $bookmark;
+            if ($bookmarkExists)
+               $query = 'UPDATE user_bookmarks SET bookmark_set = :bookmarkset WHERE user_id = :userId AND content_id = :contentId';
+            else
+            {
+                $query = 'INSERT INTO user_bookmarks (user_id, content_id, bookmark_set, created_at, updated_at) VALUES(:userId, :contentId, :bookmarkset, :created_at, :updated_at)';
+                $values[':created_at'] = date('c');
+                $values[':updated_at'] = date('c');
+            }
+            $sth = $this->dbh->prepare($query);
+
             if ($sth->execute($values) === false)
             {
                 $this->logger->error("setting bookmark for content '$contentId' for user with id '$this->user' failed");
@@ -1314,7 +1358,7 @@ class DemoAdapter extends Adapter
 
         try
         {
-            $query = 'SELECT * FROM userbookmark WHERE user_id = :userId AND content_id = :contentId';
+            $query = 'SELECT * FROM user_bookmarks WHERE user_id = :userId AND content_id = :contentId';
             $sth = $this->dbh->prepare($query);
             $values = array();
             $values[':userId'] = $this->user;
@@ -1334,28 +1378,28 @@ class DemoAdapter extends Adapter
         switch ($action)
         {
             case Adapter::BMGET_ALL:
-                $bookmarks['bookmarkSet'] = $row['bookmarkset'];
+                $bookmarks['bookmarkSet'] = $row['bookmark_set'];
                 break;
             case Adapter::BMGET_LASTMARK:
-                $bookmarkSet = bookmarkSet_from_json($row['bookmarkset']);
+                $bookmarkSet = bookmarkSet_from_json($row['bookmark_set']);
                 $bookmarkSet->hilite = null;
                 $bookmarkSet->bookmark = null;
                 $bookmarks['bookmarkSet'] = json_encode($bookmarkSet);
                 break;
             case Adapter::BMGET_HILITE:
-                $bookmarkSet = bookmarkSet_from_json($row['bookmarkset']);
+                $bookmarkSet = bookmarkSet_from_json($row['bookmark_set']);
                 $bookmarkSet->lastmark = null;
                 $bookmarkSet->bookmark = null;
                 $bookmarks['bookmarkSet'] = json_encode($bookmarkSet);
                 break;
             case Adapter::BMGET_BOOKMARK:
-                $bookmarkSet = bookmarkSet_from_json($row['bookmarkset']);
+                $bookmarkSet = bookmarkSet_from_json($row['bookmark_set']);
                 $bookmarkSet->lastmark = null;
                 $bookmarkSet->hilite = null;
                 $bookmarks['bookmarkSet'] = json_encode($bookmarkSet);
                 break;
             default:
-                $bookmarks['bookmarkSet'] = $row['bookmarkset'];
+                $bookmarks['bookmarkSet'] = $row['bookmark_set'];
                 break;
         }
 
@@ -1381,11 +1425,11 @@ class DemoAdapter extends Adapter
             $questionId = $this->extractId($response['questionID']);
             try
             {
-                $query = 'SELECT questiontype.type
-                        FROM question
-                        JOIN questiontype ON question.questiontype_id = questiontype.id
-                        WHERE question.id = :questionId
-                        ORDER BY question.id';
+                $query = 'SELECT question_types.name as type
+                        FROM questions
+                        JOIN question_types ON questions.question_type_id = question_types.id
+                        WHERE questions.id = :questionId
+                        ORDER BY questions.id';
                 $sth = $this->dbh->prepare($query);
                 $values = array();
                 $values[':questionId'] = $questionId;
@@ -1425,12 +1469,12 @@ class DemoAdapter extends Adapter
         {
             // get children for the given parent id
             $query = 'SELECT
-                        question.id,
-                        questiontype.type
-                    FROM question
-                    JOIN questiontype ON question.questiontype_id = questiontype.id
+                        questions.id,
+                        question_types.name as type
+                    FROM questions
+                    JOIN question_types ON questions.question_type_id = question_types.id
                     WHERE parent_id = :parentId
-                    ORDER BY question.id ASC';
+                    ORDER BY questions.id ASC';
             $sth = $this->dbh->prepare($query);
             $values = array();
             $values[':parentId'] = $parentId;
@@ -1477,7 +1521,7 @@ class DemoAdapter extends Adapter
         try
         {
             // get allow_multiple_selections
-            $query = 'SELECT allow_multiple_selections FROM questioninput WHERE question_id = :questionId';
+            $query = 'SELECT allow_multiple_selections FROM question_inputs WHERE question_id = :questionId';
             $sth = $this->dbh->prepare($query);
             $values = array();
             $values[':questionId'] = $questionId;
@@ -1494,7 +1538,7 @@ class DemoAdapter extends Adapter
         try
         {
             // get choices
-            $query = 'SELECT id FROM question WHERE parent_id = :parentId ORDER BY id ASC';
+            $query = 'SELECT id FROM questions WHERE parent_id = :parentId ORDER BY id ASC';
             $sth = $this->dbh->prepare($query);
             $values = array();
             $values[':parentId'] = $questionId;
@@ -1521,7 +1565,7 @@ class DemoAdapter extends Adapter
         $question = array("type" => "inputQuestion", "id" => $this->generateQuestionId($questionId));
         try
         {
-            $query = 'SELECT * FROM questioninput WHERE question_id = :questionId';
+            $query = 'SELECT * FROM question_inputs WHERE question_id = :questionId';
             $sth = $this->dbh->prepare($query);
             $values = array();
             $values[':questionId'] = $questionId;
@@ -1529,7 +1573,7 @@ class DemoAdapter extends Adapter
             $row = $sth->fetch(PDO::FETCH_ASSOC);
             $inputTypes = array();
             if (!is_null($row['text_numeric'])) $inputTypes[] = "TEXT_NUMERIC";
-            if (!is_null($row['text_alpanumeric'])) $inputTypes[] = "TEXT_ALPHANUMERIC";
+            if (!is_null($row['text_alphanumeric'])) $inputTypes[] = "TEXT_ALPHANUMERIC";
             if (!is_null($row['audio'])) $inputTypes[] = "AUDIO";
             $question["inputTypes"] = $inputTypes;
             if (!is_null($row['default_value'])) $question["defaultValue"] = $row["defaultValue"];
@@ -1547,32 +1591,32 @@ class DemoAdapter extends Adapter
         switch ($questionId)
         {
             case self::MENU_SEARCH_BY_AUTHOR:
-                $query = "SELECT content_id FROM contentmetadata WHERE key = 'dc:creator' AND value LIKE :pattern";
+                $query = "SELECT content_id FROM content_metadata WHERE key = 'dc:creator' AND value LIKE :pattern";
                 $values = array(':pattern' => "%$input%");
                 $list = 'search';
                 break;
             case self::MENU_SEARCH_BY_TITLE:
-                $query = "SELECT content_id FROM contentmetadata WHERE key = 'dc:title' AND value LIKE :pattern";
+                $query = "SELECT content_id FROM content_metadata WHERE key = 'dc:title' AND value LIKE :pattern";
                 $values = array(':pattern' => "%$input%");
                 $list = 'search';
                 break;
             case self::MENU_BROWSE_BY_TITLE:
-                $query = "SELECT content_id FROM contentmetadata WHERE key = 'dc:title'";
+                $query = "SELECT content_id FROM content_metadata WHERE key = 'dc:title'";
                 $values = null;
                 $list = 'browse';
                 break;
             case self::MENU_BROWSE_BY_DAISY2:
-                $query = "SELECT content_id FROM contentmetadata WHERE key = 'dc:format' AND value = 'Daisy 2.02'";
+                $query = "SELECT content_id FROM content_metadata WHERE key = 'dc:format' AND value = 'Daisy 2.02'";
                 $values = null;
                 $list = 'browse';
                 break;
             case self::MENU_BROWSE_BY_DAISY3:
-                $query = "SELECT content_id FROM contentmetadata WHERE key = 'dc:format' AND value = 'ANSI/NIZO Z39.86-2005'";
+                $query = "SELECT content_id FROM content_metadata WHERE key = 'dc:format' AND value = 'ANSI/NIZO Z39.86-2005'";
                 $values = null;
                 $list = 'browse';
                 break;
             default: // browse by title
-                $query = "SELECT content_id FROM contentmetadata WHERE key = 'dc:title'";
+                $query = "SELECT content_id FROM content_metadata WHERE key = 'dc:title'";
                 $values = null;
                 $list = 'browse';
         }
@@ -1598,15 +1642,15 @@ class DemoAdapter extends Adapter
         try
         {
             // delete existing content
-            $query = 'DELETE FROM usercontent WHERE user_id = :userId AND contentlist_id = :contentListId';
-            if ($this->protocolVersion == Adapter::DODP_V1) $query = str_replace('contentlist_id', 'contentlist_id_v1', $query);
+            $query = 'DELETE FROM user_contents WHERE user_id = :userId AND content_list_id = :contentListId';
+            if ($this->protocolVersion == Adapter::DODP_V1) $query = str_replace('content_list_id', 'content_list_v1_id', $query);
             $sth = $this->dbh->prepare($query);
             $values = array();
             $values[':userId'] = $this->user;
             $values[':contentListId'] = $contentListId;
             $sth->execute($values);
             // add new content
-            $query = 'INSERT INTO usercontent (user_id, content_id, contentlist_id, contentlist_id_v1, return) VALUES (:userId, :contentId, :contentListId, :contentListIdV1, 1)';
+            $query = 'INSERT INTO user_contents (user_id, content_id, content_list_id, content_list_v1_id, return, created_at, updated_at) VALUES (:userId, :contentId, :contentListId, :contentListIdV1, 1, :datetime, :datetime)';
             $sth = $this->dbh->prepare($query);
             foreach ($rows as $row)
             {
@@ -1615,6 +1659,7 @@ class DemoAdapter extends Adapter
                 $values['contentId'] = $row['content_id'];
                 $values[':contentListId'] = $contentListId;
                 $values[':contentListIdV1'] = $contentListId;
+                $values[':datetime'] = date('c');
                 $sth->execute($values);
             }
         }
@@ -1650,7 +1695,7 @@ class DemoAdapter extends Adapter
         {
             try
             {
-                $query = "SELECT returned FROM usercontent WHERE user_id = :userId AND content_id = :contentId";
+                $query = "SELECT returned FROM user_contents WHERE user_id = :userId AND content_id = :contentId";
                 $sth = $this->dbh->prepare($query);
                 $values = array();
                 $values[':userId'] = $this->user;
@@ -1676,13 +1721,14 @@ class DemoAdapter extends Adapter
 
         try
         {
-            $query = 'INSERT INTO usercontent (user_id,content_id,contentlist_id,return) VALUES(:userId, :contentId, :contentListId, :return)';
+            $query = 'INSERT INTO user_contents (user_id,content_id,content_list_id,return,created_at,updated_at) VALUES(:userId, :contentId, :contentListId, :return, :datetime, :datetime)';
             $sth = $this->dbh->prepare($query);
             $values = array();
             $values[':userId'] = $this->user;
             $values[':contentId'] = $contentId;
             $values[':contentListId'] = $this->contentListId('bookshelf');
             $values[':return'] = 0;
+            $values[':datetime'] = date('c');
             if ($sth->execute($values) === false)
             {
                 $this->logger->error("Adding content '$contentId' to bookshelf for user with id '$this->user' failed");
@@ -1714,7 +1760,7 @@ class DemoAdapter extends Adapter
         try
         {
             // mark terms as accepted
-            $query = "UPDATE user SET terms_accepted = 1 WHERE id = :userId";
+            $query = "UPDATE users SET terms_accepted = 1 WHERE id = :userId";
             $sth = $this->dbh->prepare($query);
             $values = array();
             $values[':userId'] = $this->user;
@@ -1739,7 +1785,7 @@ class DemoAdapter extends Adapter
     {
         try
         {
-            $query = 'SELECT id FROM user WHERE id = :userId AND terms_accepted = 1';
+            $query = 'SELECT id FROM users WHERE id = :userId AND terms_accepted = 1';
             $sth = $this->dbh->prepare($query);
             $sth->execute(array(':userId' => $this->user));
             $row = $sth->fetch(PDO::FETCH_ASSOC);

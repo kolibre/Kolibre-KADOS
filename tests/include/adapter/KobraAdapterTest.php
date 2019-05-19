@@ -25,26 +25,70 @@ require_once('KobraAdapter.class.php');
 
 class KobraAdapterTest extends PHPUnit_Framework_TestCase
 {
-    protected static $database;
+    protected static $sqliteDb;
     protected static $adapter;
 
     public static function setUpBeforeClass()
     {
-        self::$database = realpath(dirname(__FILE__)) . '/kobra.sqlte3';
-        if (file_exists(self::$database)) unlink(self::$database);
-
-        $dump = realpath(dirname(__FILE__)) . '/../../../data/db/kobra.sqlite3.sql';
-        $output = array();
-        $command = "sqlite3 " . self::$database . " < $dump";
-        exec($command, $output);
-        self::$adapter = new KobraAdapter(self::$database);
+        $databaseDriver = 'sqlite';
+        if (array_key_exists('DATABASE_DRIVER', $_ENV))
+        {
+            switch ($_ENV['DATABASE_DRIVER'])
+            {
+                case 'pgsql':
+                case 'postgres':
+                case 'postgresql':
+                    $databaseDriver = 'pgsql';
+            }
+        }
+        $dsn = '';
+        switch ($databaseDriver)
+        {
+            case 'pgsql':
+                $output = array();
+                $command = 'psql -c "DROP DATABASE kobra_test"';
+                exec($command, $output);
+                $output = array();
+                $command = 'psql -c "CREATE DATABASE kobra_test"';
+                exec($command, $output);
+                $dumpfile = realpath(dirname(__FILE__)) . '/../../../data/db/kobra.postgresql.sql';
+                $output = array();
+                $command = "cat " . $dumpfile . " | psql kobra_test";
+                exec($command, $output);
+                $dsn = "pgsql:host=localhost;port=5432;dbname=kobra_test";
+                break;
+            default:
+                self::$sqliteDb = realpath(dirname(__FILE__)) . '/kobra_test.sqlte3';
+                if (file_exists(self::$sqliteDb)) unlink(self::$sqliteDb);
+                $dumpfile = realpath(dirname(__FILE__)) . '/../../../data/db/kobra.sqlite3.sql';
+                $output = array();
+                $command = "sqlite3 " . self::$sqliteDb . " < $dumpfile";
+                exec($command, $output);
+                $dsn = "sqlite:" . self::$sqliteDb;
+        }
+        self::$adapter = new KobraAdapter($dsn);
         self::$adapter->setSecretKey('test');
         self::$adapter->setProtocolVersion(Adapter::DODP_V2);
     }
 
     public static function tearDownAfterClass()
     {
-        if (file_exists(self::$database)) unlink(self::$database);
+        if (array_key_exists('DATABASE_DRIVER', $_ENV))
+        {
+            switch ($_ENV['DATABASE_DRIVER'])
+            {
+                case 'pgsql':
+                case 'postgres':
+                case 'postgresql':
+                    // Below fails with error message "There is 1 other session using the database."
+                    // $output = array();
+                    // $command = 'psql -c "DROP DATABASE kobra_test"';
+                    // exec($command, $output);
+                    break;
+                default:
+                    if (file_exists(self::$sqliteDb)) unlink(self::$sqliteDb);
+            }
+        }
     }
 
     /**

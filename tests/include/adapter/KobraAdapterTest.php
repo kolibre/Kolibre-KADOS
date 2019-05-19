@@ -21,29 +21,38 @@
 $includePath = dirname(realpath(__FILE__)) . '/../../../include/adapter';
 set_include_path(get_include_path() . PATH_SEPARATOR . $includePath);
 
-require_once('DemoAdapter.class.php');
+require_once('KobraAdapter.class.php');
 
-class DemoAdapterTest extends PHPUnit_Framework_TestCase
+class KobraAdapterTest extends PHPUnit_Framework_TestCase
 {
     protected static $database;
     protected static $adapter;
 
     public static function setUpBeforeClass()
     {
-        self::$database = realpath(dirname(__FILE__)) . '/demo.db';
+        self::$database = realpath(dirname(__FILE__)) . '/kobra.sqlte3';
         if (file_exists(self::$database)) unlink(self::$database);
 
-        $dump = realpath(dirname(__FILE__)) . '/../../../data/db/demo.sqlite.dump';
+        $dump = realpath(dirname(__FILE__)) . '/../../../data/db/kobra.sqlite3.sql';
         $output = array();
         $command = "sqlite3 " . self::$database . " < $dump";
         exec($command, $output);
-        self::$adapter = new DemoAdapter(self::$database);
+        self::$adapter = new KobraAdapter(self::$database);
+        self::$adapter->setSecretKey('test');
         self::$adapter->setProtocolVersion(Adapter::DODP_V1);
     }
 
     public static function tearDownAfterClass()
     {
         if (file_exists(self::$database)) unlink(self::$database);
+    }
+
+    /**
+     * @group decrypt
+     */
+    public function testDecrypt()
+    {
+        $this->assertEquals("kolibre", self::$adapter->decrypt('Wz2fuBzjbhCrm/Dmx38DCgpWHigWf8aaEDlvpDCO5gImGDI='));
     }
 
     public function testAuthenticate()

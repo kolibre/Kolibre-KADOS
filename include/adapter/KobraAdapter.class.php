@@ -754,7 +754,7 @@ class KobraAdapter extends Adapter
         if (is_null($date)) return false;
         if ($date == '0000-00-00 00:00:00') return false;
         $patternV1 = '/\d{4}\-\d{2}\-\d{2}[ T]\d{2}:\d{2}:\d{2}/';
-        $patternV2 = '/\d{4}\-\d{2}\-\d{2}T\d{2}:\d{2}:\d{2}(\+\d{2}:\d{2}|Z)/';
+        $patternV2 = '/\d{4}\-\d{2}\-\d{2}[ T]\d{2}:\d{2}:\d{2}(\+\d{2}:\d{2}|Z)/';
         if (preg_match($patternV1, $date) == 1 || preg_match($patternV2, $date) == 1) return true;
         return false;
     }
@@ -766,11 +766,12 @@ class KobraAdapter extends Adapter
         switch ($this->protocolVersion)
         {
             case Adapter::DODP_V1:
-                if (preg_match($patternV2, $date) == 1) return substr($date, 0, 19);
+                if (preg_match($patternV2, $date) == 1) return str_replace(" ", "T", substr($date, 0, 19));
                 return $date;
                 break;
             case Adapter::DODP_V2:
                 if (preg_match($patternV2, $date) == 1) return $date;
+                if (preg_match($patternV1, $date) == 1) return str_replace(" ", "T", substr($date, 0, 19)) . "Z";
                 return $date . "Z";
                 break;
             default:
@@ -811,7 +812,7 @@ class KobraAdapter extends Adapter
         if ($this->isValidDate($returnDate) === false)
         {
             $timestamp = time() + $this->loanDuration;
-            $returnDate = date('Y-m-d\TH:i:sP', $timestamp);
+            $returnDate = date('c', $timestamp);
             $updateReturnDate = false;
             $listName = $this->protocolVersion == Adapter::DODP_V2 ? 'bookshelf' : 'issued';
             if ($this->contentInList($contentId, $listName) === true) $updateReturnDate = true;

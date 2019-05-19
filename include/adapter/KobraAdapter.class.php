@@ -99,18 +99,19 @@ class KobraAdapter extends Adapter
     {
         if (is_null($database))
         {
-            $database = realpath(dirname(__FILE__)) . '/../../data/db/demo.db';
-        }
-
-        if (file_exists($database) === false)
-        {
-            $this->logger->error("File '$database' does not exist");
-            return;
+            $this->logger->warn("No database dsn specified, defaulting to sqlite");
+            $sqliteDb = realpath(dirname(__FILE__)) . '/../../data/db/kobra.sqlite3';
+            if (file_exists($sqliteDb) === false)
+            {
+                $this->logger->error("File '$sqliteDb' does not exist");
+                return;
+            }
+            $database = "sqlite:$sqliteDb";
         }
 
         try
         {
-            $this->dbh = new PDO("sqlite:$database");
+            $this->dbh = new PDO($database);
             $this->dbh->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
         }
         catch (PDOException $e)

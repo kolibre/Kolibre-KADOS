@@ -87,6 +87,7 @@ class KobraAdapter extends Adapter
         array_push($instance_variables_to_serialize, 'userLoggingEnabled');
         array_push($instance_variables_to_serialize, 'protocolVersion');
         array_push($instance_variables_to_serialize, 'preferredLang');
+        array_push($instance_variables_to_serialize, 'secretKey');
         return $instance_variables_to_serialize;
     }
 
@@ -436,6 +437,13 @@ class KobraAdapter extends Adapter
 
     public function decrypt($encrypted)
     {
+        if (is_null($this->secreKey))
+        {
+            if (array_key_exists('KOBRA_SECRET_KEY', $_ENV))
+            {
+                $this->secretKey = $_ENV['KOBRA_SECRET_KEY'];
+            }
+        }
         $hashed_key = substr(hash('sha256', $this->secretKey), 0, 32);
         $decrypted = $this->decrypt_gcm('aes-256-gcm', $hashed_key, $encrypted);
         return $decrypted;

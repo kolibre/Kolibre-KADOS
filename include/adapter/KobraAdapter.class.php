@@ -646,9 +646,27 @@ class KobraAdapter extends Adapter
 
     public function contentLastModifiedDate($contentId)
     {
-        // TODO: implement demo cases
-        $date = $this->protocolVersion == Adapter::DODP_V2 ? '1970-01-01T00:00:00+00:00' : '1970-01-01T00:00:00';
-        return $date;
+        $contentId = $this->extractId($contentId);
+
+        try {
+            $query = 'SELECT MAX(updated_at) as last_modified FROM contents WHERE id = :contentId';
+            $sth = $this->dbh->prepare($query);
+            $sth->execute(array(':contentId' => $contentId));
+            $row = $sth->fetch(PDO::FETCH_ASSOC);
+        }
+        catch (PDOException $e)
+        {
+            $this->logger->fatal($e->getMessage());
+            throw new AdapterException('Retrieving last modified date failed');
+        }
+
+        if ($row === false)
+        {
+            $this->logger->warn->error("No content found with id '$contentId'");
+            return false;
+        }
+
+        return $this->dateFormatByProtocol($row['last_modified']);
     }
 
     public function contentAccessMethod($contentId)

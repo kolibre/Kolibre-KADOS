@@ -82,6 +82,8 @@ class DemoAdapter extends Adapter
         $instance_variables_to_serialize = array();
         array_push($instance_variables_to_serialize, 'user');
         array_push($instance_variables_to_serialize, 'userLoggingEnabled');
+        array_push($instance_variables_to_serialize, 'protocolVersion');
+        array_push($instance_variables_to_serialize, 'preferredLang');
         return $instance_variables_to_serialize;
     }
 

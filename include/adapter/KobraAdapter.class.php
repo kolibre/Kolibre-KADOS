@@ -1008,7 +1008,7 @@ class KobraAdapter extends Adapter
                 $sth = $this->dbh->prepare($query);
                 $values = array();
                 $values[':contentListId'] = $this->contentListId('issued');
-                $values[':timestamp'] = date('Y-m-d H:i:s');
+                $values[':timestamp'] = date('c');
                 $values[':id'] = $row['id'];
                 if ($sth->execute($values) === false)
                 {

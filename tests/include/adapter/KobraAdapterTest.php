@@ -220,6 +220,17 @@ class KobraAdapterTest extends PHPUnit_Framework_TestCase
         $this->assertArrayHasKey('dc:format', self::$adapter->contentMetadata('con_2'));
     }
 
+    public function testContentLastModifiedDate()
+    {
+        $this->assertFalse(self::$adapter->contentReturnDate(10));
+        $this->assertFalse(self::$adapter->contentReturnDate('con_10'));
+        $pattern = '/\d{4}\-\d{2}\-\d{2}T\d{2}:\d{2}:\d{2}(\+\d{2}:\d{2}|Z)/';
+        $this->assertRegExp($pattern, self::$adapter->contentReturnDate(1));
+        $this->assertRegExp($pattern, self::$adapter->contentReturnDate('con_1'));
+        $this->assertRegExp($pattern, self::$adapter->contentReturnDate(2));
+        $this->assertRegExp($pattern, self::$adapter->contentReturnDate('con_2'));
+    }
+
     public function testContentInList()
     {
         $this->assertFalse(self::$adapter->contentInList(10, 'new'));

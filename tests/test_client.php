@@ -116,6 +116,11 @@ class TestClient
             return false;
         }
 
+        if ($this->client->operationFailed() === false)
+        {
+            return false;
+        }
+
         if ($this->client->operationFailed() && $this->client->getFaultType() != "termsOfServiceNotAcceptedFault")
         {
             return false;

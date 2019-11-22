@@ -832,7 +832,7 @@ class KobraAdapter extends Adapter
             return false;
         }
 
-        if ($row['return'] == 0) return false;
+        if ($row['return'] == false) return false;
 
         $returnDate = $row['return_at'];
         if ($this->isValidDate($returnDate) === false)
@@ -1112,7 +1112,7 @@ class KobraAdapter extends Adapter
             return false;
         }
 
-        if ($row['return'] == 0) return false;
+        if ($row['return'] == false) return false;
         return true;
     }
 
@@ -1676,7 +1676,7 @@ class KobraAdapter extends Adapter
             $values[':contentListId'] = $contentListId;
             $sth->execute($values);
             // add new content
-            $query = 'INSERT INTO user_contents (user_id, content_id, content_list_id, content_list_v1_id, return, created_at, updated_at) VALUES (:userId, :contentId, :contentListId, :contentListIdV1, 1, :datetime, :datetime)';
+            $query = 'INSERT INTO user_contents (user_id, content_id, content_list_id, content_list_v1_id, return, created_at, updated_at) VALUES (:userId, :contentId, :contentListId, :contentListIdV1, true, :datetime, :datetime)';
             $sth = $this->dbh->prepare($query);
             foreach ($rows as $row)
             {
@@ -1754,13 +1754,12 @@ class KobraAdapter extends Adapter
             $values[':contentId'] = $contentId;
             $values[':contentListId'] = $this->contentListId('bookshelf');
             $sth->execute($values);
-            $query = 'INSERT INTO user_contents (user_id,content_id,content_list_id,return,created_at,updated_at) VALUES(:userId, :contentId, :contentListId, :return, :datetime, :datetime)';
+            $query = 'INSERT INTO user_contents (user_id,content_id,content_list_id,return,created_at,updated_at) VALUES(:userId, :contentId, :contentListId, false, :datetime, :datetime)';
             $sth = $this->dbh->prepare($query);
             $values = array();
             $values[':userId'] = $this->user;
             $values[':contentId'] = $contentId;
             $values[':contentListId'] = $this->contentListId('bookshelf');
-            $values[':return'] = 0;
             $values[':datetime'] = date('c');
             if ($sth->execute($values) === false)
             {

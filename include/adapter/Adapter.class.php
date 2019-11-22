@@ -211,21 +211,25 @@ abstract class Adapter
     const BMSET_REMOVE = 3;
 
     /**
+     * Enum to represent a null state
+     */
+    const STATE_NULL = 0;
+    /**
      * Enum to begin content download/stream
      */
-    const STATE_START = 1;
+    const STATE_START = 2;
     /**
      * Enum to pasue content download/stream
      */
-    const STATE_PAUSE = 2;
+    const STATE_PAUSE = 3;
     /**
      * Enum to resume content download/stream
      */
-    const STATE_RESUME = 3;
+    const STATE_RESUME = 4;
     /**
      * Enum to finish content download/stream
      */
-    const STATE_FINISH = 4;
+    const STATE_FINISH = 5;
 
     /**
      * Set protocol version

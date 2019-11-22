@@ -1749,6 +1749,13 @@ class KobraAdapter extends Adapter
 
         try
         {
+            $query = 'DELETE FROM user_contents WHERE user_id = :userId AND content_id = :contentId AND content_list_id = :contentListId';
+            $sth = $this->dbh->prepare($query);
+            $values = array();
+            $values[':userId'] = $this->user;
+            $values[':contentId'] = $contentId;
+            $values[':contentListId'] = $this->contentListId('bookshelf');
+            $sth->execute($values);
             $query = 'INSERT INTO user_contents (user_id,content_id,content_list_id,return,created_at,updated_at) VALUES(:userId, :contentId, :contentListId, :return, :datetime, :datetime)';
             $sth = $this->dbh->prepare($query);
             $values = array();

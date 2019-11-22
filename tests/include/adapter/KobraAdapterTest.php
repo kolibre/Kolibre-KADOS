@@ -711,7 +711,7 @@ class KobraAdapterTest extends PHPUnit_Framework_TestCase
         $this->assertCount(3, self::$adapter->contentList('browse'));
         $this->assertTrue(self::$adapter->contentAddBookshelf('con_1')); // add content
         $bookshelfAfter = count(self::$adapter->contentList('bookshelf'));
-        $this->assertEquals($bookshelfBefore+1, $bookshelfAfter);
+        $this->assertEquals($bookshelfBefore, $bookshelfAfter);
     }
 }
 

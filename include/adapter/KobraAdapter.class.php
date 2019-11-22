@@ -599,7 +599,7 @@ class KobraAdapter extends Adapter
 
         try
         {
-            $query = 'SELECT * FROM user_contents WHERE user_id = :userId AND content_list_id = :listId AND returned = 0 ORDER BY updated_at DESC';
+            $query = 'SELECT * FROM user_contents WHERE user_id = :userId AND content_list_id = :listId AND returned = false ORDER BY updated_at DESC';
             if ($this->protocolVersion == Adapter::DODP_V1) $query = str_replace('content_list_id', 'content_list_v1_id', $query);
             $sth = $this->dbh->prepare($query);
             $sth->execute(array(':userId' => $this->user, ':listId' => $listId));
@@ -812,12 +812,11 @@ class KobraAdapter extends Adapter
 
         try
         {
-            $query = 'SELECT return, return_at FROM user_contents WHERE user_id = :userId AND content_id = :contentId AND returned = :returned';
+            $query = 'SELECT return, return_at FROM user_contents WHERE user_id = :userId AND content_id = :contentId AND returned = false';
             $sth = $this->dbh->prepare($query);
             $values = array();
             $values[':userId'] = $this->user;
             $values[':contentId'] = $contentId;
-            $values[':returned'] = 0;
             $sth->execute($values);
             $row = $sth->fetch(PDO::FETCH_ASSOC);
         }
@@ -857,7 +856,7 @@ class KobraAdapter extends Adapter
             {
                 try
                 {
-                    $query = 'UPDATE user_contents SET return_at = :datetime, returned = 0
+                    $query = 'UPDATE user_contents SET return_at = :datetime, returned = false
                         WHERE user_id = :userId AND content_id = :contentId AND content_list_id = :listId AND return_at IS NULL';
                     if ($this->protocolVersion == Adapter::DODP_V1) $query = str_replace('content_list_id', 'content_list_v1_id', $query);
                     $sth = $this->dbh->prepare($query);
@@ -975,13 +974,12 @@ class KobraAdapter extends Adapter
         {
             try
             {
-                $query = "SELECT returned FROM user_contents WHERE user_id = :userId AND content_id = :contentId AND content_list_v1_id = :listId AND returned = :returned";
+                $query = "SELECT returned FROM user_contents WHERE user_id = :userId AND content_id = :contentId AND content_list_v1_id = :listId AND returned = false";
                 $sth = $this->dbh->prepare($query);
                 $values = array();
                 $values[':userId'] = $this->user;
                 $values[':contentId'] = $contentId;
                 $values[':listId'] = $this->contentListId('issued');
-                $values[':returned'] = 0;
                 if ($sth->execute($values) === false)
                 {
                     $this->logger->error("Checking return status for content with id '$contentId' for user with id '$this->user' failed");
@@ -1140,13 +1138,13 @@ class KobraAdapter extends Adapter
                 }
 
                 $row = $sth->fetch(PDO::FETCH_ASSOC);
-                if ($row['returned'] == 1)
+                if ($row['returned'] == true)
                 {
                     return true;
                 }
 
                 // mark as returned
-                $query = "UPDATE user_contents SET returned = 1 WHERE user_id = :userId AND content_id = :contentId";
+                $query = "UPDATE user_contents SET returned = true WHERE user_id = :userId AND content_id = :contentId";
                 $sth = $this->dbh->prepare($query);
                 $values = array();
                 $values[':userId'] = $this->user;
@@ -1735,7 +1733,7 @@ class KobraAdapter extends Adapter
                 }
 
                 $row = $sth->fetch(PDO::FETCH_ASSOC);
-                if ($row['returned'] == 0)
+                if ($row['returned'] == false)
                 {
                     return true;
                 }

@@ -495,7 +495,7 @@ class KobraAdapter extends Adapter
         }
 
         $this->user = $user['id'];
-        if ($users[0]['log'] == 1)
+        if ($users[0]['log'] == true)
             $this->userLoggingEnabled = true;
 
         return true;
@@ -1792,7 +1792,7 @@ class KobraAdapter extends Adapter
         try
         {
             // mark terms as accepted
-            $query = "UPDATE users SET terms_accepted = 1 WHERE id = :userId";
+            $query = "UPDATE users SET terms_accepted = true WHERE id = :userId";
             $sth = $this->dbh->prepare($query);
             $values = array();
             $values[':userId'] = $this->user;
@@ -1817,7 +1817,7 @@ class KobraAdapter extends Adapter
     {
         try
         {
-            $query = 'SELECT id FROM users WHERE id = :userId AND terms_accepted = 1';
+            $query = 'SELECT id FROM users WHERE id = :userId AND terms_accepted = true';
             $sth = $this->dbh->prepare($query);
             $sth->execute(array(':userId' => $this->user));
             $row = $sth->fetch(PDO::FETCH_ASSOC);

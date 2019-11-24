@@ -1544,6 +1544,16 @@ class DaisyOnlineService
             $this->includeAdapter($path, $adapterClass);
         }
 
+        $args = [];
+        if ($this->getEnvValue('KADOS_ADAPTER_ARGS', '') != '')
+        {
+            $args = explode(',', $_ENV['KADOS_ADAPTER_ARGS']);
+        }
+        else if (array_key_exists('args', $settings))
+        {
+            $args = $settings['args'];
+        }
+
         $path = realpath(dirname(__FILE__)) . '/adapter';
         $this->includeAdapter($path, $adapterClass);
 
@@ -1552,7 +1562,7 @@ class DaisyOnlineService
             $this->logger->fatal("Could not find adapter class '$adapterClass'");
             die('Adapter class not found, please make sure adapter path is set');
         }
-        $this->adapter = new $adapterClass;
+        $this->adapter = new $adapterClass(...$args);
     }
 
     /**

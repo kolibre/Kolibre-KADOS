@@ -257,6 +257,7 @@ class KobraAdapterTest extends PHPUnit_Framework_TestCase
             $this->assertArrayHasKey('mimeType', $resource);
             $this->assertArrayHasKey('size', $resource);
             $this->assertArrayHasKey('localURI', $resource);
+            $this->assertContains('contents/1/resources', $resource['uri']);
         }
         foreach (self::$adapter->contentResources('con_1') as $resource)
         {
@@ -264,6 +265,7 @@ class KobraAdapterTest extends PHPUnit_Framework_TestCase
             $this->assertArrayHasKey('mimeType', $resource);
             $this->assertArrayHasKey('size', $resource);
             $this->assertArrayHasKey('localURI', $resource);
+            $this->assertContains('contents/1/resources', $resource['uri']);
         }
         foreach (self::$adapter->contentResources(2) as $resource)
         {
@@ -271,6 +273,7 @@ class KobraAdapterTest extends PHPUnit_Framework_TestCase
             $this->assertArrayHasKey('mimeType', $resource);
             $this->assertArrayHasKey('size', $resource);
             $this->assertArrayHasKey('localURI', $resource);
+            $this->assertContains('contents/2/resources', $resource['uri']);
         }
         foreach (self::$adapter->contentResources('con_2') as $resource)
         {
@@ -278,6 +281,7 @@ class KobraAdapterTest extends PHPUnit_Framework_TestCase
             $this->assertArrayHasKey('mimeType', $resource);
             $this->assertArrayHasKey('size', $resource);
             $this->assertArrayHasKey('localURI', $resource);
+            $this->assertContains('contents/2/resources', $resource['uri']);
         }
     }
 
@@ -310,7 +314,7 @@ class KobraAdapterTest extends PHPUnit_Framework_TestCase
         $this->assertEquals('en', $label['lang']);
         $this->assertArrayHasKey('audio', $label);
         $this->assertArrayHasKey('uri', $label['audio']);
-        $this->assertContains('announcement_1.ogg', $label['audio']['uri']);
+        $this->assertContains('announcements/1/announcement_1.ogg', $label['audio']['uri']);
         $this->assertArrayHasKey('size', $label['audio']);
         $this->assertEquals(24677, $label['audio']['size']);
         $label = self::$adapter->label(1, Adapter::LABEL_ANNOUNCEMENT, 'sv');
@@ -320,7 +324,7 @@ class KobraAdapterTest extends PHPUnit_Framework_TestCase
         $this->assertEquals('sv', $label['lang']);
         $this->assertArrayHasKey('audio', $label);
         $this->assertArrayHasKey('uri', $label['audio']);
-        $this->assertContains('announcement_2.ogg', $label['audio']['uri']);
+        $this->assertContains('announcements/2/announcement_2.ogg', $label['audio']['uri']);
         $this->assertArrayHasKey('size', $label['audio']);
         $this->assertEquals(27392, $label['audio']['size']);
     }
@@ -532,7 +536,7 @@ class KobraAdapterTest extends PHPUnit_Framework_TestCase
         $this->assertEquals('en', $label['lang']);
         $this->assertArrayHasKey('audio', $label);
         $this->assertArrayHasKey('uri', $label['audio']);
-        $this->assertContains("question_1.ogg", $label['audio']['uri']);
+        $this->assertContains("questions/1/question_1.ogg", $label['audio']['uri']);
         $this->assertArrayHasKey('size', $label['audio']);
         $this->assertEquals(13817, $label['audio']['size']);
         $label = self::$adapter->label('que_2', Adapter::LABEL_CHOICE, 'sv');
@@ -542,7 +546,7 @@ class KobraAdapterTest extends PHPUnit_Framework_TestCase
         $this->assertEquals('sv', $label['lang']);
         $this->assertArrayHasKey('audio', $label);
         $this->assertArrayHasKey('uri', $label['audio']);
-        $this->assertContains("question_4.ogg", $label['audio']['uri']);
+        $this->assertContains("questions/4/question_4.ogg", $label['audio']['uri']);
         $this->assertArrayHasKey('size', $label['audio']);
         $this->assertEquals(14255, $label['audio']['size']);
         $label = self::$adapter->label(40, Adapter::LABEL_INPUTQUESTION);
@@ -552,7 +556,7 @@ class KobraAdapterTest extends PHPUnit_Framework_TestCase
         $this->assertEquals('en', $label['lang']);
         $this->assertArrayHasKey('audio', $label);
         $this->assertArrayHasKey('uri', $label['audio']);
-        $this->assertContains("question_27.ogg", $label['audio']['uri']);
+        $this->assertContains("questions/27/question_27.ogg", $label['audio']['uri']);
         $this->assertArrayHasKey('size', $label['audio']);
         $this->assertEquals(17356, $label['audio']['size']);
     }
@@ -599,7 +603,7 @@ class KobraAdapterTest extends PHPUnit_Framework_TestCase
         $this->assertArrayHasKey('lang', $label);
         $this->assertArrayHasKey('audio', $label);
         $this->assertArrayHasKey('uri', $label['audio']);
-        $this->assertContainsAny(array('question_39.ogg', 'question_40.ogg'), $label['audio']['uri']);
+        $this->assertContainsAny(array('questions/39/question_39.ogg', 'questions/40/question_40.ogg'), $label['audio']['uri']);
         $this->assertArrayHasKey('size', $label['audio']);
         $responses = array(array('questionID' => 'que_41', 'value' => 'this rocks')); // optional feedback 'this rocks'
         $label = self::$adapter->menuNext($responses);
@@ -607,7 +611,7 @@ class KobraAdapterTest extends PHPUnit_Framework_TestCase
         $this->assertArrayHasKey('lang', $label);
         $this->assertArrayHasKey('audio', $label);
         $this->assertArrayHasKey('uri', $label['audio']);
-        $this->assertContainsAny(array('question_39.ogg', 'question_40.ogg'), $label['audio']['uri']);
+        $this->assertContainsAny(array('questions/39/question_39.ogg', 'questions/40/question_40.ogg'), $label['audio']['uri']);
         $this->assertArrayHasKey('size', $label['audio']);
 
         // feedback menu

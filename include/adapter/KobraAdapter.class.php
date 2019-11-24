@@ -985,7 +985,7 @@ class KobraAdapter extends Adapter
             $query = 'SELECT content_lists.name FROM user_contents
                 JOIN content_lists ON user_contents.content_list_id = content_lists.id
                 WHERE user_id = :userId AND content_id = :contentId AND content_lists.name = :list';
-            if ($this->protocolVersion == Adapter::DODP_V1) $query = str_replace('contentlist_id', 'content_list_v1_id', $query);
+            if ($this->protocolVersion == Adapter::DODP_V1) $query = str_replace('content_list_id', 'content_list_v1_id', $query);
             $sth = $this->dbh->prepare($query);
             $sth->execute(array(':userId' => $this->user, ':contentId' => $contentId, ':list' => $list));
             $row = $sth->fetch(PDO::FETCH_ASSOC);

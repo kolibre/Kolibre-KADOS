@@ -66,8 +66,8 @@ class KobraAdapterTest extends PHPUnit_Framework_TestCase
                 exec($command, $output);
                 $dsn = "sqlite:" . self::$sqliteDb;
         }
-        self::$adapter = new KobraAdapter($dsn);
-        self::$adapter->setSecretKey('test');
+        $secret_key = 'test';
+        self::$adapter = new KobraAdapter($dsn, $secret_key);
         self::$adapter->setProtocolVersion(Adapter::DODP_V1);
     }
 

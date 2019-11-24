@@ -59,9 +59,10 @@ class KobraAdapter extends Adapter
     // the secret key for decrypting passwords in database
     private $secretKey = null;
 
-    public function __construct($database_dsn = null)
+    public function __construct($database_dsn = null, $secret_key = null)
     {
         $this->databaseDSN = $database_dsn;
+        $this->secretKey = $secret_key;
 
         // setup logger
         $this->setupLogger();

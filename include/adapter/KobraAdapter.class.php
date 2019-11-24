@@ -136,17 +136,18 @@ class KobraAdapter extends Adapter
 
         try
         {
-            $query = "INSERT INTO userlog ('user_id', 'datetime', 'request', 'response', 'ip')
-                VALUES(:user_id, :datetime, :request, :response, :ip)";
+            $query = "INSERT INTO user_logs (user_id, request, response, ip, created_at, updated_at)
+                VALUES(:user_id, :request, :response, :ip, :created_at, :updated_at)";
             $sth = $this->dbh->prepare($query);
             $values = array();
             $values[':user_id'] = $this->user;
-            $values[':datetime'] = date('Y-m-d H:i:s', $timestamp);
             $values[':request'] = $request;
             $values[':response'] = $response;
             $values[':ip'] = $ip;
+            $values[':created_at'] = date('c');
+            $values[':updated_at'] = date('c');
             if ($sth->execute($values) === false)
-                $this->logger->error("Insert row to userlog failed");
+                $this->logger->error("Insert row to user_logs failed");
         }
         catch (PDOException $e)
         {

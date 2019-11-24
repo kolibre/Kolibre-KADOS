@@ -689,8 +689,8 @@ class KobraAdapterTest extends PHPUnit_Framework_TestCase
 
     public function testContentAddBookshelf()
     {
-        $this->assertTrue(self::$adapter->contentAddBookshelf(10));
-        $this->assertTrue(self::$adapter->contentAddBookshelf('con_10'));
+        $this->assertFalse(self::$adapter->contentAddBookshelf(10));
+        $this->assertFalse(self::$adapter->contentAddBookshelf('con_10'));
         $this->assertTrue(self::$adapter->contentAddBookshelf(1));
         $this->assertTrue(self::$adapter->contentAddBookshelf('con_1'));
         $this->assertTrue(self::$adapter->contentAddBookshelf(2));

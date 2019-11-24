@@ -1051,6 +1051,25 @@ class KobraAdapter extends Adapter
             }
         }
 
+        if ($this->contentInList($contentId, 'issued'))
+        {
+            try
+            {
+                // delete existing content
+                $query = "DELETE FROM user_contents WHERE user_id = :userId AND content_id = :contentId AND content_list_v1_id = :contentListId";
+                $sth = $this->dbh->prepare($query);
+                $values = array();
+                $values[':userId'] = $this->user;
+                $values[':contentId'] = $contentId;
+                $values[':contentListId'] = $this->contentListId('issued');
+                $sth->execute($values);
+            }
+            catch (PDOException $e)
+            {
+                $this->logger->fatal($e->getMessage());
+                throw new AdapterException('Deleting issued content failed');
+            }
+        }
         if ($this->contentInList($contentId, 'new') || $this->contentInList($contentId, 'search') || $this->contentInList($contentId, 'browse'))
         {
             try

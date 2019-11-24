@@ -205,8 +205,22 @@ class KobraAdapter extends Adapter
     {
         $contentId = $this->extractId($contentId);
 
-        $filename = "content_$contentId.ogg";
-        return $this->serviceBaseUri()."media/$filename";
+        try
+        {
+            // TODO: support filter by supported audio types
+            $query = 'SELECT audio FROM content_audios WHERE id = :contentId limit 1';
+            $sth = $this->dbh->prepare($query);
+            $sth->execute(array(':contentId' => $contentId));
+            $row = $sth->fetch(PDO::FETCH_ASSOC);
+        }
+        catch (PDOException $e)
+        {
+            $this->logger->fatal($e->getMessage());
+            throw new AdapterException('Retrieving content audio file name failed');
+        }
+
+        $filename = $row['audio'];
+        return $this->serviceBaseUri()."/contents/$contentId/audios/$filename";
     }
 
     public function contentAudioSize($contentId)
@@ -289,8 +303,22 @@ class KobraAdapter extends Adapter
 
     public function announcementAudioUri($announcementId)
     {
-        $filename = "announcement_$announcementId.ogg";
-        return $this->serviceBaseUri()."media/$filename";
+        try
+        {
+            // TODO: support filter by supported audio types
+            $query = 'SELECT audio FROM announcement_audios WHERE id = :announcementId limit 1';
+            $sth = $this->dbh->prepare($query);
+            $sth->execute(array(':announcementId' => $announcementId));
+            $row = $sth->fetch(PDO::FETCH_ASSOC);
+        }
+        catch (PDOException $e)
+        {
+            $this->logger->fatal($e->getMessage());
+            throw new AdapterException('Retrieving announcement audio file name failed');
+        }
+
+        $filename = $row['audio'];
+        return $this->serviceBaseUri()."announcements/$announcementId/$filename";
     }
 
     public function announcementLabel($announcementId, $language = 'en')
@@ -343,8 +371,22 @@ class KobraAdapter extends Adapter
 
     public function questionAudioUri($questionId)
     {
-        $filename = "question_$questionId.ogg";
-        return $this->serviceBaseUri()."media/$filename";
+        try
+        {
+            // TODO: support filter by supported audio types
+            $query = 'SELECT audio FROM question_audios WHERE id = :questionId limit 1';
+            $sth = $this->dbh->prepare($query);
+            $sth->execute(array(':questionId' => $questionId));
+            $row = $sth->fetch(PDO::FETCH_ASSOC);
+        }
+        catch (PDOException $e)
+        {
+            $this->logger->fatal($e->getMessage());
+            throw new AdapterException('Retrieving question audio file name failed');
+        }
+
+        $filename = $row['audio'];
+        return $this->serviceBaseUri()."questions/$questionId/$filename";
     }
 
     public function questionLabel($questionId, $language = 'en')
@@ -1055,7 +1097,7 @@ class KobraAdapter extends Adapter
 
         try
         {
-            $query = 'SELECT file_name, bytes, mime_type FROM content_resources WHERE content_id = :contentId';
+            $query = 'SELECT file_name, bytes, mime_type, resource FROM content_resources WHERE content_id = :contentId';
             $sth = $this->dbh->prepare($query);
             $sth->execute(array(':contentId' => $contentId));
             $resources = $sth->fetchAll(PDO::FETCH_ASSOC);
@@ -1076,7 +1118,7 @@ class KobraAdapter extends Adapter
         foreach ($resources as $resource)
         {
             $contentResource = array();
-            $uri = $this->serviceBaseUri() . "content/$contentId/" . $resource['file_name'];
+            $uri = $this->serviceBaseUri() . "contents/$contentId/resources/" . $resource['resource'];
             $contentResource['uri'] = $uri;
             $contentResource['mimeType'] = $resource['mime_type'];
             $contentResource['size'] = $resource['bytes'];

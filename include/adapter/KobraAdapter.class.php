@@ -1716,6 +1716,11 @@ class KobraAdapter extends Adapter
     {
         $contentId = $this->extractId($contentId);
 
+        if ($this->contentExists($contentId) === false)
+        {
+            return false;
+        }
+
         // check if content already in list and not returned
         if ($this->contentInList($contentId, 'bookshelf'))
         {

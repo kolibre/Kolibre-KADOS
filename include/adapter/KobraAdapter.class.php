@@ -47,6 +47,9 @@ class KobraAdapter extends Adapter
     // logger instance
     private $logger = null;
 
+    // database data source name
+    private $databaseDSN = null;
+
     // database connection handler
     private $dbh = null;
 
@@ -56,13 +59,15 @@ class KobraAdapter extends Adapter
     // the secret key for decrypting passwords in database
     private $secretKey = null;
 
-    public function __construct($database = null)
+    public function __construct($database_dsn = null)
     {
+        $this->databaseDSN = $database_dsn;
+
         // setup logger
         $this->setupLogger();
 
         // setup database connection
-        $this->setupDatabase($database);
+        $this->setupDatabase();
     }
 
     /**
@@ -87,6 +92,7 @@ class KobraAdapter extends Adapter
         array_push($instance_variables_to_serialize, 'userLoggingEnabled');
         array_push($instance_variables_to_serialize, 'protocolVersion');
         array_push($instance_variables_to_serialize, 'preferredLang');
+        array_push($instance_variables_to_serialize, 'databaseDSN');
         array_push($instance_variables_to_serialize, 'secretKey');
         return $instance_variables_to_serialize;
     }
@@ -96,9 +102,9 @@ class KobraAdapter extends Adapter
         $this->logger = Logger::getLogger('kolibre.daisyonline.kobraadapter');
     }
 
-    private function setupDatabase($database = null)
+    private function setupDatabase()
     {
-        if (is_null($database))
+        if (is_null($this->databaseDSN))
         {
             $this->logger->warn("No database dsn specified, defaulting to sqlite");
             $sqliteDb = realpath(dirname(__FILE__)) . '/../../data/db/kobra.sqlite3';
@@ -107,12 +113,14 @@ class KobraAdapter extends Adapter
                 $this->logger->error("File '$sqliteDb' does not exist");
                 return;
             }
-            $database = "sqlite:$sqliteDb";
+            $this->databaseDSN = "sqlite:$sqliteDb";
         }
 
         try
         {
-            $this->dbh = new PDO($database);
+            $dsn = $this->databaseDSN;
+            $this->logger->debug("Connecting to database $dsn");
+            $this->dbh = new PDO($this->databaseDSN);
             $this->dbh->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
         }
         catch (PDOException $e)

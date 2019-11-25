@@ -107,14 +107,8 @@ class KobraAdapter extends Adapter
     {
         if (is_null($this->databaseDSN))
         {
-            $this->logger->warn("No database dsn specified, defaulting to sqlite");
-            $sqliteDb = realpath(dirname(__FILE__)) . '/../../data/db/kobra.sqlite3';
-            if (file_exists($sqliteDb) === false)
-            {
-                $this->logger->error("File '$sqliteDb' does not exist");
-                return;
-            }
-            $this->databaseDSN = "sqlite:$sqliteDb";
+            $this->logger->fatal("No database dsn specified");
+            return;
         }
 
         try

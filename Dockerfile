@@ -3,8 +3,8 @@ FROM php:${PHP_VERSION}-apache-stretch
 
 COPY composer.json /var/www
 RUN apt-get update && \
-    apt-get install -y wget git sqlite3 libxml2-dev && \
-    docker-php-ext-install soap && \
+    apt-get install -y wget git sqlite3 libxml2-dev libpq-dev && \
+    docker-php-ext-install soap pdo pdo_mysql pdo_pgsql && \
     wget https://getcomposer.org/download/1.6.5/composer.phar -O /tmp/composer.phar && \
     cd /var/www && \
     php /tmp/composer.phar install && \

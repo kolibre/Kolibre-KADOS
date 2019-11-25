@@ -3,9 +3,5 @@ Dockerfile*
 .git
 tests
 composer.lock
-data/db/demo.db
-data/content
-data/media
-data/service.log
 README.md
 vendor

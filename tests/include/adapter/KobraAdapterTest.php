@@ -51,7 +51,7 @@ class KobraAdapterTest extends PHPUnit_Framework_TestCase
                 $output = array();
                 $command = 'psql -c "CREATE DATABASE kobra_test"';
                 exec($command, $output);
-                $dumpfile = realpath(dirname(__FILE__)) . '/../../../data/db/kobra.postgresql.sql';
+                $dumpfile = realpath(dirname(__FILE__)) . '/kobra.postgresql.sql';
                 $output = array();
                 $command = "cat " . $dumpfile . " | psql kobra_test";
                 exec($command, $output);
@@ -60,7 +60,7 @@ class KobraAdapterTest extends PHPUnit_Framework_TestCase
             default:
                 self::$sqliteDb = realpath(dirname(__FILE__)) . '/kobra_test.sqlte3';
                 if (file_exists(self::$sqliteDb)) unlink(self::$sqliteDb);
-                $dumpfile = realpath(dirname(__FILE__)) . '/../../../data/db/kobra.sqlite3.sql';
+                $dumpfile = realpath(dirname(__FILE__)) . '/kobra.sqlite3.sql';
                 $output = array();
                 $command = "sqlite3 " . self::$sqliteDb . " < $dumpfile";
                 exec($command, $output);

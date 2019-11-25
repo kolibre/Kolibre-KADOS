@@ -3,7 +3,7 @@
         <layout class="LoggerLayoutPattern">
             <param name="conversionPattern" value="%d %c:%L [%p] %m%n"/>
         </layout>
-        <param name="file" value="../data/service.log" />
+        <param name="file" value="../logs/service.log" />
     </appender>
     <root>
         <level value="DEBUG" />

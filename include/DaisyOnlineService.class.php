@@ -240,7 +240,7 @@ class DaisyOnlineService
         {
             if (isset($_SERVER['HTTPS'])) $protocol = 'https';
         }
-        if (array_key_exists('KADOS_FORCE_HTTPS'. $_ENV))
+        if (array_key_exists('KADOS_FORCE_HTTPS', $_ENV))
         {
             $protcol = 'https';
         }

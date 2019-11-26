@@ -248,17 +248,10 @@ class DaisyOnlineService
      * Service helper getServiceBaseUri
      * @return string
      */
-    public static function getServiceBaseUri($allowencrypted = true)
+    public static function getServiceBaseUri()
     {
         $protocol = 'http';
-        if ($allowencrypted === true)
-        {
-            if (isset($_SERVER['HTTPS'])) $protocol = 'https';
-        }
-        if (array_key_exists('KADOS_FORCE_HTTPS', $_ENV))
-        {
-            $protocol = 'https';
-        }
+        if (isset($_SERVER['REQUEST_SCHEME'])) $protocol = strtolower($_SERVER['REQUEST_SCHEME']);
 
         $host = 'localhost';
         if (isset($_SERVER['SERVER_NAME'])) $host = $_SERVER['SERVER_NAME'];
@@ -266,29 +259,36 @@ class DaisyOnlineService
         $port = '';
         if (isset($_SERVER['SERVER_PORT']))
         {
-            if (array_key_exists('KADOS_FORCE_HTTPS', $_ENV) === false)
+            switch ($protocol)
             {
-                switch ($protocol)
-                {
-                    case 'http':
-                        if ($_SERVER['SERVER_PORT'] != 80)
-                            $port = ':' . $_SERVER['SERVER_PORT'];
-                        break;
-                    case 'https':
-                        if ($_SERVER['SERVER_PORT'] != 443)
-                            $port = ':' . $_SERVER['SERVER_PORT'];
-                        break;
-                }
+                case 'http':
+                    if ($_SERVER['SERVER_PORT'] != 80)
+                        $port = ':' . $_SERVER['SERVER_PORT'];
+                    break;
+                case 'https':
+                    if ($_SERVER['SERVER_PORT'] != 443)
+                        $port = ':' . $_SERVER['SERVER_PORT'];
+                    break;
             }
         }
 
         $path = '';
         if (isset($_SERVER['SCRIPT_NAME'])) $path = dirname($_SERVER['SCRIPT_NAME']);
-        if (array_key_exists('KADOS_WEB_ROOT', $_ENV))
-        {
-            $path = $_ENV['KADOS_WEB_ROOT'] . $path;
-        }
         if (strlen($path) > 0 && substr($path, -1) != '/') $path .= '/';
+
+        // override protocol if HTTP_X_FORMWARED_PROTO is set
+        if (isset($_SERVER['HTTP_X_FORWARDED_PROTO'])) {
+            switch (strtolower($_SERVER['HTTP_X_FORWARDED_PROTO']))
+            {
+                case 'http':
+                case 'https':
+                    $protocol = strtolower($_SERVER['HTTP_X_FORWARDED_PROTO']);
+                    break;
+            }
+        }
+
+        // prepend web root to path if KADOS_WEB_ROOT defined
+        if (array_key_exists('KADOS_WEB_ROOT', $_ENV)) $path = $_ENV['KADOS_WEB_ROOT'] . $path;
 
         return "$protocol://$host$port$path";
     }

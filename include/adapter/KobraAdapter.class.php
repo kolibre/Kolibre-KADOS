@@ -159,13 +159,10 @@ class KobraAdapter extends Adapter
         }
     }
 
-    public function serviceBaseUri($allowencrypted = false)
+    private function serviceBaseUri()
     {
         $protocol = 'http';
-        if ($allowencrypted === true)
-        {
-            if (isset($_SERVER['HTTPS'])) $protocol = 'https';
-        }
+        if (isset($_SERVER['REQUEST_SCHEME'])) $protocol = strtolower($_SERVER['REQUEST_SCHEME']);
 
         $host = 'localhost';
         if (isset($_SERVER['SERVER_NAME'])) $host = $_SERVER['SERVER_NAME'];
@@ -189,6 +186,17 @@ class KobraAdapter extends Adapter
         $path = '';
         if (isset($_SERVER['SCRIPT_NAME'])) $path = dirname($_SERVER['SCRIPT_NAME']);
         if (strlen($path) > 0 && substr($path, -1) != '/') $path .= '/';
+
+        // override protocol if HTTP_X_FORMWARED_PROTO is set
+        if (isset($_SERVER['HTTP_X_FORWARDED_PROTO'])) {
+            switch (strtolower($_SERVER['HTTP_X_FORWARDED_PROTO']))
+            {
+                case 'http':
+                case 'https':
+                    $protocol = strtolower($_SERVER['HTTP_X_FORWARDED_PROTO']);
+                    break;
+            }
+        }
 
         return "$protocol://$host$port$path";
     }

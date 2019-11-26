@@ -251,16 +251,19 @@ class DaisyOnlineService
         $port = '';
         if (isset($_SERVER['SERVER_PORT']))
         {
-            switch ($protocol)
+            if (array_key_exists('KADOS_FORCE_HTTPS', $_ENV) === false)
             {
-                case 'http':
-                    if ($_SERVER['SERVER_PORT'] != 80)
-                        $port = ':' . $_SERVER['SERVER_PORT'];
-                    break;
-                case 'https':
-                    if ($_SERVER['SERVER_PORT'] != 443)
-                        $port = ':' . $_SERVER['SERVER_PORT'];
-                    break;
+                switch ($protocol)
+                {
+                    case 'http':
+                        if ($_SERVER['SERVER_PORT'] != 80)
+                            $port = ':' . $_SERVER['SERVER_PORT'];
+                        break;
+                    case 'https':
+                        if ($_SERVER['SERVER_PORT'] != 443)
+                            $port = ':' . $_SERVER['SERVER_PORT'];
+                        break;
+                }
             }
         }
 

@@ -242,7 +242,7 @@ class DaisyOnlineService
         }
         if (array_key_exists('KADOS_FORCE_HTTPS', $_ENV))
         {
-            $protcol = 'https';
+            $protocol = 'https';
         }
 
         $host = 'localhost';
@@ -266,6 +266,10 @@ class DaisyOnlineService
 
         $path = '';
         if (isset($_SERVER['SCRIPT_NAME'])) $path = dirname($_SERVER['SCRIPT_NAME']);
+        if (array_key_exists('KADOS_WEB_ROOT', $_ENV))
+        {
+            $path = $_ENV['KADOS_WEB_ROOT'] . $path;
+        }
         if (strlen($path) > 0 && substr($path, -1) != '/') $path .= '/';
 
         return "$protocol://$host$port$path";

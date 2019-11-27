@@ -99,6 +99,16 @@ class KobraAdapterTest extends PHPUnit_Framework_TestCase
         $this->assertEquals("kolibre", self::$adapter->decrypt('Wz2fuBzjbhCrm/Dmx38DCgpWHigWf8aaEDlvpDCO5gImGDI='));
     }
 
+    /**
+     * @group datetime
+     */
+    public function testFormatDatetime()
+    {
+        $pattern = '/\d{4}\-\d{2}\-\d{2}T\d{2}:\d{2}:\d{2}(\+\d{2}:\d{2}|Z)/';
+        // print_r("resouce:" .$resource['lastModifiedDate']);
+        $this->assertRegexp($pattern, self::$adapter->formatDatetime('2019-11-22 05:39:21.195311'));
+    }
+
     public function testAuthenticate()
     {
         $this->assertFalse(self::$adapter->authenticate('kolibre', 'erbilok'));
@@ -282,6 +292,7 @@ class KobraAdapterTest extends PHPUnit_Framework_TestCase
 
     public function testContentResources()
     {
+        $pattern = '/\d{4}\-\d{2}\-\d{2}T\d{2}:\d{2}:\d{2}(\+\d{2}:\d{2}|Z)/';
         $this->assertEmpty(self::$adapter->contentResources(10));
         $this->assertEmpty(self::$adapter->contentResources('con_10'));
         foreach (self::$adapter->contentResources(1) as $resource)
@@ -290,7 +301,9 @@ class KobraAdapterTest extends PHPUnit_Framework_TestCase
             $this->assertArrayHasKey('mimeType', $resource);
             $this->assertArrayHasKey('size', $resource);
             $this->assertArrayHasKey('localURI', $resource);
+            $this->assertArrayHasKey('lastModifiedDate', $resource);
             $this->assertContains('contents/1/resources', $resource['uri']);
+            $this->assertRegExp($pattern, $resource['lastModifiedDate']);
         }
         foreach (self::$adapter->contentResources('con_1') as $resource)
         {
@@ -298,7 +311,9 @@ class KobraAdapterTest extends PHPUnit_Framework_TestCase
             $this->assertArrayHasKey('mimeType', $resource);
             $this->assertArrayHasKey('size', $resource);
             $this->assertArrayHasKey('localURI', $resource);
+            $this->assertArrayHasKey('lastModifiedDate', $resource);
             $this->assertContains('contents/1/resources', $resource['uri']);
+            $this->assertRegExp($pattern, $resource['lastModifiedDate']);
         }
         foreach (self::$adapter->contentResources(2) as $resource)
         {
@@ -306,7 +321,9 @@ class KobraAdapterTest extends PHPUnit_Framework_TestCase
             $this->assertArrayHasKey('mimeType', $resource);
             $this->assertArrayHasKey('size', $resource);
             $this->assertArrayHasKey('localURI', $resource);
+            $this->assertArrayHasKey('lastModifiedDate', $resource);
             $this->assertContains('contents/2/resources', $resource['uri']);
+            $this->assertRegExp($pattern, $resource['lastModifiedDate']);
         }
         foreach (self::$adapter->contentResources('con_2') as $resource)
         {
@@ -314,7 +331,9 @@ class KobraAdapterTest extends PHPUnit_Framework_TestCase
             $this->assertArrayHasKey('mimeType', $resource);
             $this->assertArrayHasKey('size', $resource);
             $this->assertArrayHasKey('localURI', $resource);
+            $this->assertArrayHasKey('lastModifiedDate', $resource);
             $this->assertContains('contents/2/resources', $resource['uri']);
+            $this->assertRegExp($pattern, $resource['lastModifiedDate']);
         }
     }
 

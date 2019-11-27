@@ -201,6 +201,13 @@ class KobraAdapter extends Adapter
         return "$protocol://$host$port$path";
     }
 
+    public function formatDatetime($datetime)
+    {
+        $d = new DateTime($datetime);
+        $format = $this->protocolVersion == Adapter::DODP_V2 ? 'Y-m-d\TH:i:sP' : 'Y-m-d\TH:i:s';
+        return $d->format($format);
+    }
+
     public function extractId($identifier)
     {
         if (is_int($identifier)) return $identifier;
@@ -720,7 +727,7 @@ class KobraAdapter extends Adapter
             return false;
         }
 
-        return $this->dateFormatByProtocol($row['last_modified']);
+        return $this->formatDatetime($row['last_modified']);
     }
 
     public function contentAccessMethod($contentId)
@@ -840,26 +847,6 @@ class KobraAdapter extends Adapter
         return false;
     }
 
-    private function dateFormatByProtocol($date)
-    {
-        $patternV1 = '/\d{4}\-\d{2}\-\d{2}[ T]\d{2}:\d{2}:\d{2}/';
-        $patternV2 = '/\d{4}\-\d{2}\-\d{2}T\d{2}:\d{2}:\d{2}(\+\d{2}:\d{2}|Z)/';
-        switch ($this->protocolVersion)
-        {
-            case Adapter::DODP_V1:
-                if (preg_match($patternV2, $date) == 1) return str_replace(" ", "T", substr($date, 0, 19));
-                return $date;
-                break;
-            case Adapter::DODP_V2:
-                if (preg_match($patternV2, $date) == 1) return $date;
-                if (preg_match($patternV1, $date) == 1) return str_replace(" ", "T", substr($date, 0, 19)) . "Z";
-                return $date . "Z";
-                break;
-            default:
-                return $date;
-        }
-    }
-
     public function contentReturnDate($contentId)
     {
         $contentId = $this->extractId($contentId);
@@ -933,7 +920,7 @@ class KobraAdapter extends Adapter
             }
         }
 
-        return $this->dateFormatByProtocol($returnDate);
+        return $this->formatDatetime($returnDate);
     }
 
     public function contentMetadata($contentId)
@@ -1128,7 +1115,7 @@ class KobraAdapter extends Adapter
 
         try
         {
-            $query = 'SELECT file_name, bytes, mime_type, resource FROM content_resources WHERE content_id = :contentId';
+            $query = 'SELECT file_name, bytes, mime_type, resource, updated_at FROM content_resources WHERE content_id = :contentId';
             $sth = $this->dbh->prepare($query);
             $sth->execute(array(':contentId' => $contentId));
             $resources = $sth->fetchAll(PDO::FETCH_ASSOC);
@@ -1154,8 +1141,7 @@ class KobraAdapter extends Adapter
             $contentResource['mimeType'] = $resource['mime_type'];
             $contentResource['size'] = $resource['bytes'];
             $contentResource['localURI'] = $resource['file_name'];
-            $lastModified = $this->protocolVersion == Adapter::DODP_V2 ? '1970-01-01T00:00:00+00:00' : '1970-01-01T00:00:00';
-            $contentResource['lastModifiedDate'] = $lastModified;
+            $contentResource['lastModifiedDate'] = $this->formatDatetime($resource['updated_at']);
             array_push($contentResources, $contentResource);
         }
 

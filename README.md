@@ -21,7 +21,9 @@ Kolibre-KADOS is a PHP module for deploying a Daisy Online service onto an exist
 user management and content delivery backend. It is fully compatible with the
 DAISY Online Delivery Protocol v1 (all required operations) and v2.0.2 (all required and some optional operations)
 and provides an adapter API for backend communication. The adapter is a layer and API 
-between the SOAP service and any type of data backend i.e. SQL databases or HTTPS REST request. 
+between the SOAP service and any type of data backend i.e. SQL databases or HTTPS REST request.
+
+Kolibre-KADOS is bundled with a default adapter (KobraAdapter) the operates on the database managed with [Kobra](https://github.com/kolibre/kobra) 
 
 Releases are available at https://github.com/kolibre/Kolibre-KADOS/releases and our 
 wishlist is in the wiki https://github.com/kolibre/Kolibre-KADOS/wiki/KADOS-wish-list
@@ -31,6 +33,11 @@ http://www.daisy.org/projects/daisy-online-delivery/drafts/20100402/do-spec-2010
 
 and DOPD v2.0.2 at 
 http://www.daisy.org/projects/daisy-online-delivery/2-0/DODP2-0-2.html
+
+Docker
+------
+
+Kolibre-KADOS is available as docker images at https://hub.docker.com/r/kolibreorg/kados.
 
 Documentation
 ---------------------------------
@@ -50,10 +57,9 @@ Dependencies
 ---------------------------------
 Major dependencies for Kolibre-KADOS:
 
-* php5
+* php7.x
 * log4php
-* php5-sqlite (for use with demo adapter only)
-* phpunit
+* php7.x-sqlite3 or php7.x-mysql or php7.x-pgsql (depending on which database to use)
 
 Install using composer:
 

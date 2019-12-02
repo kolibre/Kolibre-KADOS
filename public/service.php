@@ -92,6 +92,9 @@ if ($_SERVER['REQUEST_METHOD'] != 'POST')
 .operations {
     padding-left: 10px;
 }
+<?
+if (file_exists ('service.css')) echo file_get_contents('service.css');
+?>
 </style>
 <title>DAISYOnlineService</title>
 </head>
@@ -133,6 +136,9 @@ This service implements the DAISY Online Delivery protocol version 2 as specifie
         echo "<li>addContentToBookshelf</li>\n";
 ?>
 </ul>
+<?
+if (file_exists ('service.html')) echo file_get_contents('service.html');
+?>
 </body>
 </html>
 <?php
